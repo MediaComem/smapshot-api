@@ -6,6 +6,7 @@ const { route, getLogger } = require("../../utils/express");
 const { notFoundError, requestBodyValidationError, authorizationError } = require('../../utils/errors');
 const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
+const { parseBooleanQueryParam } = require("../../utils/params");
 
 exports.getAttributes = route(async (req, res) => {
   const geoloc_id = req.params.id;
@@ -44,7 +45,7 @@ exports.getAttributes = route(async (req, res) => {
   }
 
   // Group POSE attributs
-  const { 
+  const {
     altitude,
     latitude,
     longitude,
@@ -99,13 +100,13 @@ exports.save = route(async (req, res) => {
   const nGCP = Object.keys(gcps).length;
 
   // Parameters for improvement
-  const validation_mode = data.validation_mode || false;
+  const validation_mode = parseBooleanQueryParam(data.validation_mode) || false;
   const validator_id = data.validator_id;
   const previous_geoloc_id = data.previous_geoloc_id;
   const remark = data.remark;
   const errors_list = data.errors_list;
 
-  let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id
+  let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id (l127)
 
   // Improvments only permitted by authorized users
   if (validation_mode & !userHasRole(req, "owner_admin", "owner_validator")) {
@@ -118,7 +119,7 @@ exports.save = route(async (req, res) => {
     const geolocalisation = await models.geolocalisations.findOne({
       include,
       where: {
-        id: geoloc_id
+        id: previous_geoloc_id
       }
     });
     if (!geolocalisation) {
