@@ -69,7 +69,10 @@ const getCollections = async (req, res) => {
           is_main_challenge: whereClausePublic.is_main_challenge,
           owner_id: whereClausePublic.owner_id,
           [Op.or]: {
-            date_publi: { [Op.not]: null }, // only published collections
+            date_publi: { 
+              [Op.not]: null,
+              [Op.lte]: today
+            }, // only published collections
             ...scopeOwner                   // or collections from the owner id
           }
         };
