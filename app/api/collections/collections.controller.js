@@ -21,6 +21,14 @@ const getCollections = async (req, res) => {
     is_main_challenge: parseBooleanQueryParam(req.query.is_main_challenge),
     owner_id: inUniqueOrList(req.query.owner_id)
   };
+
+  const today = new Date().toISOString().split('T')[0];
+  if (!userHasRole(req, 'owner_validator', 'owner_admin', 'super_admin')) {
+    whereClausePublic.date_publi = { 
+      [Op.not]: null,
+      [Op.lte]: today
+    }
+  }
   let whereClause = whereClausePublic;
 
   switch (req.query.publish_state) {
@@ -126,6 +134,14 @@ exports.getList = route(async (req, res) => {
     is_main_challenge: parseBooleanQueryParam(req.query.is_main_challenge),
     owner_id: inUniqueOrList(req.query.owner_id)
   };
+
+  const today = new Date().toISOString().split('T')[0];
+  if (!userHasRole(req, 'owner_validator', 'owner_admin', 'super_admin')) {
+    whereClausePublic.date_publi = { 
+      [Op.not]: null,
+      [Op.lte]: today
+    }
+  }
   let whereClause = whereClausePublic;
 
   switch (req.query.publish_state) {
@@ -277,8 +293,11 @@ exports.getById = route(async (req, res) => {
   };
 
   // Details of unpublished collections can only be accessed by super administrators.
+  const today = new Date().toISOString().split('T')[0];
   if (!userHasRole(req, 'super_admin')) {
-    where.date_publi = { [Op.not]: null };
+    where.date_publi = { 
+      [Op.not]: null,
+      [Op.lte]: today };
   }
 
   const collectionPromise = models.collections.findOne({
