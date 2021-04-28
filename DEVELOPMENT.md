@@ -149,9 +149,10 @@ When developing locally, you can use `sequelize-cli` directly using [npx][npx],
 for example:
 
 Command                               | Description
-:------------------------------------ | :---------------------------------
+:------------------------------------ | :------------------------------------------------------------------
 `npx sequelize-cli db:migrate`        | Run pending migrations.
 `npm run migrate`                     | *Alias for the previous command.*
+`npm run migrate:wait`                | Wait for the database to be reachable, then run pending migrations.
 `npx sequelize-cli db:migrate:status` | List the status of all migrations.
 
 Migrations can be written in two ways:

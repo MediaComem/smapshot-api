@@ -8,7 +8,7 @@
   "scripts": {
     "compose": "docker-compose up --build app",
     "compose:install": "npx cross-env DOCKER_INSTALL_DEPENDENCIES=1 npm run compose",
-    "compose:migrate": "docker-compose build base app && docker-compose run --rm app npm run migrate",
+    "compose:migrate": "docker-compose build base app && docker-compose run --rm app npm run migrate:wait",
     "compose:sequelize-cli": "docker-compose build base app && docker-compose run --rm app npx sequelize-cli",
     "compose:test": "docker-compose build base test_app && docker-compose run --rm test_app",
     "compose:test:coverage": "docker-compose build base test_app && npx cross-env SHOW_OPENAPI_COVERAGE=true docker-compose run --rm test_app npm run test:coverage",
@@ -18,7 +18,8 @@
     "doctoc": "doctoc --notitle --gitlab CHEATSHEET.md DEVELOPMENT.md README.md TODO.md",
     "lint": "eslint app/**/*.js bin/www commands/**/*.js config/**/*.js db/**/*.js spec/**/*.js --fix",
     "lint:watch": "onchange -p 1000 \"app/**/*.js\" \"bin/www\" \"commands/**/*.js\" \"config/**/*.js\" \"db/**/*.js\" \"spec/**/*.js\" -- npm run lint",
-    "migrate": "npm run wait:db && sequelize-cli db:migrate",
+    "migrate": "sequelize-cli db:migrate",
+    "migrate:wait": "npm run wait:db && npm run migrate",
     "nodemon": "nodemon",
     "nodemon:docker": "nodemon --legacy-watch --polling-interval 1000",
     "openapi": "node commands/openapi",
@@ -32,7 +33,7 @@
     "test:coverage:watch": "onchange --delay 500 --exclude \"app/generated/**/*\" --initial --kill \"app/**/*.{js,json,yml}\" \"bin/www\" \"commands/**/*.js\" \"config/**/*.js\" \"locales/*.json\" \"spec/**/*.js\" -- npm run test:coverage",
     "test:debug": "cross-env LOG_LEVEL=silly SHOW_OPENAPI_COVERAGE=true npm test",
     "test:init": "concurrently \"npm run precompile\" \"npm run test:migrate\"",
-    "test:migrate": "cross-env NODE_ENV=test npm run migrate",
+    "test:migrate": "cross-env NODE_ENV=test npm run migrate:wait",
     "test:watch": "onchange --delay 500 --exclude \"app/generated/**/*\" --initial --kill \"app/**/*.{js,json,yml}\" \"bin/www\" \"commands/**/*.js\" \"config/**/*.js\" \"locales/*.json\" \"spec/**/*.js\" -- npm test",
     "wait:db": "node commands/wait-for-the-database.js"
   },

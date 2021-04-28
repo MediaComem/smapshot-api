@@ -3,3 +3,4 @@
 --ignore-dir=logs
 --ignore-dir=.nyc_output
 --ignore-dir=public
+--ignore-dir=tmp
