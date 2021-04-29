@@ -1,0 +1,63 @@
+{
+    "general": {
+        "accessForbidden": "Non hai diritti d'accesso sufficienti.",
+        "validationErrors": "Errori di convalida: uno o più campi non sono corretti.",
+        "resourceNotFound": "La risorsa non è stata trovata."
+    },
+    "auth": {
+        "error": {
+            "noAccountExist": "Non esiste un conto con quell'indirizzo e-mail.",
+            "usedSocialEmail": "La tua e-mail viene utilizzata da un social login, per favore utilizza il pulsante Google o Facebook per connetterti.",
+            "linkNotValid": "Il link non è più valido. Per favore chiedi un nuovo link.",
+            "incorrectEmail": "E-mail incorretta.",
+            "incorrectPassword": "Password incorretta",
+            "missingUsername": "Nome utente mancante",
+            "emailNotValid": "L'e-mail non è valida",
+            "emailAlreadyExists": "L'e-mail utente esiste già",
+            "accountNotActivated": "Il conto non è ancora stato attivato, per favore controlla la tua posta in arrivo.",
+            "generalServerAuth": "Errore di autenticazione del server, per favore contatta smapshot.",
+            "alreadyActivated": "Il conto è già stato attivato"
+        },
+        "forgotPassword": {
+            "success": "Riceverai una nuova password in pochi minuti!"
+        },
+        "resetPassword": {
+            "success": "La tua password è stata modificata con successo!",
+            "emailTitle": "Reimposta la tua password",
+            "emailDescription": "<p>Ricevi questo perché tu (o qualcun altro) ha richiesto la reimpostazione della password del tuo conto.</p><p>Per favore clicca sul seguente link o incollalo nel tuo browser per completare il procedimento:</p><p><a href='{{ url }}'>Reimposta la tua password</a></p><p>Attenzione, il link è valido solo per un'ora!<p>Se non l'hai richiesto, ignora questa e-mail e la tua password rimarrà invariata.</p>"
+        },
+        "createAccount": {
+            "success": "Ti è stata inviata una e-mail con un link di conferma."
+        },
+        "activateAccount": {
+            "success": "Il tuo conto è attivato. Puoi ora effettuare l'accesso."
+        },
+        "confirmAccount": {
+            "emailTitle": "Attiva il tuo conto",
+            "emailDescription": "<p>Per favore clicca sul seguente link per confermare la tua e-mail e attivare il tuo conto smapshot:</p><p><a href='{{ url }}'>Conferma la tua e-mail</a></p>"
+        }
+    },
+    "corrections": {
+        "submitted": {
+            "success": "La tua correzione è stata inviata. Il proprietario della raccolta procederà ora ad un controllo.",
+            "error": "La tua correzione non può essere inviata, per favore riprova più tardi."
+        }
+    },
+    "problems": {
+        "submitted": {
+            "success": "Il tuo problema è stato inviato. Il proprietario della raccolta procederà ora ad un controllo.",
+            "error": "Il tuo problema non può essere inviato, per favore riprova più tardi.",
+            "errorIdRequired": "Un ID immagine o un ID immagine originale è necessario."
+        }
+    },
+    "roles": {
+        "ownerIdNeeded": "Un parametro ID proprietario è necessario."
+    },
+    "pose": {
+        "3dModelCreationError": "La creazione del modello 3d non ha funzionato, si prega di contattare il team di smapshot.",
+        "impossible": "La posizione calcolata è impossibile, controlla che non ci siano errori nelle corrispondenze."
+    },
+    "locations":{
+        "noCountry": "La posizione non corrisponde ad alcun paese."
+    }
+}

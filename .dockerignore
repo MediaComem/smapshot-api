@@ -1,0 +1,16 @@
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+/.ackrc
+/coverage
+/docker-compose.*
+/Dockerfile*
+/.env*
+!/.env.test.defaults
+/.eslintrc.json
+/.git*
+/logs
+/node_modules
+/nodemon.json
+/.nyc_output
+/public
+/.tool-versions
+/.vscode

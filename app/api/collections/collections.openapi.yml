@@ -1,0 +1,93 @@
+/collections:
+  get:
+    summary: List image collections.
+    operationId: getCollections
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: extra_info
+        in: query
+        description: Retrieve extra information (owners, number images). True by default.
+        example: true
+        schema:
+          type: boolean
+      - name: is_challenge
+        in: query
+        description: Select only collections marked as challenges by their owner.
+        example: false
+        schema:
+          type: boolean
+      - name: is_main_challenge
+        in: query
+        description: Select only the collection marked as the main challenge.
+        example: false
+        schema:
+          type: boolean
+      - name: image_width
+        in: query
+        description: Width of the banner image to return.
+        example: 500
+        schema:
+          type: integer
+          enum: [200, 500, 1024]
+          default: 500
+      - name: publish_state
+        in: query
+        description: |
+          Select published/unpublished/all collections. 'published' by default
+          **Required role:** `owner_admin`, `owner_validator` or `superadmin` to retrieve unpublished collections.
+
+          **Scope:** With option `unpublished` or `all` an owner administrator or validator can only see collections from their assigned collection.
+        example: published
+        schema:
+          type: string
+          enum: [published, unpublished, all]
+          default: published
+      - name: owner_id
+        in: query
+        description: Select only the collections belonging to the owner(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+
+/collections/{id}:
+  get:
+    summary: Retrieve one image collection.
+    operationId: getCollection
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the collection.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: image_width
+        in: query
+        description: Width of the banner image to return.
+        example: 500
+        schema:
+          type: integer
+          enum: [200, 500, 1024]
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Collection"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"

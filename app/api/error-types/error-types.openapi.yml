@@ -1,0 +1,21 @@
+/errors/types:
+  get:
+    summary: List error types.
+    operationId: getErrorTypes
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: query
+        description: Select only error types with the specified ID(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorTypeList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

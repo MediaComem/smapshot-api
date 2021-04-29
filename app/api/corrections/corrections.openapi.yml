@@ -1,0 +1,285 @@
+/corrections:
+  post:
+    summary: Submit a correction on an image.
+    operationId: createCorrection
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateCorrectionRequest"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+  get:
+    summary: List image corrections.
+    operationId: getCorrections
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - name: id
+        in: query
+        description: Select only corrections with the specified ID(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: state
+        in: query
+        description: Select created/accepted/rejected/updated corrections only. All are listed by default.
+        example: created
+        schema:
+          errorMessage: should be a correction state or an array of correction states
+          oneOf:
+            - $ref: "#/components/schemas/CorrectionState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/CorrectionState"
+      - name: date_created_min
+        in: query
+        description: Select only corrections made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_created_max
+        in: query
+        description: Select only corrections made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: original_id
+        in: query
+        description: Select only corrections made on images with the specified original ID(s).
+        example: LB_3456_ETHZ
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+      - name: collection_id
+        in: query
+        description: Select only corrections made on images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: owner_id
+        in: query
+        description: Select only corrections made on images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: volunteer_id
+        in: query
+        description: Select only corrections made by the specified volunteer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: username_volunteer
+        in: query
+        description: Select only corrections made by volunteers with matching usernames.
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorrectionList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+    security:
+      bearerToken: []
+
+/corrections/{id}:
+  put:
+    summary: Update a correction as a validator. The new correction is automatically accepted.
+    operationId: updateCorrection
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the correction.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateCorrectionRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/corrections/{id}/state:
+  put:
+    summary: Validate or reject a correction.
+    operationId: updateCorrectionState
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the correction.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateCorrectionStateRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/corrections/ranking:
+  get:
+    summary: List correction rankings.
+    operationId: getCorrectionRankings
+    parameters:
+      - name: state
+        in: query
+        description: Compute rankings only for corrections in the specified state(s). All are included by default.
+        example: created
+        schema:
+          errorMessage: should be a correction state or an array of correction states
+          oneOf:
+            - $ref: "#/components/schemas/CorrectionState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/CorrectionState"
+      - name: user_id
+        in: query
+        description: >-
+          Compte rankings only for corrections made by the specified user(s). If
+          a correction has been validated by the same user who created it, it is
+          not included in the rankings.
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: validator_id
+        in: query
+        description: Compute rankings only for corrections validated by the specified user(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: date_created_min
+        in: query
+        description: Compute rankings only for corrections made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_created_max
+        in: query
+        description: Compute rankings only for corrections made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: owner_id
+        in: query
+        description: Compute rankings only for corrections on images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: collection_id
+        in: query
+        description: Compute rankings only for corrections on images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: photographer_id
+        in: query
+        description: Compute rankings only for corrections on images taken by the specified photographer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: username_volunteer
+        in: query
+        description: Compute rankings only for corrections made by the volunteer(s) with matching username(s).
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorrectionRankingList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

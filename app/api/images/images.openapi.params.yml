@@ -1,0 +1,190 @@
+# Common parameters for image list operations.
+---
+- $ref: "#/components/parameters/LanguageParameter"
+- $ref: "#/components/parameters/LimitParameter"
+- $ref: "#/components/parameters/OffsetParameter"
+- name: id
+  in: query
+  description: Filter image by id(s).
+  example: 2534
+  schema:
+    $ref: "#/components/schemas/ApiIdListParameter"
+- name: original_id
+  in: query
+  description: Filter image by original id(s).
+  example: LB_3456_ETHZ
+  schema:
+    errorMessage: should be a string or an array of strings
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+- name: owner_id
+  in: query
+  description: Select only the images belonging to the owner(s) with the specified ID(s).
+  example: 3
+  schema:
+    $ref: "#/components/schemas/ApiIdListParameter"
+- name: collection_id
+  in: query
+  description: Select only the images belonging to the collection(s) with the specified ID(s).
+  example: 3
+  schema:
+    $ref: "#/components/schemas/ApiIdListParameter"
+- name: user_id
+  in: query
+  description: Select only the images georeferenced by user(s) with the specified ID(s).
+  example: 3
+  schema:
+    $ref: "#/components/schemas/ApiIdListParameter"
+- name: publish_state
+  in: query
+  description: Select published/unpublished/all collections. 'published' by default
+  example: published
+  schema:
+    type: string
+    enum: [published, unpublished, all]
+    default: published
+- name: state
+  in: query
+  description: Select only image with given geolocation state
+  example: [initial, waiting_alignment]
+  schema:
+    type: array
+    items:
+      type: string
+      enum: [initial, waiting_alignment, waiting_validation, validated]
+    default: [waiting_validation, validated]
+- name: attributes
+  in: query
+  description: List of attributes to retrieve. Returns all if unspecified.
+  example: [id, latitude, longitude]
+  schema:
+    type: array
+    items:
+      type: string
+      enum: [id, original_id, collection_id, owner_id, title, is_published, state, height, width,
+      longitude, latitude, date_shot_min, date_shot_max, media]
+- name: latitude
+  in: query
+  description: Latitude of the point to consider for distance to images.
+  example: 46.5
+  schema:
+    type: number
+- name: longitude
+  in: query
+  description: Longitude of the point to consider for distance to images.
+  example: 46.5
+  schema:
+    type: number
+- name: bbox
+  in: query
+  description: Select only image inside the given bounding box.
+  example: [5.238, 44.829, 11.21, 48.364]
+  schema:
+    type: array
+    minItems: 4
+    maxItems: 4
+    items:
+      type: number
+- name: only_unlocked
+  in: query
+  description: Select only unlocked images.
+  schema:
+    type: boolean
+- name: keyword
+  in: query
+  description: Select only images with a title, description or original ID containing at least one of the specified keywords.
+  schema:
+    errorMessage: should be a string or an array of strings
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+- name: sortKey
+  in: query
+  description: Sort images by Distance, title or date shot.
+  schema:
+    errorMessage: should be a string
+    type: string
+- name: place_names
+  in: query
+  description: Select only images where the specified places are visible.
+  schema:
+    errorMessage: should be a string or an array of strings
+    oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+- name: wkt_roi
+  in: query
+  description: Select only images with a location or footprint that intersects the specified WKT polygon.
+  schema:
+    type: string
+- name: intersect_location
+  in: query
+  description: Select only images with a location that intersects the WKT polygon specified in the "wkt_roi" parameter.
+  schema:
+    type: boolean
+- name: intersect_footprint
+  in: query
+  description: Select only images with a footprint that intersects the WKT polygon specified in the "wkt_roi" parameter.
+  schema:
+    type: boolean
+- name: date_shot_min
+  in: query
+  description: Select only images shot after the specified date.
+  schema:
+    type: string
+    format: date
+- name: date_shot_max
+  in: query
+  description: Select only images shot before the specified date.
+  schema:
+    type: string
+    format: date
+- name: date_inserted_min
+  in: query
+  description: Select only images inserted after the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_inserted_max
+  in: query
+  description: Select only images inserted before the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_georef_min
+  in: query
+  description: Select only images georeferenced after the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_georef_max
+  in: query
+  description: Select only images georeferenced before the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_validated_min
+  in: query
+  description: Select only images validated after the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_validated_max
+  in: query
+  description: Select only images validated before the specified date.
+  schema:
+    type: string
+    format: date-time
+- name: date_downloaded_max
+  in: query
+  description: Select only images downloaded before the specified date.
+  schema:
+    type: string
+    format: date-time

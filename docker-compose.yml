@@ -1,0 +1,153 @@
+# https://docs.docker.com/compose/compose-file/
+version: "3.8"
+
+services:
+  # Application container (Node.js server).
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - base
+      - db
+      - vt_generate
+      - vt_serve
+    environment:
+      # Always connect the application running in this container to the database
+      # running in the `db` container. These environment variables take
+      # precedence over those in the `.env` file because dotenv does not
+      # override variables that are already set
+      # (https://www.npmjs.com/package/dotenv#what-happens-to-environment-variables-that-were-already-set).
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: smapshot_v2
+      DB_USER: postgres
+      DB_PASS: postgres
+      # If this variable is set, the entrypoint script will run `npm install`
+      # before starting the application, to install new dependencies.
+      DOCKER_INSTALL_DEPENDENCIES:
+    ports:
+      - "${PORT:-1337}:1337"
+    restart: "no"
+    stop_signal: KILL
+    volumes:
+      # Mount this repository into the container so that the server running
+      # within it can detect changes to the code and restart automatically.
+      # Exclude node_modules and mount it as persistent named volume instead.
+      - ".:/usr/src/app"
+      - "node_modules:/usr/src/app/node_modules"
+      - "./public/data:/data"
+
+  # Database container (PostgreSQL with PostGIS).
+  db:
+    image: mdillon/postgis:11-alpine
+    environment:
+      POSTGRES_DB: smapshot_v2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      # Expose the database on port 5432 of the host by default
+      # (or $DB_PORT, if specified).
+      - "${DB_PORT:-5434}:5432"
+    restart: "no"
+    volumes:
+      # Mount a persistent Docker volume into the container so that PostgreSQL
+      # data survives container restart.
+      - "db_data:/var/lib/postgresql/data"
+
+  # Vector tiles generation for points container
+  vt_generate:
+    image: mediacomem/vtmarkersgenerator:2.3.1
+    environment:
+      # Always connect the application running in this container to the database
+      # running in the `db` container. These environment variables take
+      # precedence over those in the `.env` file because dotenv does not
+      # override variables that are already set
+      # (https://www.npmjs.com/package/dotenv#what-happens-to-environment-variables-that-were-already-set).
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: smapshot_v2
+      DB_USER: postgres
+      DB_PASS: postgres
+    restart: "always"
+    stop_signal: KILL
+    depends_on:
+      - db
+    volumes:
+      # Mount the tasks config file
+      - ./docker/vt_generate/tasks.yml:/usr/src/app/tasks.yml
+      # Mount a persistent Docker volume into the container so that PostgreSQL
+      # data survives container restart.
+      - "vt_tilesets:/usr/src/app/output"
+
+  # Serve vector tiles generated from vt_generate container
+  vt_serve:
+    image: mediacomem/mbtileserver:1.0.0
+    environment:
+      TILE_DIR: "/tilesets"
+      MBTILESERVER_ARGS: "--disable-preview --disable-svc-list"
+    ports:
+      - "${VT_PORT:-3005}:8000"
+    restart: "no"
+    depends_on:
+      - vt_generate
+    volumes:
+      # Mount a persistent Docker volume into the container so that PostgreSQL
+      # data survives container restart.
+      - "vt_tilesets:/tilesets"
+
+  # Test application container (Mocha test runner).
+  test_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - base
+      - test_db
+    env_file:
+      - ./.env.test.defaults
+    environment:
+      # Always connect the application running in this container to the database
+      # running in the `test_db` container. These environment variables take
+      # precedence over those in the `.env` file because dotenv does not
+      # override variables that are already set
+      # (https://www.npmjs.com/package/dotenv#what-happens-to-environment-variables-that-were-already-set).
+      DB_HOST: test_db
+      DB_PORT: 5432
+      DB_NAME: smapshot_test
+      DB_USER: postgres
+      DB_PASS: postgres
+      # Force the Mocha test runner to use colors.
+      FORCE_COLOR: 1
+      LOG_LEVEL:
+      NODE_ENV: test
+      SEED:
+      SHOW_OPEN_API_COVERAGE:
+    restart: "no"
+    volumes:
+      - "./coverage:/usr/src/app/coverage"
+
+  # Test database container (PostgreSQL with PostGIS).
+  test_db:
+    image: mdillon/postgis:11-alpine
+    environment:
+      POSTGRES_DB: smapshot_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    restart: "no"
+
+  # Base image with compile-time and runtime dependencies.
+  base:
+    image: smapshot/base
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    command:
+      # Run a dummy command so the container exits immediately.
+      - "true"
+    restart: "no"
+
+volumes:
+  db_data:
+  node_modules:
+  vt_tilesets:

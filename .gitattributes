@@ -1,0 +1,4 @@
+# https://git-scm.com/docs/gitattributes
+*.sh text eol=lf
+*.js text eol=lf
+*.sql text eol=lf

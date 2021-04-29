@@ -1,0 +1,50 @@
+{
+  "$id": "Owner",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "link": {
+      "type": "string",
+      "format": "uri"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "n_images" :{
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_collections" :{
+      "type": "integer",
+      "minimum": 0
+    },
+    "media": {
+      "type": ["object", "null"],
+      "properties": {
+        "banner_url": {
+          "type": "string"
+        }
+      }
+    },
+    "extent": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name"
+  ]
+}

@@ -1,0 +1,358 @@
+/geolocalisations:
+  post:
+    summary: Start geolocating an image.
+    operationId: createGeolocalisation
+    description: >-
+      If the previous geolocalisation ID is provided, the geolocalisation is an
+      improvement of another geolocalisation. If the validator ID is provided,
+      the geolocalisation is an improvement made by a validator.
+      ## Authorization check but not required.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateGeolocalisationRequest"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGeolocalisationResponse"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+  get:
+    summary: List geolocalisations.
+    operationId: getGeolocalisations
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only see geolocalisations
+      related to the owner.
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/OrderParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - name: collection_id
+        in: query
+        description: Select only geolocalisations for images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: date_georef_min
+        in: query
+        description: Select only geolocalisations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_georef_max
+        in: query
+        description: Select only geolocalisations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: image_id
+        in: query
+        description: Select only geolocalisations for the specified image(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: is_published
+        in: query
+        description: Select only published (true) or unpublished (false) geolocalisations. Defaults to true.
+        example: false
+        schema:
+          type: boolean
+      - name: original_id
+        in: query
+        description: Select only geolocalisations for images with the specified original ID(s).
+        example: LB_3456_ETHZ
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+      - name: owner_id
+        in: query
+        description: Select only geolocalisations for images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: state
+        in: query
+        description: Select only geolocalisations in the specified state(s).
+        example: created
+        schema:
+          errorMessage: should be a geolocalisation state or an array of geolocalisation states
+          oneOf:
+            - $ref: "#/components/schemas/GeolocalisationState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/GeolocalisationState"
+      - name: username_volunteer
+        in: query
+        description: Select only geolocalisations made by volunteers with matching usernames.
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeolocalisationList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/geolocalisations/{id}:
+  get:
+    summary: Retrieve one geolocalisation.
+    operationId: getGeolocalisation
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the geolocalisation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeolocalisationAttributes"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/geolocalisations/{id}/save:
+  put:
+    summary: Save a geolocalisation.
+    operationId: updateGeolocalisation
+    description: |-
+      The geolocalisation is completed and validator will be notified for a
+      check. If the validation mode is true, the geolocalisation is an
+      improvement made by a validator.
+
+      ## Authorization required for improvements i.e. validation mode
+
+      **Required role for validation:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only update
+      geolocalisations/validations related to the owner. Anonymous users can
+      update there geolocalisations on final step or creation
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the geolocalisation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SaveGeolocalisationRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveGeolocalisationResponse"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+
+/geolocalisations/{id}/state:
+  put:
+    summary: Validate or reject a geolocalisation.
+    operationId: updateGeolocalisationState
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only see geolocalisations
+      related to the owner.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the geolocalisation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateGeolocalisationStateRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              type: string
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []
+
+/geolocalisations/{id}/footprint:
+  post:
+    summary: Save the footprint of a geolocalisation.
+    operationId: updateGeolocalisationFootprint
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the geolocalisation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateGeolocalisationFootprintRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/geolocalisations/ranking:
+  get:
+    summary: List geolocalisation rankings.
+    operationId: getGeolocalisationRankings
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: state
+        in: query
+        description: Compute rankings only for geolocalisations in the specified state(s). All are included by default.
+        example: created
+        schema:
+          errorMessage: should be a geolocalisation state or an array of geolocalisation states
+          oneOf:
+            - $ref: "#/components/schemas/GeolocalisationState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/GeolocalisationState"
+      - name: user_id
+        in: query
+        description: >-
+          Compte rankings only for geolocalisations made by the specified user(s). If
+          a geolocalisation has been validated by the same user who created it, it is
+          not included in the rankings.
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: validator_id
+        in: query
+        description: Compute rankings only for geolocalisations validated by the specified user(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: date_georef_min
+        in: query
+        description: Compute rankings only for geolocalisations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_georef_max
+        in: query
+        description: Compute rankings only for geolocalisations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: owner_id
+        in: query
+        description: Compute rankings only for geolocalisations on images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: collection_id
+        in: query
+        description: Compute rankings only for geolocalisations on images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: photographer_id
+        in: query
+        description: Compute rankings only for geolocalisations on images taken by the specified photographer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: username_volunteer
+        in: query
+        description: Compute rankings only for geolocalisations made by the volunteer(s) with matching username(s).
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeolocalisationRankingList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"

@@ -1,0 +1,29 @@
+/locations/{longitude},{latitude}/countrycode:
+  get:
+    summary: Get the country code of a set of coordinates in ISO 3166-2 alpha-2 format.
+    operationId: getLocationCountryCode
+    parameters:
+      - name: latitude
+        in: path
+        description: The latitude (EPSG 4326).
+        example: 46.5
+        required: true
+        schema:
+          type: number
+      - name: longitude
+        in: path
+        description: The longitude (EPSG 4326).
+        example: 46.5
+        required: true
+        schema:
+          type: number
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              type: string
+              example: CH
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

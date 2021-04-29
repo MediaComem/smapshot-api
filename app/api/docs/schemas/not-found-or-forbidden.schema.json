@@ -1,0 +1,28 @@
+{
+  "$id": "NotFoundOrForbiddenResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "description": "A response body indicating that either the resource does not exist or the user does not have sufficient privileges to perform the operation.",
+  "properties": {
+    "$$merge": {
+      "file": "./generic-http-problem-details.res.schema.json",
+      "pointer": "/properties"
+    },
+    "type": {
+      "example": "https://httpstatuses.com/404"
+    },
+    "title": {
+      "example": "Not Found"
+    },
+    "status": {
+      "example": 404
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "detail",
+    "status",
+    "title",
+    "type"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "$id": "ObservationList",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "$ref": "Observation#"
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,121 @@
+{
+  "$id": "Correction",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["title", "caption"]
+    },
+    "state": {
+      "$ref": "CorrectionState$"
+    },
+    "remark": {
+      "type": ["string", "null"]
+    },
+    "correction": {
+      "type": "string"
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_validated": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ]
+    },
+    "downloaded": {
+      "type": "boolean"
+    },
+    "is_original": {
+      "type": "boolean"
+    },
+    "previous_correction_id": {
+      "type": ["null", "integer"]
+    },
+    "update" : {
+      "type": "object",
+      "properties": {
+        "correction": {
+          "type": "string"
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "original_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "caption": {
+          "type": ["string", "null"]
+        },
+        "is_published": {
+          "type": "boolean"
+        },
+        "orig_title": {
+          "type": "string"
+        },
+        "orig_caption": {
+          "type": ["string", "null"]
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "ApiId#"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id", "name"]
+        },
+        "collection": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "ApiId#"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id", "name"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_created",
+    "state",
+    "correction",
+    "type",
+    "image"
+  ]
+}

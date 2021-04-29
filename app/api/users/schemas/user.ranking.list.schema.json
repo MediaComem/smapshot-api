@@ -1,0 +1,23 @@
+{
+  "$id": "UserRankingList",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "count": {
+      "description": "Total number of users matching the filters",
+      "type": "integer",
+      "minimum": 0
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "$ref": "UserRanking#"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "count",
+    "rows"
+  ]
+}

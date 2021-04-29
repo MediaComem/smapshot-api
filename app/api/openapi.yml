@@ -1,0 +1,129 @@
+# Base OpenAPI document for this API.
+#
+# The documentation for the version of the OpenAPI specification used in this
+# API is available at
+# https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md.
+#
+# This is not a full OpenAPI document. It includes other files through the
+# custom `!include` tag. When assembled, the full version of the OpenAPI
+# document is saved to the `openapi.assembled.json` file. Read the development
+# guide in `DEVELOPMENT.md` for more information.
+
+# Warning: when updating this version, also search for and update all references
+# to the OpenAPI specification (i.e. links to
+# "https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md")
+# throughout this codebase.
+openapi: "3.0.3"
+
+# API metadata.
+info:
+  title: smapshot
+  description: The participative time machine.
+  # The API version is dynamically defined from the "package.json" file.
+  version: !include ./openapi.version.js
+  contact:
+    name: smapshot
+    url: https://smapshot.heig-vd.ch
+
+# Servers are dynamically defined from the application's configuration.
+servers: !include ./openapi.servers.js
+
+# All API resources are defined in other files under this directory with the
+# `.openapi.yml` extension.
+paths: !include ./**/*.openapi.yml
+
+components:
+  # Common parameters used throughout the API.
+  parameters:
+    LanguageParameter:
+      name: lang
+      in: query
+      description: Language to localize data and message returned by the API.
+      example: en
+      schema:
+        type: string
+        enum: ["en", "de", "fr", "it", "pt"]
+    LimitParameter:
+      name: limit
+      in: query
+      description: Maximum number of results to return.
+      example: 5
+      schema:
+        type: integer
+        minimum: 0
+        default: 30
+    OffsetParameter:
+      name: offset
+      in: query
+      description: Number of result to skip from start.
+      example: 0
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    OrderParameter:
+      name: order
+      in: query
+      description: Sort direction (ascencing or descending).
+      example: ASC
+      schema:
+        type: string
+        enum: [ ASC, DESC ]
+  # Common responses used throughout the API.
+  responses:
+    ForbiddenError:
+      description: >-
+        Authentication was successful but the user is not authorized to perform
+        this action due to insufficient privileges.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ForbiddenResponse"
+    RequestBodyValidationErrors:
+      description: The request body contains invalid data.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/RequestBodyValidationErrorsResponse"
+    RequestParametersValidationErrors:
+      description: The request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/RequestParametersValidationErrorsResponse"
+    UnauthorizedError:
+      description: Authentication failed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/UnauthorizedResponse"
+    NotFoundError:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/NotFoundResponse"
+    NotFoundOrForbiddenError:
+      description: >-
+        The resource does not exist or the user does not have sufficient
+        privileges to perform the operation.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/NotFoundOrForbiddenResponse"
+  # JSON schemas are defined in other files under this directory with the
+  # `.schema.json` extension. Each JSON schema is inserted in the `schemas`
+  # object under a key corresponding to its `$id` property.
+  schemas: !include jsonSchemasById ./**/*.schema.json
+
+  securitySchemes:
+    bearerToken:
+      type: http
+      in: header
+      name: Authorization
+      scheme: Bearer
+      description: |-
+        To authenticate to most operations of the API, the client must sent a
+        valid token in the Authorization header. The value of the header must be
+        the standard HTTP authentication scheme "Bearer" followed by one space
+        and the token.

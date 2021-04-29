@@ -1,0 +1,28 @@
+{
+  "$id": "UnauthorizedResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "description": "A response body indicating that authentication failed.",
+  "properties": {
+    "$$merge": {
+      "file": "./generic-http-problem-details.res.schema.json",
+      "pointer": "/properties"
+    },
+    "type": {
+      "example": "https://httpstatuses.com/401"
+    },
+    "title": {
+      "example": "Unauthorized"
+    },
+    "status": {
+      "example": 401
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "detail",
+    "status",
+    "title",
+    "type"
+  ]
+}

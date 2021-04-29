@@ -1,0 +1,25 @@
+{
+  "$id": "AuthenticationErrorResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "$$merge": {
+      "file": "../../docs/schemas/generic-http-problem-details.res.schema.json",
+      "pointer": "/properties"
+    },
+    "type": {
+      "example": "http://httpstatuses.com/401"
+    },
+    "title": {
+      "example": "Unauthorized"
+    },
+    "status": {
+      "example": 401
+    },
+    "detail": {
+      "example": "Wrong password"
+    }
+  },
+  "additionalProperties": false,
+  "required": [ "detail", "status", "title", "type" ]
+}

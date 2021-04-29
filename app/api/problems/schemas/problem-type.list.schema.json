@@ -1,0 +1,9 @@
+{
+  "$id": "ProblemTypeList",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "$ref": "ProblemType#"
+  },
+  "additionalProperties": false
+}

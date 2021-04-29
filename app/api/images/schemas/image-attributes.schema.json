@@ -1,0 +1,281 @@
+{
+  "$id": "ImageAttributes",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "original_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "caption": {
+      "type": [ "string", "null" ]
+    },
+    "correction_enabled": {
+      "type": "boolean"
+    },
+    "nObs": {
+      "type": "integer"
+    },
+    "observation_enabled": {
+      "type": "boolean"
+    },
+    "state": {
+      "$ref": "ImageState#"
+    },
+    "view_type": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": ["terrestrial", "lowOblique", "highOblique", "nadir"]
+        }
+      ]
+    },
+    "is_published": {
+      "type": "boolean"
+    },
+    "license": {
+      "type": "string"
+    },
+    "link": {
+      "type": [ "null", "string" ]
+    },
+    "download_link": {
+      "type": [ "null", "string" ]
+    },
+    "shop_link": {
+      "type": [ "null", "string" ]
+    },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "link"
+      ]
+    },
+    "collection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "link"
+      ]
+    },
+    "georeferencer": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "username"
+          ]
+        }
+      ]
+    },
+    "photographer": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "link": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "link"
+          ]
+        }
+      ]
+    },
+    "collection_id": {
+      "type": "integer"
+    },
+    "height": {
+      "type": ["integer", "null"]
+    },
+    "width": {
+      "type": ["integer", "null"]
+    },
+    "longitude": {
+      "type": ["number", "null"]
+    },
+    "latitude": {
+      "type": ["number", "null"]
+    },
+    "date_shot_min": {
+      "type": "string",
+      "format": "date"
+    },
+    "date_shot_max": {
+      "type": "string",
+      "format": "date"
+    },
+    "media": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "image_url": {
+          "type": "string"
+        },
+        "model_3d_url": {
+          "type": "string"
+        },
+        "tiles": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "apriori_altitude": {
+      "type": ["number", "null"]
+    },
+    "apriori_locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "azimuth": {
+            "type": [ "null", "number" ]
+          },
+          "exact": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "exact",
+          "longitude",
+          "latitude"
+        ]
+      }
+    },
+    "pose": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": [ "null", "number" ]
+        },
+        "latitude": {
+          "type": [ "null", "number" ]
+        },
+        "altitude": {
+          "type": [ "null", "number" ]
+        },
+        "azimuth": {
+          "type": [ "null", "number" ]
+        },
+        "focal": {
+          "type": [ "null", "number" ]
+        },
+        "roll": {
+          "type": [ "null", "number" ]
+        },
+        "tilt": {
+          "type": [ "null", "number" ]
+        },
+        "country_iso_a2": {
+          "type": [ "null", "string" ],
+          "minLength": 2,
+          "maxLength": 2
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "longitude",
+        "latitude",
+        "altitude",
+        "azimuth",
+        "focal",
+        "roll",
+        "tilt"
+      ]
+    },
+    "locked": {
+      "type": "boolean"
+    },
+    "locked_user_id": {
+      "type": [ "null", "integer" ]
+    },
+    "delta_last_start": {
+      "type": [ "null", "number" ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ]
+}

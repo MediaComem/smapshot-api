@@ -1,0 +1,126 @@
+/users:
+  get:
+    summary: List user accounts.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only see users who have
+      participated in their assigned collection. A user is defined to have
+      participated in a collection if he or she has geolocated an image in that
+      collection.
+    operationId: getUsers
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: email
+        in: query
+        description: Select only the users who have the specified case-insensitive email or emails.
+        example: alice@example.com
+        schema:
+          errorMessage: should be a valid email address or an array of emails
+          oneOf:
+            - type: string
+              format: email
+            - type: array
+              items:
+                type: string
+                format: email
+      - name: language
+        in: query
+        description: Select only the users who have configured the specified language as their language.
+        example: en
+        schema:
+          $ref: "#/components/schemas/Locale"
+      - name: letter
+        in: query
+        description: Select only the users who have or have not subscribed to the newsletter.
+        example: true
+        schema:
+          type: boolean
+      - name: username
+        in: query
+        description: Select only users with a username that contains any of the specified case-insensitive string or strings.
+        example: bob
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []
+
+/users/ranking:
+  get:
+    summary: List users' ranking.
+    operationId: getUsersRanking
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - name: collection_id
+        in: query
+        description: Collection identidier to retrieve only ranking of contributions to that collection.
+        example: 42
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: owner_id
+        in: query
+        description: Owner identidier to retrieve only ranking of contributions to that owner.
+        example: 4
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: date_min
+        in: query
+        description: Minimal date of contributions to consider.
+        schema:
+          type: string
+          format: date
+      - name: date_max
+        in: query
+        description: Maximum date of contributions to consider.
+        schema:
+          type: string
+          format: date
+      - name: order_by
+        in: query
+        description: Contribution type to order the ranking.
+        example: n_geoloc
+        schema:
+          type: string
+          enum: [n_geoloc, n_corr, n_obs]
+          default: n_geoloc
+      - name: order_dir
+        in: query
+        description: Order direction.
+        example: DESC
+        schema:
+          type: string
+          enum: [ASC, DESC]
+          default: DESC
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRankingList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

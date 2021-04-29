@@ -1,0 +1,16 @@
+{
+  "$id": "ApiIdListParameter",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "errorMessage": "should be an integer or an array of integers",
+  "oneOf": [
+    {
+      "$ref": "ApiId#"
+    },
+    {
+      "type": "array",
+      "items": {
+        "$ref": "ApiId#"
+      }
+    }
+  ]
+}

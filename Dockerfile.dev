@@ -1,0 +1,14 @@
+FROM smapshot/base
+
+# The application will be mounted into this directory.
+WORKDIR /usr/src/app
+
+# Copy the start script into the image.
+COPY ./docker/app/start.sh /usr/local/bin/start
+RUN chmod +x /usr/local/bin/start
+
+# The start script will install dependencies on startup.
+ENTRYPOINT [ "start" ]
+
+# Run the application in development mode by default.
+CMD [ "npm", "run", "dev:docker" ]

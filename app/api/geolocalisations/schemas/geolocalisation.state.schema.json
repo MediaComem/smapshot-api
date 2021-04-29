@@ -1,0 +1,6 @@
+{
+  "$id": "GeolocalisationState",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "string",
+  "enum": ["created", "waiting_validation", "validated", "improved", "rejected"]
+}

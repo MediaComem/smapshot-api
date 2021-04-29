@@ -1,0 +1,144 @@
+{
+  "$id": "SaveGeolocalisationRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "remark": {
+      "type": "string"
+    },
+    "errors_list": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "gcps": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "X": {
+                "type": "number"
+              },
+              "Y": {
+                "type": "number"
+              },
+              "Z": {
+                "type": "number"
+              },
+              "altitude": {
+                "type": "number"
+              },
+              "dxy": {
+                "type": "number"
+              },
+              "errorClass": {
+                "type": "string"
+              },
+              "errorPct": {
+                "type": "number"
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "x": {
+                "type": "number"
+              },
+              "xReproj": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "yReproj": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "azimuth": {
+      "type": "number"
+    },
+    "tilt": {
+      "type": "number"
+    },
+    "roll": {
+      "type": "number"
+    },
+    "focal": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "altitude": {
+      "type": "number",
+      "minimum": -418,
+      "maximum": 8848
+    },
+    "cx": {
+      "type": [ "number", "null" ]
+    },
+    "cy": {
+      "type": [ "number", "null" ]
+    },
+    "validation_mode": {
+      "type": "boolean"
+    },
+    "validator_id": {
+      "oneOf": [
+        {
+          "$ref": "ApiId#"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previous_geoloc_id": {
+      "$ref": "ApiId#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "image_id",
+    "longitude",
+    "latitude",
+    "altitude",
+    "roll",
+    "tilt",
+    "azimuth",
+    "focal"
+  ]
+}

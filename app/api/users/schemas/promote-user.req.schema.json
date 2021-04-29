@@ -1,0 +1,17 @@
+{
+  "$id": "PromoteUserRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "$ref": "ApiId#"
+    },
+    "role": {
+      "$ref": "UserRole#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "role"
+  ]
+}

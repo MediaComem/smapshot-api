@@ -1,0 +1,79 @@
+/users/{id}/roles:
+  post:
+    summary: Promote a user by adding a role.
+    operationId: promoteUser
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin` or `superadmin`.
+
+      An owner administrator is only allowed to promote users to the owner
+      validator or volunteer role.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the user.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PromoteUserRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+  delete:
+    summary: Demote a user by removing a role.
+    operationId: demoteUser
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin` or `superadmin`.
+
+      An owner administrator is only allowed to remove the owner validator role.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the user.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DemoteUserRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []

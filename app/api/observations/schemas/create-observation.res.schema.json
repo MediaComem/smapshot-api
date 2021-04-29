@@ -1,0 +1,80 @@
+{
+  "$id": "CreateObservationResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "state": {
+      "$ref": "ObservationState#"
+    },
+    "user_id": {
+      "$ref": "ApiId#"
+    },
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "coord_x": {
+      "type": "number",
+      "minimum": 0
+    },
+    "coord_y": {
+      "type": "number",
+      "minimum": 0
+    },
+    "width": {
+      "type": "number",
+      "minimum": 0
+    },
+    "height": {
+      "type": "number",
+      "minimum": 0
+    },
+    "observation": {
+      "type": "string",
+      "minLength": 2
+    },
+    "remark": {
+      "type": ["string", "null"]
+    },
+    "validator_id": {
+      "oneOf": [
+        {
+          "$ref": "ApiId#"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "downloaded": {
+      "type": "boolean",
+      "enum": [false]
+    },
+    "download_timestamp": {
+      "$ref": "NullableDateTime#"
+    },
+    "date_validated": {
+      "$ref": "NullableDateTime#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "state",
+    "user_id",
+    "image_id",
+    "date_created",
+    "coord_x",
+    "coord_y",
+    "width",
+    "height",
+    "observation",
+    "downloaded"
+  ]
+}

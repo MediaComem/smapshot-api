@@ -1,0 +1,400 @@
+/images:
+  get:
+    summary: List images.
+    description: |-
+      List images and associated location or a priori location typically to
+      display on a map. Non localized images without a priori location are not
+      returned.
+    operationId: getImages
+    parameters: !include ./images.openapi.params.yml
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+
+/images/id:
+  get:
+    summary: List image IDs.
+    operationId: getImageIds
+    parameters: !include ./images.openapi.params.yml
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageIdList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+
+/images/metadata:
+  get:
+    summary: List images metadata including validated volunteer contributions.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only see images from
+      their assigned collection.
+    operationId: getImagesMetadata
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - name: id
+        in: query
+        description: Filter image by id(s).
+        example: 2534
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: original_id
+        in: query
+        description: Filter image by original id(s).
+        example: LB_3456_ETHZ
+        schema:
+          errorMessage: should be a string or an array of strings
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      - name: owner_id
+        in: query
+        description: Select only the images belonging to the owner(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: collection_id
+        in: query
+        description: Select only the images belonging to the collection(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: geolocalisation
+        in: query
+        description: Should be true to include geolocation information.
+        example: true
+        schema:
+          type: boolean
+        default: false
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageMetadataList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+
+/images/stats:
+  get:
+    summary: Get image statistics.
+    operationId: getImageStats
+    parameters:
+      - name: collection_id
+        in: query
+        description: Compute statistics only for images belonging to the collection(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: owner_id
+        in: query
+        description: Compute statistics only for images belonging to the owner(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: user_id
+        in: query
+        description: Compute statistics only for images georeferenced by the user(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: validator_id
+        in: query
+        description: Compute statistics only for images georeferenced by the user(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: photographer_id
+        in: query
+        description: Compute statistics only for images georeferenced by the user(s) with the specified ID(s).
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: date_shot_min
+        in: query
+        description: Compute statistics only for images shot after the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_shot_max
+        in: query
+        description: Compute statistics only for images shot before the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_inserted_min
+        in: query
+        description: Compute statistics only for images inserted after the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_inserted_max
+        in: query
+        description: Compute statistics only for images inserted before the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_georef_min
+        in: query
+        description: Compute statistics only for images georeferenced after the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_georef_max
+        in: query
+        description: Compute statistics only for images georeferenced before the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_validated_min
+        in: query
+        description: Compute statistics only for images validated after the specified date.
+        schema:
+          type: string
+          format: date-time
+      - name: date_validated_max
+        in: query
+        description: Compute statistics only for images validated before the specified date.
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageStats"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+
+/images/{id}/attributes:
+  get:
+    summary: Retrieve an image's attributes.
+    operationId: getImageAttributes
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: image_width
+        in: query
+        description: Width of the image to return.
+        example: 500
+        schema:
+          type: integer
+          enum: [200, 500, 1024]
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageAttributes"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{imageId}/lock:
+  post:
+    summary: Lock an image.
+    operationId: lockImage
+    parameters:
+      - name: imageId
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: user_id
+        in: query
+        description: The unique identifier of the user locking the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/SuccessMessageResponse"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{imageId}/unlock:
+  post:
+    summary: Unlock an image.
+    operationId: unlockImage
+    parameters:
+      - name: imageId
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: user_id
+        in: query
+        description: The unique identifier of the user unlocking the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/SuccessMessageResponse"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{imageId}/checklock:
+  get:
+    summary: Check whether an image is locked.
+    operationId: checkImageLock
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: imageId
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageLock"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{id}/footprint:
+  get:
+    summary: Get the footprint of an image.
+    operationId: getImageFootprint
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageFootprint"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{id}/state:
+  put:
+    summary: Update the state of an image.
+    operationId: updateImageState
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateImageStateRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/owners/{owner_id_slug}/original_images/{original_id}/attributes:
+  get:
+    summary: Get the attributes of an image identified by its original ID.
+    parameters:
+      - name: owner_id_slug
+        in: path
+        description: The ID or slug of the image's owner.
+        example: 42
+        schema:
+          oneOf:
+            - type: string
+            - $ref: "#/components/schemas/ApiId"
+      - name: original_id
+        in: path
+        description: The original ID of the image.
+        example: LB_3456_ETHZ
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/OriginalImageAttributes"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"

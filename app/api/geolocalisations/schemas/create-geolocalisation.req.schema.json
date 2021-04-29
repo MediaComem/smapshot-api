@@ -1,0 +1,20 @@
+{
+  "$id": "CreateGeolocalisationRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "validator_id": {
+      "$ref": "ApiId#"
+    },
+    "previous_geoloc_id": {
+      "$ref": "ApiId#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "image_id"
+  ]
+}

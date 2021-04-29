@@ -1,0 +1,64 @@
+{
+  "$id": "User",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "username": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "date_registr": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "letter": {
+      "type": "boolean"
+    },
+    "lang": {
+      "oneOf": [
+        { "$ref": "Locale#" },
+        { "type": "null" }
+      ]
+    },
+    "has_one_validated": {
+      "type": "boolean"
+    },
+    "local_login": {
+      "type": "boolean"
+    },
+    "owner_id": {
+      "oneOf": [
+        { "type": "integer" },
+        { "type": "null" }
+      ]
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "UserRole#"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "has_one_validated",
+    "lang",
+    "letter",
+    "roles",
+    "username"
+  ]
+}

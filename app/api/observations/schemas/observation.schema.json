@@ -1,0 +1,138 @@
+{
+  "$id": "Observation",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observation": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "ObservationState$"
+    },
+    "remark": {
+      "type": ["string", "null"]
+    },
+    "download_timestamp": {
+      "type": ["boolean", "null"]
+    },
+    "coord_x": {
+      "type": "number",
+      "minimum": 0
+    },
+    "coord_y": {
+      "type": "number",
+      "minimum": 0
+    },
+    "width": {
+      "type": "number",
+      "minimum": 0
+    },
+    "height": {
+      "type": "number",
+      "minimum": 0
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "original_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "is_published": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id", "name"]
+        },
+        "collection": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "ApiId#"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id", "name"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "volunteer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "username"
+      ]
+    },
+    "validator": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "ApiId#"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "username"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_created",
+    "observation",
+    "state",
+    "coord_x",
+    "coord_y",
+    "width",
+    "height",
+    "image"
+  ]
+}

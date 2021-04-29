@@ -1,0 +1,35 @@
+{
+  "$id": "RegisterLocalUserRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "letter": {
+      "type": "boolean",
+      "default": false
+    },
+    "password": {
+      "type": "string",
+      "minLength": 6
+    },
+    "return_url": {
+      "type": "string",
+      "example": "https://example.com",
+      "format": "uri"
+    },
+    "username": {
+      "type": "string",
+      "minLength": 2
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "email",
+    "password",
+    "return_url",
+    "username"
+  ]
+}

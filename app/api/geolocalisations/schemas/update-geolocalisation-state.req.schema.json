@@ -1,0 +1,32 @@
+{
+  "$id": "UpdateGeolocalisationStateRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "remark": {
+      "type": "string",
+      "minLength": 2
+    },
+    "state": {
+      "type": "string",
+      "enum": [ "validated", "rejected" ]
+    },
+    "errors_list": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "state"
+  ]
+}

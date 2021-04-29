@@ -1,0 +1,24 @@
+{
+  "$id": "CreateCorrectionRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "new_value": {
+      "type": "string",
+      "minLength": 2
+    },
+    "type": {
+      "type": "string",
+      "enum": ["title", "caption"]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "image_id",
+    "new_value",
+    "type"
+  ]
+}

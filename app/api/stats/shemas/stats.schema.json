@@ -1,0 +1,25 @@
+{
+  "$id": "GlobalStats",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "nUsers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nGeoref": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nCollections": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "nUsers",
+    "nGeoref",
+    "nCollections"
+  ]
+}

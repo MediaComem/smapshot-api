@@ -1,0 +1,49 @@
+{
+  "$id": "RequestValidationError",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "description": "An error indicating that part of an HTTP request is invalid.",
+  "properties": {
+    "location": {
+      "type": "string",
+      "description": "Which part of the request contains the invalid data.",
+      "enum": [ "body", "header", "path", "query" ],
+      "example": "query"
+    },
+    "message": {
+      "type": "string",
+      "description": "The human-readable error message."
+    },
+    "path": {
+      "type": "string",
+      "description": "The path to the invalid data (location-dependent).",
+      "example": "/foo",
+      "format": "json-pointer"
+    },
+    "validation": {
+      "description": "The type(s) of validation that failed.",
+      "example": "type",
+      "oneOf": [
+        {
+          "type": "string",
+          "example": "someValidation"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "someValidation"
+          },
+          "minItems": 1
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "location",
+    "message",
+    "path",
+    "validation"
+  ]
+}

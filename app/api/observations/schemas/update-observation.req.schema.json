@@ -1,0 +1,33 @@
+{
+  "$id": "UpdateObservationRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },    
+    "coord_x": {
+      "type": "number",
+      "minimum": 0
+    },
+    "coord_y": {
+      "type": "number",
+      "minimum": 0
+    },
+    "width": {
+      "type": "number",
+      "minimum": 0
+    },
+    "height": {
+      "type": "number",
+      "minimum": 0
+    },
+    "observation": {
+      "type": "string",
+      "minLength": 2
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+  ]
+}

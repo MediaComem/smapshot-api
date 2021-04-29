@@ -1,0 +1,13 @@
+# https://github.com/istanbuljs/nyc#configuration-files
+all: true
+exclude:
+  - coverage
+  - node_modules
+  - public
+include:
+  - app
+  - utils/*.js
+  - "!**/*.spec.js"
+reporter:
+  - html
+  - text-summary

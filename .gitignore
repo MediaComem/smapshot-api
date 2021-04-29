@@ -1,0 +1,16 @@
+# https://git-scm.com/docs/gitignore
+/app/generated
+/coverage
+/data*
+/.env*
+/!.env.sample
+/!.env.*.defaults
+/logs
+/node_modules
+/.nyc_output
+/public
+*.pyc
+__pycache__/
+/.screenrc
+/tmp
+/.vscode

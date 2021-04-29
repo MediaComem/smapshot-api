@@ -1,0 +1,28 @@
+{
+  "$id": "ForbiddenResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "description": "A response body indicating that the user is not authorized to perform this action despite being authenticated, probably due to insufficient privileges.",
+  "properties": {
+    "$$merge": {
+      "file": "./generic-http-problem-details.res.schema.json",
+      "pointer": "/properties"
+    },
+    "type": {
+      "example": "https://httpstatuses.com/403"
+    },
+    "title": {
+      "example": "Forbidden"
+    },
+    "status": {
+      "example": 403
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "detail",
+    "status",
+    "title",
+    "type"
+  ]
+}

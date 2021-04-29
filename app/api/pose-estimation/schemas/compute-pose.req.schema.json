@@ -1,0 +1,63 @@
+{
+  "$id": "ComputePoseRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "altitude": {
+      "type": "number",
+      "minimum": -418,
+      "maximum": 15000
+    },
+    "roll": {
+      "type": "number"
+    },
+    "tilt": {
+      "type": "number"
+    },
+    "azimuth": {
+      "type": "number"
+    },
+    "height": {
+      "type": "number",
+      "minimum": 0
+    },
+    "width": {
+      "type": "number",
+      "minimum": 0
+    },
+    "locationLocked": {
+      "type": "boolean"
+    },
+    "gcps": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "image_id",
+    "longitude",
+    "latitude",
+    "altitude",
+    "roll",
+    "tilt",
+    "azimuth",
+    "height",
+    "width"
+  ]
+}

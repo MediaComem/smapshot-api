@@ -1,0 +1,14 @@
+{
+  "$id": "DemoteUserRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "role": {
+      "$ref": "UserRole#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "role"
+  ]
+}

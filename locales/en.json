@@ -1,0 +1,64 @@
+{
+    "general": {
+        "accessForbidden": "You do not have enough access privileges.",
+        "validationErrors": "Validation Errors: one or more fields are not correct.",
+        "resourceNotFound": "The resource could not be found."
+    },
+    "auth": {
+        "error": {
+            "noAccountExist": "No account with that email address exists.",
+            "usedSocialEmail": "Your e-mail is used by a social login, please use the Google or Facebook button to connect.",
+            "noPasswordChangeWithSocialEmail": "Your are using a social account like Google or Facebook, you can't change your password on smapshot.",
+            "linkNotValid": "The link is not anymore valid. Please ask for a new link.",
+            "incorrectEmail": "Incorrect e-mail.",
+            "incorrectPassword": "Incorrect password",
+            "missingUsername": "Missing username",
+            "emailNotValid": "Email is not valid",
+            "emailAlreadyExists": "User email already exists",
+            "accountNotActivated": "Account has not been activated yet, please check your e-mail inbox.",
+            "generalServerAuth": "Server Authentication error, please contact smapshot team.",
+            "alreadyActivated": "Account is already activated"
+        },
+        "forgotPassword": {
+            "success": "You will receive a new password in a few minutes!"
+        },
+        "resetPassword": {
+            "success": "Your password has been changed successfully!",
+            "emailTitle": "Smapshot: Reset your password",
+            "emailDescription": "<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p><p>Please click on the following link, or paste this into your browser to complete the process:</p><p><a href='{{ url }}'>Reset your password</a></p><p>Attention, the link is only valid for one hour!<p>If you did not request this, please ignore this email and your password will remain unchanged.</p>"
+        },
+        "createAccount": {
+            "success": "An e-mail has been sent to you with a confirmation link."
+        },
+        "activateAccount": {
+            "success": "Your account is activated. You can now log in."
+        },
+        "confirmAccount": {
+            "emailTitle": "Activate your account",
+            "emailDescription": "<p>Please click on the following link to confirm your e-mail and activate your smapshot account:</p><p><a href='{{ url }}'>Confirm your e-mail</a></p>"
+        }
+    },
+    "corrections": {
+        "submitted": {
+            "success": "Your correction has been submitted. The owner of the collection will now proceed to a check.",
+            "error": "Your correction can not be submitted, please try again later."
+        }
+    },
+    "problems": {
+        "submitted": {
+            "success": "Your problem has been submitted. The owner of the collection will now proceed to a check.",
+            "error": "Your problem can not be submitted, please try again later.",
+            "errorIdRequired": "An image ID or and original image ID is needed."
+        }
+    },
+    "roles": {
+        "ownerIdNeeded": "An owner ID parameter is needed."
+    },
+    "pose": {
+        "3dModelCreationError": "An error happens at the 3d creation model step, please contact smapshot team.",
+        "impossible": "The computed pose is impossible, check that there is no error on the correspondences."
+    },
+    "locations":{
+        "noCountry": "The location is not within a country."
+    }
+}

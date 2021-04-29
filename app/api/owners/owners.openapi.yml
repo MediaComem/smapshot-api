@@ -1,0 +1,41 @@
+/owners:
+  get:
+    summary: List of collection owners.
+    operationId: GetOwners
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: query
+        description: Filter by one or multiple owners.
+        example: 3
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: publish_state
+        in: query
+        description: |-
+          Select published/unpublished/all collections. 'published' by default
+
+          **Authorization:** the `super_admin` role is required to list
+          unpublished (or all) collections.
+        example: published
+        schema:
+          type: string
+          enum: [published, unpublished, all]
+      - name: image_width
+        in: query
+        description: Width of the banner image to return.
+        example: 500
+        schema:
+          type: integer
+          enum: [200, 500, 1024]
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"

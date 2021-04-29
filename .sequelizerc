@@ -1,0 +1,16 @@
+const path = require('path');
+
+const { env, root } = require('./config');
+
+/**
+ * Presets for the sequelize command line.
+ *
+ * See https://sequelize.org/master/manual/migrations.html#dynamic-configuration.
+ */
+module.exports = {
+  env,
+  config: path.join(root, 'db', 'config.js'),
+  'models-path': path.join(root, 'app', 'models'),
+  'seeders-path': path.join(root, 'db', 'seeders'),
+  'migrations-path': path.join(root, 'db', 'migrations')
+};

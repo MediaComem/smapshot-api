@@ -1,0 +1,74 @@
+{
+  "$id": "UserGeolocalisationInfo",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "state": {
+      "enum": ["created", "waiting_validation", "validated", "improved", "rejected"]
+    },
+    "date_georef": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "remark": {
+      "type": "string"
+    },
+    "errors_list": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "ApiId#"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+        },
+        "collection": {
+          "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "ApiId#"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_georef",
+    "state",
+    "image"
+  ]
+}

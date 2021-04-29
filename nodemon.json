@@ -1,0 +1,19 @@
+{
+  "exec": "npm start",
+  "ignore": [
+    "app/generated/**/*",
+    ".git",
+    "node_modules/*/*"
+  ],
+  "watch": [
+    ".env",
+    "app",
+    "commands",
+    "config",
+    "locales"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "js,json,yml"
+}

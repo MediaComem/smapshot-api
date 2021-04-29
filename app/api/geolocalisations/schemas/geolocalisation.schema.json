@@ -1,0 +1,315 @@
+{
+  "$id": "Geolocalisation",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "state": {
+      "$ref": "GeolocalisationState#"
+    },
+    "remark": {
+      "type": "string"
+    },
+    "errors_list": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "original_id": {
+          "type": [ "string", "null" ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "is_published": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ]
+        },
+        "collection": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "ApiId#"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "is_published",
+        "owner",
+        "collection"
+      ]
+    },
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "user_id": {
+      "$ref": "ApiId#"
+    },
+    "date_georef": {
+      "$ref": "NullableDateTime#"
+    },
+    "date_seen": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date_checked": {
+      "$ref": "NullableDateTime#"
+    },
+    "date_validated": {
+      "$ref": "NullableDateTime#"
+    },
+    "footprint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "Polygon"
+              ]
+            },
+            "coordinates": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "coordinates"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gcp_json": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "X": {
+                "type": "number"
+              },
+              "Y": {
+                "type": "number"
+              },
+              "Z": {
+                "type": "number"
+              },
+              "altitude": {
+                "type": "number"
+              },
+              "dxy": {
+                "type": "number"
+              },
+              "errorClass": {
+                "type": "string"
+              },
+              "errorPct": {
+                "type": "number"
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "x": {
+                "type": "number"
+              },
+              "xReproj": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "yReproj": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "azimuth": {
+      "type": [ "number", "null" ]
+    },
+    "tilt": {
+      "type": [ "number", "null" ]
+    },
+    "roll": {
+      "type": [ "number", "null" ]
+    },
+    "focal": {
+      "type": [ "number", "null" ]
+    },
+    "longitude": {
+      "type": [ "number", "null" ]
+    },
+    "latitude": {
+      "type": [ "number", "null" ]
+    },
+    "altitude": {
+      "type": [ "number", "null" ]
+    },
+    "location": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [ "Point" ]
+            },
+            "coordinates": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "coordinates"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "px": {
+      "type": [ "number", "null" ]
+    },
+    "py": {
+      "type": [ "number", "null" ]
+    },
+    "volunteer": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "username"
+      ]
+    },
+    "validator": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "username"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "validator_id": {
+      "oneOf": [
+        {
+          "$ref": "ApiId#"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "start": {
+      "$ref": "NullableDateTime#"
+    },
+    "stop": {
+      "$ref": "NullableDateTime#"
+    },
+    "score": {
+      "type": [ "number", "null" ]
+    },
+    "surface_ratio": {
+      "type": [ "integer", "null" ]
+    },
+    "n_gcp": {
+      "type": [ "integer", "null" ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_georef",
+    "state",
+    "image"
+  ]
+}

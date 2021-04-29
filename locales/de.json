@@ -1,0 +1,63 @@
+{
+    "general": {
+        "accessForbidden": "Sie haben nicht genügend Zugriffsrechte.",
+        "validationErrors": "Validierungsfehler: ein oder mehrere Punkte sind nicht korrekt.",
+        "resourceNotFound": "Der Resource konnte nicht gefunden werden."
+    },
+    "auth": {
+        "error": {
+            "noAccountExist": "Es existiert kein Konto mit dieser E-Mail-Adresse.",
+            "usedSocialEmail": "Ihre E-Mail wird von einem sozialen Login verwendet, bitte benutzen Sie den Google- oder Facebook-Button zum Verbinden.",
+            "linkNotValid": "Der Link ist nicht mehr gültig. Bitte fragen Sie nach einem neuen Link.",
+            "incorrectEmail": "Falsche E-Mail.",
+            "incorrectPassword": "Falsches Passwort.",
+            "missingUsername": "Benutzername fehlt",
+            "emailNotValid": "E-Mail ist nicht korrekt",
+            "emailAlreadyExists": "Benutzername existiert bereits",
+            "accountNotActivated": "Das Konto wurde noch nicht aktiviert, bitte überprüfen Sie Ihren E-Mail-Posteingang.",
+            "generalServerAuth": "Server-Authentifizierungsfehler, bitte kontaktieren Sie smapshot Team.",
+            "alreadyActivated": "Konto wurde bereits aktiviert"
+        },
+        "forgotPassword": {
+            "success": "Sie erhalten in wenigen Minuten ein neues Passwort!"
+        },
+        "resetPassword": {
+            "success": "Ihr Passwort wurde erfolgreich geändert!",
+            "emailTitle": "sMapshot: Passwort zurücksetzen",
+            "emailDescription": "<p>Sie erhalten dies, weil Sie (oder jemand anderes) das Zurücksetzen des Passwortes für Ihr Konto beantragt haben.</p><<p>Bitte klicken Sie auf den folgenden Link oder fügen Sie diesen in Ihren Browser ein, um den Vorgang abzuschliessen:</p><p><a href='{{{ url }}}'>Passwort zurücksetzen</a></p><p>Achtung, der Link ist nur eine Stunde gültig!<p>Wenn Sie dies nicht angefordert haben, ignorieren Sie bitte diese E-Mail und Ihr Passwort bleibt unverändert.</p>"
+        },
+        "createAccount": {
+            "success": "Sie haben eine E-Mail mit einem Bestätigungslink erhalten."
+        },
+        "activateAccount": {
+            "success": "Ihr Konto ist aktiviert. Sie können sich nun einloggen."
+        },
+        "confirmAccount": {
+            "emailTitle": "Aktivieren Sie Ihr Konto",
+            "emailDescription": "<p>Bitte klicken Sie auf den folgenden Link, um Ihre E-Mail zu bestätigen und Ihren sMapshot-Account zu aktivieren:</p><p><a href='{{{ url }}}'>Bestätigen Sie Ihre E-Mail-Adresse</a></p>"
+        }
+    },
+    "corrections": {
+        "submitted": {
+            "success": "Ihre Korrektur wurde übermittelt. Die Institution wird wird nun eine Überprüfung durchführen.",
+            "error": "Ihre Korrektur kann nicht übermittelt werden, bitte versuchen Sie es später noch einmal."
+        }
+    },
+    "problems": {
+        "submitted": {
+            "success": "Ihr Problem wurde übermittelt. Die Institution wird wird nun eine Überprüfung durchführen.",
+            "error": "Ihr Problem kann nicht übermittelt werden, bitte versuchen Sie es später noch einmal.",
+            "errorIdRequired": "Ein Bildcode oder Institutions-ID wird benötigt."
+        }
+    },
+    "roles": {
+        "ownerIdNeeded": "Institutions-ID wird benötigt."
+    },
+    "pose": {
+        "3dModelCreationError": "Beim Schritt des 3D-Erstellungsmodells ist ein Fehler aufgetreten, bitte kontaktieren Sie sMapshot Team.",
+        "impossible": "Die berechnete Position ist nicht möglich, überprüfen Sie die Punktepaare."
+    },
+    "locations":{
+        "noCountry": "Der Standort entspricht keinem Land."
+    }
+}

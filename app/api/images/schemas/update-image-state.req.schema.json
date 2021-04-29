@@ -1,0 +1,21 @@
+{
+  "$id": "UpdateImageStateRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "publish": {
+      "type": "boolean"
+    },
+    "new_state": {
+      "type": "string",
+      "enum": [
+        "not_georef",
+        "waiting_validation",
+        "validated",
+        "impossible"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

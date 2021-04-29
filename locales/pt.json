@@ -1,0 +1,63 @@
+{
+    "general": {
+        "accessForbidden": "Você não tem permissão de acesso suficiente.",
+        "validationErrors": "Erro de validação: um ou mais campos estão incorretos.",
+        "resourceNotFound": "O recurso não pôde ser encontrado."
+    },
+    "auth": {
+        "error": {
+            "noAccountExist": "Não existe conta com esse endereço de e-mail.",
+            "usedSocialEmail": "Seu e-mail é utilizado por um login social, por favor use os botões do Google ou Facebook para conectar.",
+            "linkNotValid": "Esse link não é válido. Por favor solicite um novo link.",
+            "incorrectEmail": "E-mail incorreto.",
+            "incorrectPassword": "Senha incorreta.",
+            "missingUsername": "Usuário não informado",
+            "emailNotValid": "E-mail inválido",
+            "emailAlreadyExists": "E-mail do usuário já existe",
+            "accountNotActivated": "Conta não ativada, por favor verifique seu e-mail.",
+            "generalServerAuth": "Erro de autenticação no servidor, por favor entre em contato com o Smapshot.",
+            "alreadyActivated": "A conta já foi ativada"
+        },
+        "forgotPassword": {
+            "success": "Você receberá uma nova senha em alguns minutos!"
+        },
+        "resetPassword": {
+            "success": "Sua senha foi alterada com sucesso!",
+            "emailTitle": "Smapshot: Redefinir sua senha",
+            "emailDescription": "<p>Você está recebendo essa mensagem por você (ou alguém) ter solicitado uma redefinição de senha da sua conta.</p><p>Por favor clique no link seguinte, ou copie o endereço ao seu navegador para completar o processo:</p><p><a href='{{ url }}'>Redefinir sua senha</a></p><p>Atenção, esse link só é válido por uma hora!<p>Se você não solicitou essa alteração, por favor ignore a mensagem e sua senha continuará a mesma.</p>"
+        },
+        "createAccount": {
+            "success": "Um e-mail foi enviado com o link de confirmação."
+        },
+        "activateAccount": {
+            "success": "Sua conta foi ativada, você realizar o login."
+        },
+        "confirmAccount": {
+            "emailTitle": "Ativar sua conta",
+            "emailDescription": "<p>Por favor clique no link para confirmar seu e-mail e ativar sua conta no Smapshot:</p><p><a href='{{ url }}'>Confirmar e-mail</a></p>"
+        }
+    },
+    "corrections": {
+        "submitted": {
+            "success": "Sua correção foi enviada. O proprietário da coleção verificará as informações.",
+            "error": "Sua correção não pode ser enviada, por favor tente novamente."
+        }
+    },
+    "problems": {
+        "submitted": {
+            "success": "Seu problema foi enviado. O proprietário da coleção verificará as informações.",
+            "error": "Sem problema não pode ser enviado, por favor tente novamente.",
+            "errorIdRequired": "Algum ID de imagem é necessário."
+        }
+    },
+    "roles": {
+        "ownerIdNeeded": "O parâmetro ID de proprietário é necessário."
+    },
+    "pose": {
+        "3dModelCreationError": "A criação do modelo 3d não funcionou, por favor contacte a equipa smapshot.",
+        "impossible": "A computação de posição é impossível, verifique se não há erros nas correspondências."
+    },
+    "locations":{
+        "noCountry": "O local não corresponde a nenhum país."
+    }
+}

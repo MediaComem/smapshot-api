@@ -1,0 +1,114 @@
+/auth/local/login:
+  post:
+    summary: Authenticate with a local user account.
+    description: >-
+      Send the credentials of your user account to obtain an authentication
+      token. You can then use this token to authenticate to the rest of the API.
+    operationId: postAuthLocalLogin
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LogInLocalUserRequest"
+    responses:
+      "200":
+        description: Successful authentication.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogInLocalUserResponse"
+      "401":
+        description: User account credentials are missing or invalid.
+        content:
+          application/problem+json:
+            schema:
+              $ref: "#/components/schemas/AuthenticationErrorResponse"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/auth/local/register:
+  post:
+    summary: Registers a local user account.
+    description: >-
+      Create a new user account identified by your email address.
+    operationId: postAuthLocalRegister
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RegisterLocalUserRequest"
+    responses:
+      "201":
+        description: The account was successfully created.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/auth/local/activate:
+  post:
+    summary: Activate a newly registered user account.
+    operationId: activateLocalUserAccount
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActivateLocalUserRequest"
+    responses:
+      "200":
+        description: The account was successfully activated.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/auth/forgot:
+  post:
+    summary: Request an email to reset a forgotten password.
+    operationId: forgotPassword
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ForgottenPasswordRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/auth/reset:
+  post:
+    summary: Reset a user's password with the token received by email.
+    operationId: resetPassword
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ResetPasswordRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"

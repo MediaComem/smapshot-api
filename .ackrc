@@ -1,0 +1,5 @@
+# https://beyondgrep.com
+--ignore-dir=app/generated
+--ignore-dir=logs
+--ignore-dir=.nyc_output
+--ignore-dir=public

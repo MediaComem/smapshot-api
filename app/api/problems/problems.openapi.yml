@@ -1,0 +1,223 @@
+/problems:
+  post:
+    summary: Submit a problem concerning an image.
+    operationId: createProblem
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateProblemRequest"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+  get:
+    summary: List image problems.
+    operationId: getProblems
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: query
+        description: Select only problems with the specified ID(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: state
+        in: query
+        description: Select created/validated/owned_processed/admin_processed problems only. All are listed by default.
+        example: created
+        schema:
+          errorMessage: should be a problem state or an array of problem states
+          oneOf:
+            - $ref: "#/components/schemas/ProblemState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ProblemState"
+      - name: date_created_min
+        in: query
+        description: Select only problems created after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_created_max
+        in: query
+        description: Select only problems created before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: source
+        in: query
+        description: Select only problems from the specified source(s).
+        schema:
+          errorMessage: should be a problem source or an array of problem source
+          oneOf:
+            - $ref: "#/components/schemas/ProblemTypeSource"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ProblemTypeSource"
+      - name: original_id
+        in: query
+        description: Select only problems concerning images with the specified original ID(s).
+        example: LB_3456_ETHZ
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+      - name: collection_id
+        in: query
+        description: Select only problems concerning images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: owner_id
+        in: query
+        description: Select only problems concerning images that belong to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: volunteer_id
+        in: query
+        description: Select only problems created by the specified volunteer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: username_volunteer
+        in: query
+        description: Select only problems created by volunteers with matching usernames.
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+    security:
+      bearerToken: []
+
+/problems/{id}:
+  delete:
+    summary: Delete a problem.
+    operationId: deleteProblem
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the problem.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "204":
+        description: Successful request.
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+    security:
+      bearerToken: []
+
+/problems/{id}/state:
+  put:
+    summary: Update a problem's state.
+    operationId: updateProblemState
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the problem.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateProblemStateRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/problems/types:
+  get:
+    summary: List image problems.
+    operationId: getProblemTypes
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: query
+        description: Select only problem types with the specified ID(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: source
+        in: query
+        description: Select only problems from the specified source(s).
+        schema:
+          errorMessage: should be a problem source or an array of problem source
+          oneOf:
+            - $ref: "#/components/schemas/ProblemTypeSource"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ProblemTypeSource"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemTypeList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

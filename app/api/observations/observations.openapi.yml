@@ -1,0 +1,295 @@
+/observations:
+  post:
+    summary: Submit an observation on an image.
+    operationId: createObservation
+    description: |-
+      ## Authorization check but not required
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateObservationRequest"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateObservationResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+  get:
+    summary: List observations.
+    operationId: getObservations
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only see observations
+      related to the owner.
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - name: id
+        in: query
+        description: Select only observations with the specified ID(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: image_id
+        in: query
+        description: Select only observations made on the specified image(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: state
+        in: query
+        description: Select only observations in the specified state(s).
+        example: created
+        schema:
+          errorMessage: should be an observation state or an array of observation states
+          oneOf:
+            - $ref: "#/components/schemas/ObservationState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ObservationState"
+      - name: date_created_min
+        in: query
+        description: Select only observations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_created_max
+        in: query
+        description: Select only observations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: original_id
+        in: query
+        description: Select only observations made on images with the specified original ID(s).
+        example: LB_3456_ETHZ
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+      - name: collection_id
+        in: query
+        description: Select only observations made on images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: owner_id
+        in: query
+        description: Select only observations made on images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: volunteer_id
+        in: query
+        description: Select only observations made by the specified volunteer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: username_volunteer
+        in: query
+        description: Select only observations made by volunteers with matching usernames.
+        example: john
+        schema:
+          errorMessage: should be a string or an array of strings at least 2 characters long
+          oneOf:
+            - type: string
+              minLength: 2
+            - type: array
+              items:
+                type: string
+                minLength: 2
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ObservationList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+
+/observations/{id}:
+  put:
+    summary: Update an observation.
+    operationId: updateObservation
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the observation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateObservationRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+  delete:
+    summary: Delete an observation.
+    operationId: deleteObservation
+    description: >-
+      To delete an observation, a user must either be its creator or have one
+      of the following roles: `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the observation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "404":
+        $ref: "#/components/responses/NotFoundOrForbiddenError"
+
+/observations/{id}/state:
+  put:
+    summary: Validate or reject an observation.
+    operationId: updateObservationState
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the observation.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateObservationStateRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/observations/ranking:
+  get:
+    summary: List observation rankings.
+    operationId: getObservationRankings
+    parameters:
+      - name: state
+        in: query
+        description: Compute rankings only for observations in the specified state(s). All are included by default.
+        example: created
+        schema:
+          errorMessage: should be an observation state or an array of observation states
+          oneOf:
+            - $ref: "#/components/schemas/ObservationState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ObservationState"
+      - name: user_id
+        in: query
+        description: >-
+          Compute rankings only for observations made by the specified user(s).
+          If an observation has been validated by the same user who created it,
+          it is not included in the rankings.
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: validator_id
+        in: query
+        description: Compute rankings only for observations validated by the specified user(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: date_created_min
+        in: query
+        description: Compute rankings only for observations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_created_max
+        in: query
+        description: Compute rankings only for observations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: owner_id
+        in: query
+        description: Compute rankings only for observations on images belonging to the specified owner(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: collection_id
+        in: query
+        description: Compute rankings only for observations on images in the specified collection(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+      - name: photographer_id
+        in: query
+        description: Compute rankings only for observations on images taken by the specified photographer(s).
+        example: 1243
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ObservationRankingList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

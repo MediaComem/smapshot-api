@@ -1,0 +1,21 @@
+/stats:
+  get:
+    summary: Get global statistics.
+    operationId: GetStats
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: owner_id
+        in: query
+        description: Filter collections and georeferenced images for a specific owner.
+        example: 3
+        schema:
+          type: integer
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GlobalStats"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"

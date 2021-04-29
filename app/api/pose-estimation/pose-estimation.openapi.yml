@@ -1,0 +1,52 @@
+/pose/compute:
+  post:
+    summary: Compute the camera pose.
+    operationId: computePose
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            # FIXME: need gcps example for request
+            $ref: "#/components/schemas/ComputePoseRequest"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            # FIXME: need sample response
+            schema:
+              type: object
+              properties: {}
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/pose/recompute:
+  get:
+    summary: (Re-)Compute the camera pose from values stored in the database.
+    operationId: recomputePose
+    description: |-
+      ## Authorization
+
+      **Required role:** `superadmin`.
+    parameters:
+      - name: image_id
+        in: query
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecomputePoseResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []

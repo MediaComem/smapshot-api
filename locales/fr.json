@@ -1,0 +1,63 @@
+{
+    "general": {
+        "accessForbidden": "Vous n'avez pas les autorisations nécessaires",
+        "validationErrors": "Erreurs de validation: un ou plusieurs champs ne sont pas correct.",
+        "resourceNotFound": "La ressource n'a pas pu être trouvée."
+    },
+    "auth": {
+        "error": {
+            "noAccountExist": "Aucun compte n'existe avec cet e-mail",
+            "usedSocialEmail": "Votre e-mail est utilisé par un login Google ou Facebook, veuillez utiliser les boutons appropriés pour vous connecter.",
+            "linkNotValid": "Le lien n'est plus valide. Veuillez redemander un lien.",
+            "incorrectEmail": "E-mail incorrect",
+            "incorrectPassword": "Mot de passe incorrect",
+            "missingUsername": "Le nom d'utilisateur est manquant",
+            "emailNotValid": "L'email n'est pas valide",
+            "emailAlreadyExists": "L'email est déjà utilisé avec un autre compte",
+            "accountNotActivated": "Le compte n'a pas encore été activé, veuillez vérifier votre boîte email et cliquer sur le lien d'activation.",
+            "generalServerAuth": "Erreur d'authentification serveur, veuillez contacter l'équipe smapshot.",
+            "alreadyActivated": "Le compte a déjà été activé"
+        },
+        "forgotPassword": {
+            "success": "Vous allez recevoir un nouveau mot de passe d'ici quelques minutes\u00A0!"
+        },
+        "resetPassword": {
+            "success": "Votre mot de passe a été changé avec succès\u00A0!",
+            "emailTitle": "Réinitialiser votre mot de passe",
+            "emailDescription": "<p>Vous recevez ceci parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe pour votre compte.</p><p>Veuillez cliquer sur le lien suivant, ou collez-le dans votre navigateur pour compléter le processus:</p><p><a href='{{ url }}'>Réinitialiser votre mot de passe</a></p><p>Attention, le lien n'est valable qu'une heure\u00A0!</p><p>Si vous n'avez pas demandé cela, veuillez ignorer cet e-mail et votre mot de passe restera inchangé.</p>"
+        },
+        "createAccount": {
+            "success": "Un e-mail vous a été envoyé afin de confirmer votre compte."
+        },
+        "activateAccount": {
+            "success": "Votre compte a été activé. Vous pouvez désormais vous connecter."
+        },
+        "confirmAccount": {
+            "emailTitle": "Confirmer votre e-mail pour activer votre compte",
+            "emailDescription": "<p>Afin d'activer votre compte smapshot, veuillez cliquer sur le lien suivant pour confirmer votre e-mail</p><p><a href='{{ url }}'>Confirmer votre e-mail</a></p>"
+        }
+    },
+    "corrections": {
+        "submitted": {
+            "success": "Votre correction a été envoyée. Le propriétaire de la collection va maintenant procéder à une vérification.",
+            "error": "Votre correction ne peut pas être envoyée, réessayer plus tard."
+        }
+    },
+    "problems": {
+        "submitted": {
+            "success": "Votre problème a été envoyé. Le propriétaire de la collection va maintenant procéder à une vérification.",
+            "error": "Votre problème ne peut pas être envoyé, réessayer plus tard.",
+            "errorIdRequired": "Un image ID or un original image ID est nécessaire."
+        }
+    },
+    "roles": {
+        "ownerIdNeeded": "Le paramètre owner ID est nécessaire."
+    },
+    "pose": {
+        "3dModelCreationError": "La création du modèle 3d n'a pas fonctionné, veuillez contacter l'équipe smapshot.",
+        "impossible": "La position calculée est impossible. Contrôlez qu'il n'y ait pas une erreur sur une correspondance."
+    },
+    "locations":{
+        "noCountry": "La localisation ne correspond à aucun pays."
+    }
+}

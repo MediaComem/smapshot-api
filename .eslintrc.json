@@ -1,0 +1,58 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:promise/recommended"
+  ],
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "overrides": [
+    {
+      "files": [ "app/**/*.spec.js", "spec/**/*.js", "utils/**/*.spec.js" ],
+      "globals": {
+        "afterEach": "readonly",
+        "before": "readonly",
+        "beforeEach": "readonly",
+        "describe": "readonly",
+        "it": "readonly"
+      },
+      "rules": {
+        "node/no-unpublished-require": "off"
+      }
+    },
+    {
+      "files": [ "commands/**/*.js" ],
+      "rules": {
+        "no-console": "off",
+        "no-process-exit": "off"
+      }
+    },
+    {
+      "files": [ "spec/**/*.js" ],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [ "spec/**/*.chai.js" ],
+      "rules": {
+        "func-names": "off"
+      }
+    }
+  ],
+  "rules": {
+    "func-names": [1, "as-needed"],
+    "no-console": "error",
+    "no-extra-boolean-cast": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_([^_]|$)",
+        "varsIgnorePattern": "^_+([^_]|$)"
+      }
+    ],
+    "prefer-destructuring": ["error", { "object": false, "array": false }]
+  }
+}

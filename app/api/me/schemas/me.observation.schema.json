@@ -1,0 +1,73 @@
+{
+  "$id": "UserObservationInfo",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "state": {
+      "enum": ["created", "validated", "rejected", "updated"]
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date"
+    },
+    "remark": {
+      "type": "string"
+    },
+    "observation": {
+      "type": "string"
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "ApiId#"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+        },
+        "collection": {
+          "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_created",
+    "state",
+    "observation",
+    "image"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$id": "UpdateUserInfoRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "minLength": 2
+    },
+    "first_name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "last_name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "lang": {
+      "$ref": "Locale#"
+    },
+    "letter": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

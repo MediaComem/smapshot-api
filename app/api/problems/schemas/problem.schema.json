@@ -1,0 +1,91 @@
+{
+  "$id": "Problem",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "problem_type_id": {
+      "$ref": "ApiId#"
+    },
+    "state": {
+      "$ref": "ProblemState#"
+    },
+    "problems_type": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "title": {
+          "type": "string"
+        },
+        "translation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["id", "title", "translation"]
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "ApiId#"
+        },
+        "original_id": {
+          "type": "string"
+        },
+        "is_published": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["name"]
+        },
+        "collection": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": ["name"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_created",
+    "title",
+    "problem_type_id",
+    "state",
+    "problems_type",
+    "image"
+  ]
+}

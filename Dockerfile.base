@@ -1,0 +1,18 @@
+FROM node:12.18.3-buster
+
+LABEL maintainer="smapshot@heig-vd.ch"
+
+# Install tools required to compile npm packages, and Python dependencies used
+# at runtime.
+
+RUN apt-get update && \
+    apt-get install -qy \
+    --no-install-recommends software-properties-common build-essential \
+    ca-certificates curl git g++ make cmake wget unzip libtool automake \
+    python3-distutils python3 python3-pip libgl1-mesa-glx
+
+COPY requirements.txt /
+
+RUN python3 -m pip install --trusted-host pypi.python.org --upgrade pip \
+  && pip install --trusted-host pypi.python.org --upgrade setuptools wheel \
+  && pip3 install -r requirements.txt

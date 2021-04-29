@@ -1,0 +1,33 @@
+{
+  "$id": "UserRanking",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "username": {
+      "type": "string"
+    },
+    "n_geoloc": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_corr": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_obs": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "username",
+    "n_geoloc",
+    "n_corr",
+    "n_obs"
+  ]
+}

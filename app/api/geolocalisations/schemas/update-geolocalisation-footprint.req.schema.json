@@ -1,0 +1,28 @@
+{
+  "$id": "UpdateGeolocalisationFootprintRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "footprint_geojson": {
+      "type": "object",
+      "properties": {
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "longitude",
+    "latitude",
+    "footprint_geojson"
+  ]
+}

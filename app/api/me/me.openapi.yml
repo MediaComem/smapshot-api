@@ -1,0 +1,154 @@
+/me/info:
+  get:
+    summary: Retrieve profile info from the logged in user.
+    operationId: getMyInfo
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+  put:
+    summary: Update logged in user profile.
+    operationId: updateMyInfo
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateUserInfoRequest"
+    responses:
+      "200":
+        description: Successful request.
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/me/password:
+  put:
+    summary: Update logged in user password.
+    operationId: updateMyPassword
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateUserPasswordRequest"
+    responses:
+      "200":
+        description: Successful request.
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/me/geolocalisations:
+  get:
+    summary: List geolocations of the logged in user.
+    operationId: getMyGeolocations
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/OrderParameter"
+      - name: date_min
+        in: query
+        description: Select only geolocalisations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_max
+        in: query
+        description: Select only geolocalisations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserGeolocalisationInfoList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+
+/me/observations:
+  get:
+    summary: List observations of the logged in user.
+    operationId: getMyObservations
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/OrderParameter"
+      - name: date_min
+        in: query
+        description: Select only observations made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_max
+        in: query
+        description: Select only observations made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserObservationInfoList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+
+/me/corrections:
+  get:
+    summary: List corrections of the logged in user.
+    operationId: getMyCorrections
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
+      - $ref: "#/components/parameters/OffsetParameter"
+      - $ref: "#/components/parameters/OrderParameter"
+      - name: date_min
+        in: query
+        description: Select only corrections made after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_max
+        in: query
+        description: Select only corrections made before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCorrectionInfoList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"

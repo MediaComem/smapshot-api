@@ -1,0 +1,6 @@
+{
+  "$id": "UserRole",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "string",
+  "enum": [ "owner_admin", "owner_validator", "super_admin", "volunteer" ]
+}

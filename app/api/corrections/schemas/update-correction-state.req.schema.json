@@ -1,0 +1,19 @@
+{
+  "$id": "UpdateCorrectionStateRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "remark": {
+      "type": "string",
+      "minLength": 2
+    },
+    "state": {
+      "type": "string",
+      "enum": [ "validated", "rejected" ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "state"
+  ]
+}

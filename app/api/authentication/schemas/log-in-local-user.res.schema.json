@@ -1,0 +1,34 @@
+{
+  "$id": "LogInLocalUserResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "token": {
+      "type": "string",
+      "example": "eyJhbGciOiJIU.eyJzdWIiOiIxMjM0NTY3ODkwIiwi.SflKxwRJSMeKKF2Q"
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "username": {
+          "type": "string",
+          "minLength": 2
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "username"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "token",
+    "user"
+  ]
+}

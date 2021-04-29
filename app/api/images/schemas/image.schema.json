@@ -1,0 +1,91 @@
+{
+  "$id": "Image",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "original_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "ImageState#"
+    },
+    "is_published": {
+      "type": "boolean"
+    },
+    "owner_id": {
+      "type": "integer"
+    },
+    "collection_id": {
+      "type": "integer"
+    },
+    "height": {
+      "type": ["integer", "null"]
+    },
+    "width": {
+      "type": ["integer", "null"]
+    },
+    "longitude": {
+      "type": ["number", "null"]
+    },
+    "latitude": {
+      "type": ["number", "null"]
+    },
+    "date_shot_min": {
+      "type": "string",
+      "format": "date"
+    },
+    "date_shot_max": {
+      "type": "string",
+      "format": "date"
+    },
+    "media": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "image_url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "apriori_locations": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "exact": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "exact",
+          "longitude",
+          "latitude"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "longitude",
+    "latitude"
+  ]
+}

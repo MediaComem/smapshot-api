@@ -1,0 +1,8 @@
+# https://github.com/mochajs/mocha/blob/master/example/config/.mocharc.yml
+---
+ignore:
+  - node_modules
+  - public
+spec:
+  - app/**/*.spec.js
+  - utils/**/*.spec.js

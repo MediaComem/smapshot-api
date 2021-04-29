@@ -1,0 +1,3 @@
+[submodule "app/georeferencer"]
+	path = app/georeferencer
+	url = git@gitlab.com:mediacomem/smapshot/georeferencer.git

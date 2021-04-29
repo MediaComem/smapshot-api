@@ -1,0 +1,27 @@
+{
+  "$id": "CreateProblemRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "original_id": {
+      "type": "string",
+      "description": "The original ID of the image in its collection. Required if the image ID is not specified."
+    },
+    "problem_type_id": {
+      "$ref": "ApiId#"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "problem_type_id"
+  ]
+}
