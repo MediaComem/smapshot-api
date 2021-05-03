@@ -203,6 +203,7 @@
     summary: List correction rankings.
     operationId: getCorrectionRankings
     parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
       - name: state
         in: query
         description: Compute rankings only for corrections in the specified state(s). All are included by default.
