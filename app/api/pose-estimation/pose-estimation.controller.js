@@ -101,7 +101,13 @@ exports.computePoseCreateGltf = async (req, res) => {
     }else{
       lock=0
     }
-    let results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
+
+    let results;
+    try {
+      results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
+    } catch(error) {
+      res.status(400).send({ message: req.__('pose.impossible') });
+    }
 
     if (!results) {
      res.status(400).send({ message: req.__('pose.impossible') });
