@@ -19,7 +19,7 @@
               type: object
               properties: {}
       "422":
-        $ref: "#/components/responses/RequestBodyValidationErrors"
+        $ref: "#/components/responses/PoseEstimationError"
 
 /pose/recompute:
   get:

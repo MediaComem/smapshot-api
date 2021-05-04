@@ -79,6 +79,14 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ForbiddenResponse"
+    PoseEstimationError:
+      description: The request body contains invalid or unprecise data that do not allow pose estimation.
+      content:
+        application/problem+json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/PoseEstimationErrorResponse"
+              - $ref: "#/components/schemas/RequestBodyValidationErrorsResponse"
     RequestBodyValidationErrors:
       description: The request body contains invalid data.
       content:
