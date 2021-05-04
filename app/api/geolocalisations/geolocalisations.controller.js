@@ -378,7 +378,7 @@ exports.saveFootprint = route(async (req, res) => {
   //Does geoloc_id exist in the DB
   const geolocalisationEntry = await models.geolocalisations.findByPk(geoloc_id);
   if (!geolocalisationEntry){
-    throw notFoundError();
+    throw notFoundError(req);
   }
   //Check if footprint already exists for geoloc_id
   const footPrintExist = geolocalisationEntry.footprint;

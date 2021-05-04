@@ -1,0 +1,28 @@
+{
+  "$id": "PoseEstimationErrorResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "description": "A response body indicating that the request body contains unprecise data that do not allow to compute the pose estimation.",
+  "properties": {
+    "$$merge": {
+      "file": "./generic-http-problem-details.res.schema.json",
+      "pointer": "/properties"
+    },
+    "type": {
+      "example": "https://httpstatuses.com/422"
+    },
+    "title": {
+      "example": "Unprocessable Entity"
+    },
+    "status": {
+      "example": 422
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "detail",
+    "status",
+    "title",
+    "type"
+  ]
+}

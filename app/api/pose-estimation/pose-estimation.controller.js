@@ -6,6 +6,8 @@ const { root } = require('../../../config');
 
 const models = require("../../models");
 const gltf = require("../gltf/gltf.controller");
+const { poseEstimationError } = require('../../utils/errors');
+const { route } = require("../../utils/express");
 
 async function getDbImage(image_id){
   const query = models.images.findOne({
@@ -68,7 +70,7 @@ function computeGCPRatio(_gcpArray, _width, _height) {
  }
 
 // Get parameters sent by the client
-exports.computePoseCreateGltf = async (req, res) => {
+exports.computePoseCreateGltf = route(async (req, res) => {
    const locationLocked = req.body.locationLocked;
    const GCPs = req.body.gcps;
    const height = parseFloat(req.body.height);
@@ -106,11 +108,11 @@ exports.computePoseCreateGltf = async (req, res) => {
     try {
       results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
     } catch(error) {
-      res.status(400).send({ message: req.__('pose.impossible') });
+      throw poseEstimationError(req);
     }
 
     if (!results) {
-     res.status(400).send({ message: req.__('pose.impossible') });
+      throw poseEstimationError(req);
     } else {
 
      const {imageCoordinatesForGltf, ...filteredResults } = results;
@@ -123,13 +125,13 @@ exports.computePoseCreateGltf = async (req, res) => {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id)
        res.status(201).send(filteredResults);
      } catch {
-       res.status(400).send({ message: req.__('pose.3dModelCreationError') });
+      throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
   }
-};
+});
 
 // Get parameters sent by the client
-exports.computePoseCreateGltfFromDb = async (req, res) => {
+exports.computePoseCreateGltfFromDb = route(async (req, res) => {
 
   const image_id = parseInt(req.query.image_id);
   const image = await getDbImage(image_id);
@@ -140,9 +142,15 @@ exports.computePoseCreateGltfFromDb = async (req, res) => {
     const GCPs = image['geolocalisation.gcp_json']
     const gcpArrayString = JSON.stringify(GCPs)
 
-    let results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image.width, image.height, 0)
+    let results;
+    try {
+      results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image.width, image.height, 0)
+    } catch(error) {
+      throw poseEstimationError(req);
+    }
+
     if (!results) {
-     res.status(400).send({ message: req.__('pose.impossible') });
+      throw poseEstimationError(req);
     } else {
 
      const {imageCoordinatesForGltf, longitude, latitude, altitude, roll, tilt, azimuth, focal} = results;
@@ -189,11 +197,11 @@ exports.computePoseCreateGltfFromDb = async (req, res) => {
      try {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
      } catch {
-       res.status(400).send({ message: req.__('pose.3dModelCreationError') });
+       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
      }
      return res.json({ success: true, message: "Gltf and orientation are updated" });
     }
   } else {
    return res.json({ success: true, message: "Image id: " + image_id + " is not georeferenced or is terrestrial." });
   }
-};
+});

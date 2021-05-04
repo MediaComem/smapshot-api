@@ -116,6 +116,19 @@ exports.requestParametersValidationError = (req, errors) => new HttpProblemDetai
 exports.requestBodyValidationError = (req, errors) => new HttpProblemDetailsError(422, req.__('general.validationErrors'), { errors });
 
 /**
+ * Creates an error indicating the pose computation could not converge with the given request body.
+ * It will be returned to the API client as an HTTP 422 Unprocessable Entity response by the global
+ * error handler.
+ *
+ * @param {express.Request} req - The Express request object.
+ * @param {string} [detail] - A human-readable explanation specific to this
+ * occurrence of the problem. This will be sent in the response.
+ * @returns {HttpProblemDetailsError} An error that can be thrown or passed to
+ * Express's `next` function.
+ */
+ exports.poseEstimationError = (req, detail) => new HttpProblemDetailsError(422, detail || req.__('pose.impossible'));
+
+/**
  * Creates an error resulting from the violation of a foreign key database
  * constraint, i.e. attempting to reference a row that does not exist. It will
  * be returned to the client as an HTTP 422 Unprocessable Entity response using
