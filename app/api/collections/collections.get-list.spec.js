@@ -107,21 +107,23 @@ describe('GET /collections', () => {
   describe('with default fixtures', () => {
 
     let owner1, owner2, owner3;
-    let col1, col2, col3, col4, col5;
+    let col1, col2, col3, col4, col5, col6;
     let initialState;
     beforeEach(async () => {
       const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
-      const threeMonthsAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+      const threedaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const threeDaysAhead = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
       // Generate 5 collections belonging to 3 owners.
       [ owner1, owner2, owner3 ] = await generate(3, createOwner);
-      [ col1, col2, col3, col4, col5 ] = await Promise.all([
+      [ col1, col2, col3, col4, col5, col6 ] = await Promise.all([
         createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 }),
-        createCollection({ owner: owner1 }),
-        createCollection({ date_publi: threeMonthsAgo, is_main_challenge: true, is_owner_challenge: true, owner: owner2 }),
+        createCollection({ owner: owner1 }), // if no date_publi given, entry will be assigned todays date 
+        createCollection({ date_publi: threedaysAgo, is_main_challenge: true, is_owner_challenge: true, owner: owner2 }),
         createCollection({ date_publi: oneYearAgo, owner: owner3 }),
-        createCollection({ date_publi: null, owner: owner3 })
+        createCollection({ date_publi: null, owner: owner3 }),
+        createCollection({ date_publi: threeDaysAhead, is_main_challenge: true, is_owner_challenge: true, owner: owner2 })
       ]);
 
       // Generate images for the collections.
@@ -137,7 +139,8 @@ describe('GET /collections', () => {
         // Collection 4 has no georeferenced images.
         createImage({ collection: col4, state: 'initial' }),
         createImage({ collection: col4, state: 'initial' }),
-        createImage({ collection: col5, state: 'initial' })
+        createImage({ collection: col5, state: 'initial' }),
+        createImage({ collection: col6, state: 'initial' })
       ]);
 
       // Define banners for each collection.
@@ -399,6 +402,7 @@ describe('GET /collections', () => {
         expect(res)
           .to.have.status(200)
           .and.to.have.jsonBody([
+            getExpectedCollection(col6, extraInfoOptionsNoMedia( { nImages: 1, nGeoref: 0 })),
             getExpectedCollection(col5, extraInfoOptionsNoMedia( { nImages: 1, nGeoref: 0 }))
           ])
           .and.to.matchResponseDocumentation();
@@ -483,6 +487,7 @@ describe('GET /collections', () => {
             getExpectedCollection(col3, extraInfoOptions({ nImages: 2, nGeoref: 2 })),
             getExpectedCollection(col1, extraInfoOptions({ nImages: 2, nGeoref: 1 })),
             getExpectedCollection(col2, extraInfoOptions({ nImages: 4, nGeoref: 3 })),
+            getExpectedCollection(col6, extraInfoOptionsNoMedia( { nImages: 1, nGeoref: 0 })),
             getExpectedCollection(col5, extraInfoOptionsNoMedia( { nImages: 1, nGeoref: 0 }))
           ])
           .and.to.matchResponseDocumentation();

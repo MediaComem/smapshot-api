@@ -14,7 +14,9 @@ const Op = Sequelize.Op;
 const getCollections = async (req, res) => {
   const lang = req.getLocale();
   const image_width = req.query.image_width ? parseInt(req.query.image_width) : 500;
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
 
   const whereClausePublic = {
     date_publi: {
@@ -42,8 +44,10 @@ const getCollections = async (req, res) => {
       whereClause = {
         ...whereClausePublic,
         date_publi: {
-          [Op.eq]: null,
-          [Op.gte]: today
+          [Op.or]: {
+            [Op.eq]: null,
+            [Op.gte]: today
+          }
         },
         ...scopeOwner
       };
@@ -130,8 +134,10 @@ exports.getList = route(async (req, res) => {
   }
 
   const lang = req.getLocale();
-  const today = new Date().toISOString().split('T')[0];
-
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
+  
   const whereClausePublic = {
     date_publi: {
       [Op.not]: null,
@@ -157,9 +163,11 @@ exports.getList = route(async (req, res) => {
       // restrict to current owner
       whereClause = {
         ...whereClausePublic,
-        date_publi: { 
-          [Op.eq]: null,
-          [Op.gte]: today
+        date_publi: {
+          [Op.or]: {
+            [Op.eq]: null,
+            [Op.gte]: today
+          }
         },
         ...scopeOwner
       };

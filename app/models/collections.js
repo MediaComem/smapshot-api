@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING
       },
       date_publi: {
-        type: DataTypes.DATEONLY
+        type: DataTypes.DATE
       },
       banner_id:{
         type: DataTypes.INTEGER
