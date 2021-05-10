@@ -115,7 +115,7 @@ describe('GET /collections', () => {
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const threeDaysAhead = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
-      // Generate 5 collections belonging to 3 owners.
+      // Generate 6 collections belonging to 3 owners.
       [ owner1, owner2, owner3 ] = await generate(3, createOwner);
       [ col1, col2, col3, col4, col5, col6 ] = await Promise.all([
         createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 }),
@@ -407,6 +407,36 @@ describe('GET /collections', () => {
           ])
           .and.to.matchResponseDocumentation();
 
+        await expectNoSideEffects(app, initialState);
+      });
+
+      it(`selects unpublished collections scoped to an owner administrators owner_id with the "publish_state" query parameter set to "unpublished" and the "extra_info" query parameter set to ${extra_info}`, async () => {
+        const userOwner = await createUser({ roles: [ 'owner_admin' ], owner_id: owner2.id });
+        const token = await generateJwtFor(userOwner);
+        initialState = await loadInitialState();
+  
+        const req = {
+          ...baseRequest,
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          query: {
+            owner_id: [ owner2.id, owner3.id ],
+            extra_info: extra_info,
+            publish_state: 'unpublished'
+          }
+        };
+        
+        expect(req).to.matchRequestDocumentation();
+  
+        const res = await testHttpRequest(app, req);
+        expect(res)
+          .to.have.status(200)
+          .and.to.have.jsonBody([
+            getExpectedCollection(col6, extraInfoOptionsNoMedia( { nImages: 1, nGeoref: 0 }))
+          ])
+          .and.to.matchResponseDocumentation();
+  
         await expectNoSideEffects(app, initialState);
       });
 
