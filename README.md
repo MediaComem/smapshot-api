@@ -98,10 +98,10 @@ Command                                  | Description
 You will need:
 
 * A [PostgreSQL](https://www.postgresql.org) 11+ server with the
-  [PostGIS][https://postgis.net] extension.
+  [PostGIS](https://postgis.net) extension.
 * [Node.js](https://nodejs.org) 12.x.
 * [Python](https://www.python.org) 3+ and the
-  [pip][https://pypi.org/project/pip/] package installer.
+  [pip](https://pypi.org/project/pip/) package installer.
 
 ### Setup
 
