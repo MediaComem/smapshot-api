@@ -12,5 +12,6 @@
 /nodemon.json
 /.nyc_output
 /public
+/tmp
 /.tool-versions
 /.vscode
