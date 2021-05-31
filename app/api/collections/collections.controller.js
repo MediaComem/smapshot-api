@@ -14,13 +14,20 @@ const Op = Sequelize.Op;
 const getCollections = async (req, res) => {
   const lang = req.getLocale();
   const image_width = req.query.image_width ? parseInt(req.query.image_width) : 500;
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
 
   const whereClausePublic = {
-    date_publi: { [Op.not]: null },
+    date_publi: {
+      [Op.not]: null,
+      [Op.lte]: today // future publish date is not yet published
+    },
     is_owner_challenge: parseBooleanQueryParam(req.query.is_challenge),
     is_main_challenge: parseBooleanQueryParam(req.query.is_main_challenge),
     owner_id: inUniqueOrList(req.query.owner_id)
   };
+
   let whereClause = whereClausePublic;
 
   switch (req.query.publish_state) {
@@ -32,11 +39,16 @@ const getCollections = async (req, res) => {
         throw authorizationError('Unpublished collections can only be accessed by respective owner or super administrators');
       }
       const { include: scopeOwner } = getOwnerScope(req);
-      // retrieve only unpublished collections
+      // retrieve only unpublished collections including those with future publish date
       // restrict to current owner
       whereClause = {
         ...whereClausePublic,
-        date_publi: { [Op.eq]: null },
+        date_publi: {
+          [Op.or]: {
+            [Op.eq]: null,
+            [Op.gte]: today
+          }
+        },
         ...scopeOwner
       };
       break;
@@ -55,13 +67,16 @@ const getCollections = async (req, res) => {
       } else {
         const { include: scopeOwner } = getOwnerScope(req);
         // get all published collections
-        // + unpublished restricted to current owner
+        // + unpublished restricted to current owner including those with future publish date
         whereClause = {
           is_owner_challenge: whereClausePublic.is_owner_challenge,
           is_main_challenge: whereClausePublic.is_main_challenge,
           owner_id: whereClausePublic.owner_id,
           [Op.or]: {
-            date_publi: { [Op.not]: null }, // only published collections
+            date_publi: { 
+              [Op.not]: null,
+              [Op.lte]: today
+            }, // only published collections
             ...scopeOwner                   // or collections from the owner id
           }
         };
@@ -119,13 +134,20 @@ exports.getList = route(async (req, res) => {
   }
 
   const lang = req.getLocale();
-
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
+  
   const whereClausePublic = {
-    date_publi: { [Op.not]: null },
+    date_publi: {
+      [Op.not]: null,
+      [Op.lte]: today // future publish date is not yet published
+    },
     is_owner_challenge: parseBooleanQueryParam(req.query.is_challenge),
     is_main_challenge: parseBooleanQueryParam(req.query.is_main_challenge),
     owner_id: inUniqueOrList(req.query.owner_id)
   };
+
   let whereClause = whereClausePublic;
 
   switch (req.query.publish_state) {
@@ -137,11 +159,16 @@ exports.getList = route(async (req, res) => {
         throw authorizationError('Unpublished collections can only be accessed by respective owner or super administrators');
       }
       const { include: scopeOwner } = getOwnerScope(req);
-      // retrieve only unpublished collections
+      // retrieve only unpublished collections including those with future publish date
       // restrict to current owner
       whereClause = {
         ...whereClausePublic,
-        date_publi: { [Op.eq]: null },
+        date_publi: {
+          [Op.or]: {
+            [Op.eq]: null,
+            [Op.gte]: today
+          }
+        },
         ...scopeOwner
       };
       break;
@@ -160,13 +187,16 @@ exports.getList = route(async (req, res) => {
       } else {
         const { include: scopeOwner } = getOwnerScope(req);
         // get all published collections
-        // + unpublished restricted to current owner
+        // + unpublished restricted to current owner including those with future publish date
         whereClause = {
           is_owner_challenge: whereClausePublic.is_owner_challenge,
           is_main_challenge: whereClausePublic.is_main_challenge,
           owner_id: whereClausePublic.owner_id,
           [Op.or]: {
-            date_publi: { [Op.not]: null }, // only published collections
+            date_publi: {
+              [Op.not]: null, // only published collections
+              [Op.lte]: today // excluding future published date
+            }, 
             ...scopeOwner                   // or collections from the owner id
           }
         };
@@ -277,8 +307,11 @@ exports.getById = route(async (req, res) => {
   };
 
   // Details of unpublished collections can only be accessed by super administrators.
+  const today = new Date().toISOString().split('T')[0];
   if (!userHasRole(req, 'super_admin')) {
-    where.date_publi = { [Op.not]: null };
+    where.date_publi = { 
+      [Op.not]: null,
+      [Op.lte]: today };
   }
 
   const collectionPromise = models.collections.findOne({
