@@ -100,7 +100,7 @@ exports.save = route(async (req, res) => {
   const nGCP = Object.keys(gcps).length;
 
   // Parameters for improvement
-  const validation_mode = parseBooleanQueryParam(data.validation_mode) || false;
+  const validation_mode = parseBooleanQueryParam(data.validation_mode, false);
   const validator_id = data.validator_id;
   const previous_geoloc_id = data.previous_geoloc_id;
   const remark = data.remark;
@@ -109,7 +109,7 @@ exports.save = route(async (req, res) => {
   let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id (l127)
 
   // Improvments only permitted by authorized users
-  if (validation_mode & !userHasRole(req, "owner_admin", "owner_validator")) {
+  if (validation_mode && !userHasRole(req, "owner_admin", "owner_validator")) {
     throw authorizationError(req.__('general.accessForbidden'));
   }
 
