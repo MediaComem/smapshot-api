@@ -9,8 +9,7 @@ const router = new express.Router();
 
 // List observations.
 router.get("/observations",
-  authenticate(),
-  authorize("owner_admin", "owner_validator"),
+  authenticate({ required: false }),
   validateDocumentedRequestParametersFor('GET', '/observations'),
   listController.getList
 );
