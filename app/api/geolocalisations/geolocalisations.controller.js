@@ -205,6 +205,7 @@ exports.save = route(async (req, res) => {
       n_gcp: nGCP,
       previous_geolocalisation_id: null,
       stop: models.sequelize.literal("now()"),
+      user_id: georeferencer_id,
       state: "waiting_validation",
       date_checked: models.sequelize.literal("now()"),
       date_georef: models.sequelize.literal("now()")
