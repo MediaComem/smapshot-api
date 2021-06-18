@@ -48,7 +48,7 @@ const parseAttributes = (query) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^200,/0/default.jpg'))
+      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'))
       end)`
     ),

@@ -100,7 +100,7 @@ const getCollections = async (req, res) => {
           when banner_id IS NOT NULL
             THEN case
               when banner.iiif_data IS NOT NULL
-              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^${image_width},/0/default.jpg'))
+              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
             end
             else null
@@ -219,7 +219,7 @@ exports.getList = route(async (req, res) => {
           when collections.banner_id IS NOT NULL
             THEN case
               when banner.iiif_data IS NOT NULL
-              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^${image_width},/0/default.jpg'))
+              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
             end
             else null
@@ -363,7 +363,7 @@ exports.getById = route(async (req, res) => {
         models.sequelize.literal(
         `(case
           when iiif_data IS NOT NULL
-          THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^200,/0/default.jpg'))
+          THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
           else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
           end)`
         ),

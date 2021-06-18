@@ -52,7 +52,7 @@ exports.getList = utils.route(async (req, res) => {
           when banner_id IS NOT NULL
           THEN case
             when iiif_data IS NOT NULL
-            THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^${image_width},/0/default.jpg'))
+            THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
             else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',banner.id,'.jpg'))
             end
           else null

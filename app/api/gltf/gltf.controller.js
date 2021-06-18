@@ -63,7 +63,7 @@ async function getDbImage(image_id) {
         models.sequelize.literal(
         `(CASE
           WHEN iiif_data IS NOT NULL
-              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^1024,1024/0/default.jpg'))
+              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
           ELSE
               json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/1024/',images.id,'.jpg'))
           end)`

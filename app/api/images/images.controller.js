@@ -239,7 +239,7 @@ exports.getAttributes = utils.route(async (req, res) => {
       models.sequelize.literal(
       `(CASE
         WHEN iiif_data IS NOT NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^200,/0/default.jpg'),
+            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         WHEN iiif_data IS NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
@@ -247,7 +247,7 @@ exports.getAttributes = utils.route(async (req, res) => {
                                    'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         WHEN iiif_data IS NOT NULL
-            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/pct:1,1,99,99/^200,/0/default.jpg'),
+            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
         ELSE
             json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
