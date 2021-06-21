@@ -3,6 +3,7 @@ const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const utils = require("../../utils/express");
+const config = require('../../../config');
 const { cleanProp, getFieldI18n } = require("../../utils/params");
 
 const Op = Sequelize.Op;
@@ -114,6 +115,16 @@ exports.getGeolocalisations = async (req, res) => {
     where: cleanedWhereGeo
   });
 
+  const media = [
+    models.sequelize.literal(
+      `(case
+      when iiif_data IS NOT NULL
+      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',geolocalisations.image_id,'.jpg'))
+      end)`
+    ),
+    "media"
+  ];
   const queryPromise = models.geolocalisations.findAll({
     attributes: ['id', 'state', 'date_georef', 'remark', 'errors_list'],
     where: cleanedWhereGeo,
@@ -123,7 +134,7 @@ exports.getGeolocalisations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title"],
+        attributes: ["id", "name", "title", media],
         include: [
           {
             model: models.owners,
@@ -162,6 +173,16 @@ exports.getObservations = async (req, res) => {
     where: cleanedWhereObs
   });
 
+  const media = [
+    models.sequelize.literal(
+      `(case
+      when iiif_data IS NOT NULL
+      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',observations.image_id,'.jpg'))
+      end)`
+    ),
+    "media"
+  ];
   const queryPromise = models.observations.findAll({
     attributes: ['id', 'state', 'date_created', 'remark', 'observation'],
     where: cleanedWhereObs,
@@ -171,7 +192,7 @@ exports.getObservations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title"],
+        attributes: ["id", "name", "title", media],
         include: [
           {
             model: models.owners,
@@ -225,6 +246,16 @@ exports.getCorrections = async (req, res) => {
     ]
   });
 
+  const media = [
+    models.sequelize.literal(
+      `(case
+      when iiif_data IS NOT NULL
+      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',corrections.image_id,'.jpg'))
+      end)`
+    ),
+    "media"
+  ];
   const queryPromise = models.corrections.findAll({
     attributes: ['id', 'state', 'date_created', 'remark', 'type', 'correction'],
     where: cleanedwhereCorr,
@@ -234,7 +265,7 @@ exports.getCorrections = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", "caption", "orig_title", "orig_caption"],
+        attributes: ["id", "name", "title", "caption", "orig_title", "orig_caption", media],
         include: [
           {
             model: models.owners,

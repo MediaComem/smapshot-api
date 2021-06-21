@@ -2,6 +2,7 @@ const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const utils = require("../../utils/express");
+const config = require('../../../config');
 const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../../utils/params");
 const { getOwnerScope: getImageOwnerScope } = require('../images/images.utils');
 
@@ -42,6 +43,16 @@ exports.getList = utils.route(async (req, res) => {
   };
   const cleanedWhereVolunteers = cleanProp(whereVolunteers);
 
+  const media = [
+    models.sequelize.literal(
+      `(case
+      when iiif_data IS NOT NULL
+      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',corrections.image_id,'.jpg'))
+      end)`
+    ),
+    "media"
+  ];
   // TODO change query to add update and do not send admin updates separately in the list
   const corrections = await models.corrections.findAll({
     attributes: [
@@ -69,7 +80,7 @@ exports.getList = utils.route(async (req, res) => {
       },
       {
         model: models.images,
-        attributes: ["id", "original_id", "title", "caption", "is_published", "orig_title", "orig_caption"],
+        attributes: ["id", "original_id", "title", "caption", "is_published", "orig_title", "orig_caption", media],
         where: cleanedWhereImages,
         include: [
           {
