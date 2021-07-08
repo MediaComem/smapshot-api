@@ -42,8 +42,8 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
   have a `super_admin` user account, you can add one with:
 
   ```sql
-  INSERT INTO public.users (first_name, last_name, email, username, date_registr, letter, lang, "password", roles, owner_id)
-  VALUES ('Franck', 'Dulin', 'super_admin@smapshot.ch', 'super_admin', now(), TRUE, 'fr','$2b$12$v80JamELNdJnvHyVAQrUZOaIRJJ2BI48vTsZop4s5mgoA9jbcX4Ni','{volunteer,super_admin}', 1);
+  INSERT INTO public.users (first_name, last_name, email, username, date_registr, letter, lang, "password", roles)
+  VALUES ('Franck', 'Dulin', 'super_admin@smapshot.ch', 'super_admin', now(), TRUE, 'fr','$2b$12$v80JamELNdJnvHyVAQrUZOaIRJJ2BI48vTsZop4s5mgoA9jbcX4Ni','{volunteer,super_admin}');
   ```
 
 ## Develop with Docker Compose (recommended)
