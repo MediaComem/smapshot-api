@@ -2,7 +2,6 @@ tasks:
 
   visit:
     channelName: "update_vt_visit"
-    debounceWait: 30000
     sql: "
       SELECT id, owner_id, collection_id, ST_Force2D(ST_SnapToGrid(location, 0.0001)) AS geom,
       (CASE
@@ -29,7 +28,6 @@ tasks:
 
   contribute:
     channelName: "update_vt_contribute"
-    debounceWait: 30000
     sql: "
       SELECT images.id, images.owner_id, images.collection_id, ST_Force2D(ST_SnapToGrid(apriori_locations.geom, 0.0001)) ,
       (CASE
