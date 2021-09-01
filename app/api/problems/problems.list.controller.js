@@ -3,7 +3,7 @@ const Sequelize = require("sequelize");
 const models = require("../../models");
 const { route } = require("../../utils/express");
 const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../../utils/params");
-const { getOwnerScope: getImageOwnerScope } = require('../images/images.utils');
+// const { getOwnerScope: getImageOwnerScope } = require('../images/images.utils');
 
 const Op = Sequelize.Op;
 
@@ -26,9 +26,10 @@ exports.getList = route(async (req, res) => {
   const whereTypes = { source: inUniqueOrList(req.query.source) };
   const cleanedWhereTypes = cleanProp(whereTypes);
 
-  const { where: whereImagesScope } = getImageOwnerScope(req);
+  // const { where: whereImagesScope } = getImageOwnerScope(req);
   const whereImages = {
-    ...whereImagesScope,
+    // ...whereImagesScope,
+    id: inUniqueOrList(req.query.image_id),
     original_id: inUniqueOrList(req.query.original_id)
   };
   const cleanedWhereImages = cleanProp(whereImages);
