@@ -8,13 +8,13 @@ const Op = Sequelize.Op;
 
 exports.getList = utils.route(async (req, res) => {
   const lang = req.getLocale();
-  const isSuperUser = req.user.isSuperAdmin();
-  const userOwnerId = req.user.owner_id;
+  const isSuperUser = req.user ? req.user.isSuperAdmin() : false;
+  const userOwnerId = req.user ? req.user.owner_id : undefined;
 
   let whereObs = {
     id: inUniqueOrList(req.query.id),
     image_id: inUniqueOrList(req.query.image_id),
-    state: inUniqueOrList(req.query.state),
+    state: req.user ? inUniqueOrList(req.query.state) : 'validated', // if not authenticated allow only validated
     date_created: {
       [Op.gte]: req.query.date_created_min,
       [Op.lte]: req.query.date_created_max
@@ -41,12 +41,22 @@ exports.getList = utils.route(async (req, res) => {
   };
   const cleanedWhereVolunteers = cleanProp(whereVolunteers);
   const queryPromise = models.observations.findAll({
-    attributes: [
+    attributes:  req.user ? [ // if not authenticated, remark is not shown
       "id",
       "date_created",
       "observation",
       "state",
       "remark",
+      "download_timestamp",
+      "coord_x",
+      "coord_y",
+      "width",
+      "height"
+    ] : [
+      "id",
+      "date_created",
+      "observation",
+      "state",
       "download_timestamp",
       "coord_x",
       "coord_y",
@@ -89,11 +99,17 @@ exports.getList = utils.route(async (req, res) => {
         attributes: ["id", "username"],
         where: cleanedWhereVolunteers
       },
+      req.user ?  // if not authenticated, validator is not shown
       {
-        model: models.users,
-        as: "validator",
-        attributes: ["id", "username"],
-        required: false
+          model: models.users,
+          as: "validator",
+          attributes: ["id", "username"],
+          required: false
+      } : {
+          model: models.users,
+          as: "validator",
+          attributes: [],
+          required: false
       }
     ]
   });
