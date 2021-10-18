@@ -18,6 +18,10 @@ exports.getList = utils.route(async (req, res) => {
     date_created: {
       [Op.gte]: req.query.date_created_min,
       [Op.lte]: req.query.date_created_max
+    },
+    date_validated:{
+      [Op.gte]: req.query.date_validated_min,
+      [Op.lte]: req.query.date_validated_max
     }
   };
 
@@ -40,29 +44,39 @@ exports.getList = utils.route(async (req, res) => {
     username: inUniqueOrList(iLikeFormatter(req.query.username_volunteer))
   };
   const cleanedWhereVolunteers = cleanProp(whereVolunteers);
+  const attributes = [ // if not authenticated, remark is not shown
+    "id",
+    "date_created",
+    "observation",
+    "state",
+    "date_validated",
+    "download_timestamp",
+    "coord_x",
+    "coord_y",
+    "width",
+    "height"
+  ];
+  let validator = {
+    model: models.users,
+    as: "validator",
+    attributes: [],
+    required: false
+  };
+  if (isSuperUser || req.user && req.user.owner_id) {
+    // display remark only for super admin and owner validator
+    attributes.push("remark");
+    // return validator attributes only for super admin or owner admin
+    validator = {
+      model: models.users,
+      as: "validator",
+      attributes: ["id", "username"],
+      required: false
+    }
+  }
+
+
   const queryPromise = models.observations.findAll({
-    attributes:  req.user ? [ // if not authenticated, remark is not shown
-      "id",
-      "date_created",
-      "observation",
-      "state",
-      "remark",
-      "download_timestamp",
-      "coord_x",
-      "coord_y",
-      "width",
-      "height"
-    ] : [
-      "id",
-      "date_created",
-      "observation",
-      "state",
-      "download_timestamp",
-      "coord_x",
-      "coord_y",
-      "width",
-      "height"
-    ],
+    attributes,
     limit: req.query.limit || 30,
     offset: req.query.offset || 0,
     where: cleanedWhereObs,
@@ -99,18 +113,7 @@ exports.getList = utils.route(async (req, res) => {
         attributes: ["id", "username"],
         where: cleanedWhereVolunteers
       },
-      req.user ?  // if not authenticated, validator is not shown
-      {
-          model: models.users,
-          as: "validator",
-          attributes: ["id", "username"],
-          required: false
-      } : {
-          model: models.users,
-          as: "validator",
-          attributes: [],
-          required: false
-      }
+      validator
     ]
   });
 
