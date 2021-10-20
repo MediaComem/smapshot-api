@@ -73,6 +73,20 @@
         schema:
           type: string
           format: date-time
+      - name: date_validated_min
+        in: query
+        description: Select only observations validated after the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
+      - name: date_validated_max
+        in: query
+        description: Select only observations validated before the specified date.
+        example: "2021-02-03T04:05:06Z"
+        schema:
+          type: string
+          format: date-time
       - name: original_id
         in: query
         description: Select only observations made on images with the specified original ID(s).
