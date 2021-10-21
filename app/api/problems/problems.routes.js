@@ -9,8 +9,6 @@ const router = new express.Router();
 
 // List problems.
 router.get("/problems",
-  authenticate(),
-  authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('GET', '/problems'),
   listController.getList
 );
