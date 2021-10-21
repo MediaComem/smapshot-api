@@ -23,7 +23,8 @@ module.exports = {
         footprint_timestamp TIMESTAMPTZ DEFAULT NULL,
         viewshed_simple_timestamp TIMESTAMPTZ DEFAULT NULL,
         viewshed_precise_timestamp TIMESTAMPTZ DEFAULT NULL,
-        toponyms_timestamp TIMESTAMPTZ DEFAULT NULL
+        toponyms_timestamp TIMESTAMPTZ DEFAULT NULL,
+        git_revision_hash BYTEA DEFAULT NULL
       );
       INSERT INTO public.geometadata (fk_image_id) SELECT id FROM images;
       WITH cte AS (
