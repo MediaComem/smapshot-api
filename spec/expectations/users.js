@@ -37,7 +37,8 @@ exports.expectUserInDatabase = async expected => {
     owner_id: get(expected, 'owner_id', null),
     active: get(expected, 'active', false),
     active_token: get(expected, 'active_token', null),
-    active_expires: get(expected, 'active_expires', null)
+    active_expires: get(expected, 'active_expires', null),
+    last_login: get(expected, 'last_login', null)
   });
 
   return row;

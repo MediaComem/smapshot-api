@@ -54,7 +54,8 @@ exports.createUser = async (options = {}) => {
     roles: roles,
     active: get(options, 'active', true),
     active_token: get(options, 'active_token', null),
-    active_expires: get(options, 'active_expires', null)
+    active_expires: get(options, 'active_expires', null),
+    last_login: get(options, 'last_login', null)
   };
 
   const result = await sequelize.query(
