@@ -20,7 +20,7 @@ const { getOwnerScope } = require('./images.utils');
 const Op = Sequelize.Op;
 
 const parseAttributes = (query) => {
-  const basic_attributes = ["id", "original_id", "collection_id", "owner_id", "title", "is_published", "state", "height", "width"]
+  const basic_attributes = ["id", "original_id", "collection_id", "owner_id", "title", "is_published", "state","date_georef", "height", "width"]
   const longitude = [models.sequelize.literal("ST_X(ST_SnapToGrid(location, 0.0001))"), "longitude"];
   const latitude = [models.sequelize.literal("ST_Y(ST_SnapToGrid(location, 0.0001))"), "latitude"];
   const date_shot_min = [

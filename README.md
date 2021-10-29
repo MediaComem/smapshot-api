@@ -39,11 +39,11 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
   Unzip the contents of the `data.zip` file into the `public/data` directory in
   this repository.
 * Once you have set up the database in the following sections, if you do not
-  have a `super_admin` user account, you can add one with:
+  have a `super_admin` user account (password `super_admin`), you can add one with:
 
   ```sql
-  INSERT INTO public.users (first_name, last_name, email, username, date_registr, letter, lang, "password", roles)
-  VALUES ('Franck', 'Dulin', 'super_admin@smapshot.ch', 'super_admin', now(), TRUE, 'fr','$2b$12$v80JamELNdJnvHyVAQrUZOaIRJJ2BI48vTsZop4s5mgoA9jbcX4Ni','{volunteer,super_admin}');
+  INSERT INTO public.users (first_name, last_name, email, username, date_registr, letter, lang, "password", roles, active)
+  VALUES ('Franck', 'Dulin', 'super_admin@smapshot.ch', 'super_admin', now(), TRUE, 'fr','$2b$12$v80JamELNdJnvHyVAQrUZOaIRJJ2BI48vTsZop4s5mgoA9jbcX4Ni','{volunteer,super_admin}',TRUE);
   ```
 
 ## Develop with Docker Compose (recommended)
