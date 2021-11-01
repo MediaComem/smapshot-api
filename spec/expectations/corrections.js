@@ -14,6 +14,7 @@ exports.getExpectedCorrection = (
 ) => {
   const {
     locale: locale,
+    media: expectedMedia,
     ...extraProperties
   } = options;
 
@@ -45,5 +46,12 @@ exports.getExpectedCorrection = (
     }
   };
 
+  if (expectedMedia === undefined) {
+    expected.image.media = {
+      image_url: `http://localhost:1337/data/collections/${image.collection.id}/images/500/${image.id}.jpg`
+    };
+  } else if (expectedMedia !== false) {
+    expected.image.media = expectedMedia;
+  }
   return compactObject(expected);
 };

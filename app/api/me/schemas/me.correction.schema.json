@@ -58,6 +58,18 @@
         "orig_caption": {
           "type": ["string", "null"]
         },
+        "media": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "image_url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "owner": {
           "type": "object",
             "properties": {
