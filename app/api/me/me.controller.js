@@ -160,7 +160,7 @@ exports.getGeolocalisations = async (req, res) => {
   })
   const searchImagePromise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
+    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
     }
   });
@@ -233,7 +233,7 @@ exports.getObservations = async (req, res) => {
   const results = await utils.handlePromise(queryPromise, {status: 500, message: "Observations cannot be retrieved. There has been an error with the server."})
   const searchImagePromise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
+    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
     }
   });
@@ -337,7 +337,7 @@ exports.getCorrections = async (req, res) => {
   })
   const searchImagePromise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
+    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
     }
   });

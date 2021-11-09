@@ -131,7 +131,7 @@ exports.getList = utils.route(async (req, res) => {
   const searchImagePromise = [];
 
   owners.forEach((owner) => { 
-    if (owner.media.banner_url == null && owner.banner.dataValues.iiif_data) {
+    if (owner.media && owner.media.banner_url == null && owner.banner.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width)); 
     }
   });
@@ -139,7 +139,7 @@ exports.getList = utils.route(async (req, res) => {
   await Promise.all(searchImagePromise);
 
   owners.forEach((owner) => { 
-    delete owner.banner.dataValues.iiif_data;
+    delete owner.banner;
   });
 
   return res.send(owners);

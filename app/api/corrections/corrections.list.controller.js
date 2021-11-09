@@ -117,7 +117,7 @@ exports.getList = utils.route(async (req, res) => {
 
   const searchImagePromise = [];
   corrections.forEach(correction => {
-    if (correction.dataValues.image.dataValues.media.image_url === null && correction.dataValues.image.dataValues.iiif_data) {
+    if (correction.dataValues.image.dataValues.media && correction.dataValues.image.dataValues.media.image_url === null && correction.dataValues.image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(correction.dataValues.image.dataValues.media, correction.dataValues.image.dataValues.iiif_data.size_info, 500));
     }
   })

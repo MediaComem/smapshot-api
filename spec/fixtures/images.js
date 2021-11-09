@@ -107,7 +107,8 @@ exports.createImage = async (options = {}) => {
     geolocalisation_id: get(options, 'geolocalisation_id', null),
     original_state: get(options, 'original_state', 'initial'),
     state: get(options, 'state', 'initial'),
-    country_iso_a2: get(options, 'country_iso_a2', null)
+    country_iso_a2: get(options, 'country_iso_a2', null),
+    last_login: null
   };
 
   const result = await sequelize.query(
@@ -123,7 +124,7 @@ exports.createImage = async (options = {}) => {
         downloaded, download_timestamp, footprint, viewshed_simple, viewshed_precise,
         viewshed_created, viewshed_timestamp, geotag_created, geotag_timestamp,
         geotags_json, date_validated, last_start, last_start_user_id, shop_link,
-        geolocalisation_id, state, original_state, country_iso_a2
+        geolocalisation_id, state, original_state, country_iso_a2, last_login
       )
       VALUES (
         :collection_id, :owner_id, :name, :date_inserted, :date_shot, :date_georef,
@@ -135,7 +136,7 @@ exports.createImage = async (options = {}) => {
         :downloaded, :download_timestamp, :footprint, :viewshed_simple, :viewshed_precise,
         :viewshed_created, :viewshed_timestamp, :geotag_created, :geotag_timestamp,
         :geotags_json, :date_validated, :last_start, :last_start_user_id, :shop_link,
-        :geolocalisation_id, :state, :original_state, :country_iso_a2
+        :geolocalisation_id, :state, :original_state, :country_iso_a2, :last_login
       )
       RETURNING id
     `,

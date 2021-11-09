@@ -142,7 +142,12 @@ const getCollections = async (req, res) => {
   await Promise.all(searchImagePromise);
 
   collections.forEach((collection) => {
-    delete collection.banner.dataValues.iiif_data;
+    if (collection.media) {
+      delete collection.banner;
+    }
+    else {
+      delete collection.dataValues.banner;
+    }
   });
 
   return res.send(collections);
@@ -328,7 +333,7 @@ exports.getList = route(async (req, res) => {
   const searchImagePromise = [];
 
   collections.forEach((collection) => {
-    if (collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
+    if (collection.media && collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.media, collection.banner.dataValues.iiif_data.size_info, image_width));
     }
   });
@@ -336,7 +341,7 @@ exports.getList = route(async (req, res) => {
   await Promise.all(searchImagePromise);
 
   collections.forEach((collection) => {
-    delete collection.banner.dataValues.iiif_data;
+    delete collection.banner;
   });
 
   return res.send(collections.filter(collection => collection.nImages));
@@ -433,13 +438,13 @@ exports.getById = route(async (req, res) => {
 
   const searchImagePromise = [];
 
-  if (collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
-    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.media, collection.banner.dataValues.iiif_data.size_info, image_width));
+  if (media.dataValues.media && media.dataValues.media.banner_url === null && media.dataValues.banner.dataValues.iiif_data) {
+    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(media.dataValues.media, media.dataValues.banner.dataValues.iiif_data.size_info, image_width));
   }
 
   await Promise.all(searchImagePromise);
 
-  delete collection.banner.dataValues.iiif_data;
+  delete media.dataValues.banner;
 
   res.send({
     id: collection.id,

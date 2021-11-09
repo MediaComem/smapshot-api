@@ -348,13 +348,13 @@ exports.getAttributes = utils.route(async (req, res) => {
 
   const searchImagePromise = [];
 
-  if (results.dataValues.media.image_url === null && results.dataValues.iiif_data) {
+  if (results.dataValues.media && results.dataValues.media.image_url === null && results.dataValues.iiif_data) {
     searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(results.dataValues.media, results.dataValues.iiif_data.size_info, 1024));
   }
 
   await Promise.all(searchImagePromise);
 
-  delete results.iiif_data;
+  delete results.dataValues.iiif_data;
 
   // Group POSE attributes.
   const {

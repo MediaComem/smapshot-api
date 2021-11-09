@@ -362,7 +362,7 @@ exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
   const searchImagePromise = [];
   images.rows.forEach((image) => {
-    if (image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
+    if (image.dataValues.media && image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
     }
   })
@@ -381,7 +381,7 @@ exports.getListId = utils.route(async (req, res) => {
 
   const searchImagePromise = [];
   images.rows.forEach((image) => {
-    if (image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
+    if (image.dataValues.media && image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
     }
   })

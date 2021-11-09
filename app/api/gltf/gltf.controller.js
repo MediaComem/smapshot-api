@@ -86,7 +86,7 @@ async function getDbImage(image_id) {
 
   const searchImagePromise = [];
 
-  if (result.dataValues.media.image_url === null && result.dataValues.iiif_data) {
+  if (result.dataValues.media && result.dataValues.media.image_url === null && result.dataValues.iiif_data) {
     searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.media, result.dataValues.iiif_data.size_info, 1024));
   }
 
