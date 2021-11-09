@@ -16,11 +16,12 @@ const {
   toUniqueArray
 } = require("../../utils/params");
 const { getOwnerScope } = require('./images.utils');
+const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
 
 const Op = Sequelize.Op;
 
 const parseAttributes = (query) => {
-  const basic_attributes = ["id", "original_id", "collection_id", "owner_id", "title", "is_published", "state","date_georef", "height", "width"]
+  const basic_attributes = ["id", "original_id", "collection_id", "owner_id", "title", "is_published", "state","date_georef", "height", "width", "iiif_data"]
   const longitude = [models.sequelize.literal("ST_X(ST_SnapToGrid(location, 0.0001))"), "longitude"];
   const latitude = [models.sequelize.literal("ST_Y(ST_SnapToGrid(location, 0.0001))"), "latitude"];
   const date_shot_min = [
@@ -48,12 +49,17 @@ const parseAttributes = (query) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
+      THEN case
+        WHEN iiif_data->>'size_info' IS NOT NULL
+        THEN json_build_object('image_url', NULL)
+        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
+        end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'))
       end)`
     ),
     "media"
   ];
+
   const default_attributes = [
     ...basic_attributes,
     date_shot_min,
@@ -354,12 +360,37 @@ const getImages = async (req, orderkey, count = true) => {
 
 exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
+  const searchImagePromise = [];
+  images.rows.forEach((image) => {
+    if (image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
+      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
+    }
+  })
+  await Promise.all(searchImagePromise);
+
+  images.rows.forEach((image) => {
+    delete image.dataValues.iiif_data;
+  });
+
   res.status(200).send(images);
 });
 
 exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
+
+  const searchImagePromise = [];
+  images.rows.forEach((image) => {
+    if (image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
+      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
+    }
+  })
+  await Promise.all(searchImagePromise);
+
+  images.rows.forEach((image) => {
+    delete image.dataValues.iiif_data;
+  });
+
   // Send flattened objects
   res.status(200).send(images.map(obj => obj.id));
 });

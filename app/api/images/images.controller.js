@@ -7,6 +7,7 @@ const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
 const { notFoundError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
+const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
 
 // PUT /images/:id/state
 // =====================
@@ -194,6 +195,7 @@ exports.getAttributes = utils.route(async (req, res) => {
     "focal",
     'width',
     'height',
+    'iiif_data',
     'country_iso_a2',
     [models.sequelize.literal("ST_X(location)"), "longitude"],
     [models.sequelize.literal("ST_Y(location)"), "latitude"],
@@ -239,16 +241,27 @@ exports.getAttributes = utils.route(async (req, res) => {
       models.sequelize.literal(
       `(CASE
         WHEN iiif_data IS NOT NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
+            THEN case 
+              WHEN iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('image_url', NULL),
+                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
+                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
+                END
         WHEN iiif_data IS NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
             THEN json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
                                    'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         WHEN iiif_data IS NOT NULL
-            THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
+            THEN case 
+              WHEN iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('image_url', NULL,
+                                  'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+                END
         ELSE
             json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
                               'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')))
@@ -332,6 +345,16 @@ exports.getAttributes = utils.route(async (req, res) => {
   if (results === null) {
     throw notFoundError(req);
   }
+
+  const searchImagePromise = [];
+
+  if (results.media.image_url === null && results.iiif_data) {
+    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(results.media, results.iiif_data.size_info, 1024));
+  }
+
+  await Promise.all(searchImagePromise);
+
+  delete results.iiif_data;
 
   // Group POSE attributes.
   const {

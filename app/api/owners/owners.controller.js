@@ -6,6 +6,7 @@ const { userHasRole } = require("../../utils/authorization");
 const { authorizationError } = require("../../utils/errors");
 const utils = require("../../utils/express");
 const { inUniqueOrList, cleanProp, getFieldI18n } = require("../../utils/params");
+const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
 
 const Op = Sequelize.Op;
 
@@ -52,7 +53,11 @@ exports.getList = utils.route(async (req, res) => {
           when banner_id IS NOT NULL
           THEN case
             when iiif_data IS NOT NULL
-            THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+            THEN case 
+              when iiif_data->>'size_info' IS NOT NULL
+              THEN json_build_object('banner_url', NULL)
+              else json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+            end  
             else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',banner.id,'.jpg'))
             end
           else null
@@ -64,7 +69,9 @@ exports.getList = utils.route(async (req, res) => {
     include:[{
         model: models.images,
         as: "banner",
-        attributes: []
+        attributes: [
+          "iiif_data"
+        ]
     }],
     group: ["owners.id", "banner.id"],
     where: cleanProp(whereClause),
@@ -121,7 +128,20 @@ exports.getList = utils.route(async (req, res) => {
     };
   });
 
+  const searchImagePromise = [];
+
+  owners.forEach((owner) => { 
+    if (owner.media.banner_url == null && owner.banner.dataValues.iiif_data) {
+      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width)); 
+    }
+  });
+
+  await Promise.all(searchImagePromise);
+
+  owners.forEach((owner) => { 
+    delete owner.banner.dataValues.iiif_data;
+  });
+
   return res.send(owners);
 
 });
-
