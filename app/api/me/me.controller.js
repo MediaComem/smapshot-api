@@ -5,7 +5,7 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const config = require('../../../config');
 const { cleanProp, getFieldI18n } = require("../../utils/params");
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -158,14 +158,16 @@ exports.getGeolocalisations = async (req, res) => {
     status: 500,
     message: "Geolocalisations cannot be retrieved. There has been an error with the server."
   })
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
     }
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -231,14 +233,16 @@ exports.getObservations = async (req, res) => {
     ]
   });
   const results = await utils.handlePromise(queryPromise, {status: 500, message: "Observations cannot be retrieved. There has been an error with the server."})
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
     }
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -335,14 +339,16 @@ exports.getCorrections = async (req, res) => {
     status: 500,
     message: "Corrections cannot be retrieved. There has been an error with the server."
   })
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
   results.forEach((result) => {
-    if (result.dataValues.image.dataValues.media && result.dataValues.image.dataValues.media.image_url === null && result.dataValues.image.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.image.dataValues.media, result.dataValues.image.dataValues.iiif_data.size_info, 500));
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
     }
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;

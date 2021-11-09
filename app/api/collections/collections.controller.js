@@ -7,7 +7,7 @@ const { authorizationError, notFoundError } = require("../../utils/errors");
 const { route } = require("../../utils/express");
 const { inUniqueOrList, cleanProp, getFieldI18n, parseBooleanQueryParam } = require("../../utils/params");
 const config = require('../../../config');
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -73,7 +73,7 @@ const getCollections = async (req, res) => {
           is_main_challenge: whereClausePublic.is_main_challenge,
           owner_id: whereClausePublic.owner_id,
           [Op.or]: {
-            date_publi: { 
+            date_publi: {
               [Op.not]: null,
               [Op.lte]: today
             }, // only published collections
@@ -100,7 +100,7 @@ const getCollections = async (req, res) => {
           when banner_id IS NOT NULL
             THEN case
               when banner.iiif_data IS NOT NULL
-              THEN case 
+              THEN case
                 when banner.iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('banner_url', NULL)
                 else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
@@ -127,27 +127,24 @@ const getCollections = async (req, res) => {
     ]
   });
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
+  // Check if banner URL exist (if not check if iiif level 0 server)
   collections.forEach((collection) => {
-    if (collection.media && collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.media, collection.banner.dataValues.iiif_data.size_info, image_width));
-    }
-    if (collection.dataValues && collection.dataValues.media.banner_url === null && collection.banner.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.dataValues.media, collection.banner.dataValues.iiif_data.size_info, image_width));
+    const media = collection.dataValues.media;
+    const banner = collection.dataValues.banner.dataValues;
+    if (media && media.banner_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
     }
 
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
+  // Clean extra data
   collections.forEach((collection) => {
-    if (collection.media) {
-      delete collection.banner;
-    }
-    else {
-      delete collection.dataValues.banner;
-    }
+    delete collection.dataValues.banner;
   });
 
   return res.send(collections);
@@ -330,15 +327,18 @@ exports.getList = route(async (req, res) => {
     };
   });
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
   collections.forEach((collection) => {
-    if (collection.media && collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.media, collection.banner.dataValues.iiif_data.size_info, image_width));
+    const media = collection.media;
+    const banner = collection.banner.dataValues;
+    if (media && media.banner_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
     }
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   collections.forEach((collection) => {
     delete collection.banner;
@@ -436,13 +436,16 @@ exports.getById = route(async (req, res) => {
     throw notFoundError(req);
   }
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
-  if (media.dataValues.media && media.dataValues.media.banner_url === null && media.dataValues.banner.dataValues.iiif_data) {
-    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(media.dataValues.media, media.dataValues.banner.dataValues.iiif_data.size_info, image_width));
+  const mediaInfo = media.dataValues.media;
+  const banner = media.dataValues.banner.dataValues;
+  if (mediaInfo && mediaInfo.banner_url === null &&
+    iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+    iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
   }
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   delete media.dataValues.banner;
 

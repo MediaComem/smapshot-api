@@ -6,7 +6,7 @@ const { spawn } = require("child_process");
 const config = require('../../../config');
 const models = require("../../models");
 const utils = require("../../utils/express");
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 exports.generateFromDbPose = utils.route(async (req, res) => {
   const image_id = req.query.image_id;
@@ -84,13 +84,15 @@ async function getDbImage(image_id) {
 
   const result = await query
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
-  if (result.dataValues.media && result.dataValues.media.image_url === null && result.dataValues.iiif_data) {
-    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.media, result.dataValues.iiif_data.size_info, 1024));
+  const media = result.media;
+  if (media && media.image_url === null &&
+    iiifLevel0Utils.isIIIFLevel0(result.iiif_data)) {
+    iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, result.iiif_data.size_info, 1024));
   }
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   delete result.iiif_data;
 

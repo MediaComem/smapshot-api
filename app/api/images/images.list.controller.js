@@ -16,7 +16,7 @@ const {
   toUniqueArray
 } = require("../../utils/params");
 const { getOwnerScope } = require('./images.utils');
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -360,13 +360,15 @@ const getImages = async (req, orderkey, count = true) => {
 
 exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
   images.rows.forEach((image) => {
-    if (image.dataValues.media && image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
+    const media = image.dataValues.media;
+    if (media && media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
     }
   })
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   images.rows.forEach((image) => {
     delete image.dataValues.iiif_data;
@@ -379,13 +381,15 @@ exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
   images.rows.forEach((image) => {
-    if (image.dataValues.media && image.dataValues.media.image_url === null && image.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(image.dataValues.media, image.dataValues.iiif_data.size_info, 200));
+    const media = image.dataValues.media;
+    if (media && media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
     }
   })
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   images.rows.forEach((image) => {
     delete image.dataValues.iiif_data;

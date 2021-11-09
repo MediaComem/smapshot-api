@@ -7,7 +7,7 @@ const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
 const { notFoundError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 // PUT /images/:id/state
 // =====================
@@ -346,13 +346,15 @@ exports.getAttributes = utils.route(async (req, res) => {
     throw notFoundError(req);
   }
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
-  if (results.dataValues.media && results.dataValues.media.image_url === null && results.dataValues.iiif_data) {
-    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(results.dataValues.media, results.dataValues.iiif_data.size_info, 1024));
+  const media = results.dataValues.media;
+  if (media && media.image_url === null &&
+    iiifLevel0Utils.isIIIFLevel0(results.dataValues.iiif_data)) {
+    iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, results.dataValues.iiif_data.size_info, 1024));
   }
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
   delete results.dataValues.iiif_data;
 

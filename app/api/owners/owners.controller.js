@@ -6,7 +6,7 @@ const { userHasRole } = require("../../utils/authorization");
 const { authorizationError } = require("../../utils/errors");
 const utils = require("../../utils/express");
 const { inUniqueOrList, cleanProp, getFieldI18n } = require("../../utils/params");
-const loadIIIFLevel0Utils = require('../../utils/loadIIIFLevel0Image');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -128,17 +128,18 @@ exports.getList = utils.route(async (req, res) => {
     };
   });
 
-  const searchImagePromise = [];
+  const iiifLevel0Promise = [];
 
-  owners.forEach((owner) => { 
-    if (owner.media && owner.media.banner_url == null && owner.banner.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width)); 
+  owners.forEach((owner) => {
+    if (owner.media && owner.media.banner_url == null &&
+        iiifLevel0Utils.isIIIFLevel0(owner.banner.dataValues.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width));
     }
   });
 
-  await Promise.all(searchImagePromise);
+  await Promise.all(iiifLevel0Promise);
 
-  owners.forEach((owner) => { 
+  owners.forEach((owner) => {
     delete owner.banner;
   });
 
