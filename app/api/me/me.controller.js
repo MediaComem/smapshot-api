@@ -5,6 +5,7 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const config = require('../../../config');
 const { cleanProp, getFieldI18n } = require("../../utils/params");
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -119,7 +120,11 @@ exports.getGeolocalisations = async (req, res) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      THEN case 
+      WHEN iiif_data->>'size_info' IS NOT NULL
+        THEN json_build_object('image_url', NULL)
+        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',geolocalisations.image_id,'.jpg'))
       end)`
     ),
@@ -134,7 +139,7 @@ exports.getGeolocalisations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", media],
+        attributes: ["id", "name", "title", "iiif_data", media],
         include: [
           {
             model: models.owners,
@@ -148,12 +153,29 @@ exports.getGeolocalisations = async (req, res) => {
       }
     ]
   });
+
+  const results = await utils.handlePromise(queryPromise, {
+    status: 500,
+    message: "Geolocalisations cannot be retrieved. There has been an error with the server."
+  })
+  const iiifLevel0Promise = [];
+  results.forEach((result) => {
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+    }
+  });
+
+  await Promise.all(iiifLevel0Promise);
+
+  results.forEach(result => {
+    delete result.dataValues.image.dataValues.iiif_data;
+  })
+
   // Submit request
   res.header('Total-Items', countTotal).status(200).send(
-    await utils.handlePromise(queryPromise, {
-      status: 500,
-      message: "Geolocalisations cannot be retrieved. There has been an error with the server."
-    })
+    results
   );
 };
 
@@ -177,7 +199,11 @@ exports.getObservations = async (req, res) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      THEN case 
+      WHEN iiif_data->>'size_info' IS NOT NULL
+        THEN json_build_object('image_url', NULL)
+        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+        end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',observations.image_id,'.jpg'))
       end)`
     ),
@@ -192,7 +218,7 @@ exports.getObservations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", media],
+        attributes: ["id", "name", "title", "iiif_data", media],
         include: [
           {
             model: models.owners,
@@ -206,12 +232,25 @@ exports.getObservations = async (req, res) => {
       }
     ]
   });
+  const results = await utils.handlePromise(queryPromise, {status: 500, message: "Observations cannot be retrieved. There has been an error with the server."})
+  const iiifLevel0Promise = [];
+  results.forEach((result) => {
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+    }
+  });
+
+  await Promise.all(iiifLevel0Promise);
+
+  results.forEach(result => {
+    delete result.dataValues.image.dataValues.iiif_data;
+  })
+
   // Submit request
   res.header('Total-Items', countTotal).status(200).send(
-    await utils.handlePromise(queryPromise, {
-      status: 500,
-      message: "Observations cannot be retrieved. There has been an error with the server."
-    })
+    results
   );
 };
 
@@ -250,7 +289,11 @@ exports.getCorrections = async (req, res) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      THEN case 
+      WHEN iiif_data->>'size_info' IS NOT NULL
+        THEN json_build_object('image_url', NULL)
+        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',corrections.image_id,'.jpg'))
       end)`
     ),
@@ -265,7 +308,7 @@ exports.getCorrections = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", "caption", "orig_title", "orig_caption", media],
+        attributes: ["id", "name", "title", "caption", "orig_title", "orig_caption", "iiif_data", media],
         include: [
           {
             model: models.owners,
@@ -291,11 +334,28 @@ exports.getCorrections = async (req, res) => {
       }
     ]
   });
+
+  const results = await utils.handlePromise(queryPromise, {
+    status: 500,
+    message: "Corrections cannot be retrieved. There has been an error with the server."
+  })
+  const iiifLevel0Promise = [];
+  results.forEach((result) => {
+    const image = result.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+    }
+  });
+
+  await Promise.all(iiifLevel0Promise);
+
+  results.forEach(result => {
+    delete result.dataValues.image.dataValues.iiif_data;
+  })
+
   // Submit request
   res.header('Total-Items', countTotal).status(200).send(
-    await utils.handlePromise(queryPromise, {
-      status: 500,
-      message: "Corrections cannot be retrieved. There has been an error with the server."
-    })
+    results
   );
 };

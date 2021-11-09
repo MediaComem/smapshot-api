@@ -6,6 +6,7 @@ const { spawn } = require("child_process");
 const config = require('../../../config');
 const models = require("../../models");
 const utils = require("../../utils/express");
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 exports.generateFromDbPose = utils.route(async (req, res) => {
   const image_id = req.query.image_id;
@@ -59,11 +60,16 @@ async function getDbImage(image_id) {
       "height",
       "state",
       "collection_id",
+      "iiif_data",
       [
         models.sequelize.literal(
         `(CASE
           WHEN iiif_data IS NOT NULL
-              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
+              THEN case
+                WHEN  iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('image_url', NULL)
+                ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
+                END
           ELSE
               json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/1024/',images.id,'.jpg'))
           end)`
@@ -75,7 +81,22 @@ async function getDbImage(image_id) {
       id: parseInt(image_id, 10)
     }
   });
-  return await query
+
+  const result = await query
+
+  const iiifLevel0Promise = [];
+
+  const media = result.media;
+  if (media && media.image_url === null &&
+    iiifLevel0Utils.isIIIFLevel0(result.iiif_data)) {
+    iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, result.iiif_data.size_info, 1024));
+  }
+
+  await Promise.all(iiifLevel0Promise);
+
+  delete result.iiif_data;
+
+  return result
 }
 
 async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id) {
