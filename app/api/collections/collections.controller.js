@@ -130,24 +130,15 @@ const getCollections = async (req, res) => {
   const searchImagePromise = [];
 
   collections.forEach((collection) => {
-    if (collection.media && collection.media.banner_url === null && collection.banner.dataValues.iiif_data) {
-      searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.media, collection.banner.dataValues.iiif_data.size_info, image_width));
-    }
-    if (collection.dataValues && collection.dataValues.media.banner_url === null && collection.banner.dataValues.iiif_data) {
+    if (collection.dataValues.media && collection.dataValues.media.banner_url === null && collection.banner.dataValues.iiif_data) {
       searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnBanner(collection.dataValues.media, collection.banner.dataValues.iiif_data.size_info, image_width));
     }
-
   });
 
   await Promise.all(searchImagePromise);
 
   collections.forEach((collection) => {
-    if (collection.media) {
-      delete collection.banner;
-    }
-    else {
-      delete collection.dataValues.banner;
-    }
+    delete collection.dataValues.banner;
   });
 
   return res.send(collections);
