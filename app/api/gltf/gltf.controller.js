@@ -66,10 +66,10 @@ async function getDbImage(image_id) {
         `(CASE
           WHEN iiif_data IS NOT NULL
               THEN case
-              WHEN  iiif_data->>'size_info' IS NOT NULL
-              THEN json_build_object('image_url', NULL)
-              ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
-              END
+                WHEN  iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('image_url', NULL)
+                ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
+                END
           ELSE
               json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/1024/',images.id,'.jpg'))
           end)`
@@ -86,8 +86,8 @@ async function getDbImage(image_id) {
 
   const searchImagePromise = [];
 
-  if (result.media.image_url === null && result.iiif_data) {
-    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.media, result.iiif_data.size_info, 1024));
+  if (result.dataValues.media.image_url === null && result.dataValues.iiif_data) {
+    searchImagePromise.push(loadIIIFLevel0Utils.getUrlOnImage(result.dataValues.media, result.dataValues.iiif_data.size_info, 1024));
   }
 
   await Promise.all(searchImagePromise);
