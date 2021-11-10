@@ -79,7 +79,7 @@ exports.getAttributes = utils.route(async (req, res) => {
             WHEN iiif_data IS NOT NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
                 THEN case 
                   WHEN iiif_data->>'size_info' IS NOT NULL
-                  THEN                json_build_object('image_url', NULL),
+                  THEN                json_build_object('image_url', NULL,
                                       'tiles', json_build_object('type', 'iiif', 'url', iiif_data->>'size_info'),
                                       'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                   else                json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
@@ -93,8 +93,8 @@ exports.getAttributes = utils.route(async (req, res) => {
             WHEN iiif_data IS NOT NULL
                 THEN case 
                   WHEN iiif_data->>'size_info' IS NOT NULL
-                  THEN json_build_object('image_url', NULL),
-                                        'tiles', json_build_object('type', 'iiif', 'url', iiif_data->>'size_info'),
+                  THEN json_build_object('image_url', NULL,
+                                        'tiles', json_build_object('type', 'iiif', 'url', iiif_data->>'size_info'))
                   else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                        'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
                   end
