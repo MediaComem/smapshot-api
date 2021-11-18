@@ -30,7 +30,7 @@ router.post("/observations",
 // Update an observation.
 router.put("/observations/:id",
   authenticate(),
-  authorize("owner_admin", "owner_validator"),
+  authorize("volunteer","owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('PUT', '/observations/{id}'),
   validateRequestBodyWithJsonSchema('UpdateObservationRequest'),
   controller.findObservation,

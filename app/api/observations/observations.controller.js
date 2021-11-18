@@ -29,6 +29,9 @@ exports.submit = route(async (req, res) => {
 exports.update = route(async (req, res) => {
   await req.observation.update({
     state: 'created',
+    remark: null,
+    validator_id: null,
+    date_validated: null,
     observation: req.body.observation,
     coord_x: req.body.coord_x,
     coord_y: req.body.coord_y,

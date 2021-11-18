@@ -39,7 +39,7 @@ exports.createObservation = async (options = {}) => {
     association: 'validator',
     // Automatically create an associated validator by default if the state
     // requires it.
-    required: options.validator !== false && [ 'accepted', 'rejected' ].includes(state)
+    required: options.validator !== false && [ 'accepted', 'rejected', 'validated' ].includes(state)
   });
 
   const columns = {
