@@ -14,6 +14,7 @@ exports.login = [
     const user = req.user;
     const token = await generateJwtFor(user);
     getLogger(req).verbose(`User ${user.id} has successfully logged in`);
+    storeLastLoginDate(user)
 
     res.send({
       user: {
@@ -96,12 +97,12 @@ exports.google = (req, res, next) => {
       req.login(user, { session: false }, err => {
         if (err) return res.status(400).send(err);
 
+        storeLastLoginDate(user)
         const token = jwt.sign({ id: user.id }, config.jwtSecret);
         // redirect to front-end to receive the token
         res.redirect(`${req.session.return_url}?token=${token}`);
         delete req.session.return_url;
       });
-
       return next();
     }
   )(req, res, next);
@@ -121,6 +122,7 @@ exports.facebook = (req, res, next) => {
       req.login(user, { session: false }, err => {
         if (err) return res.status(400).send(err);
 
+        storeLastLoginDate(user)
         const token = jwt.sign({ id: user.id }, config.jwtSecret);
         // redirect to front-end to receive the token
         res.redirect(`${req.session.return_url}?token=${token}`);
@@ -293,6 +295,18 @@ async function generateAndSetActivationTokenFor(user) {
 
   user.active_token = token;
   user.active_expires = tokenExpiration;
+}
+
+async function storeLastLoginDate(user) {
+  const lastLogin = Date.now();
+  await models.users.update({
+    last_login: lastLogin
+  }, {
+    where: {
+      id: user.id
+    }
+  });
+  user.last_login = lastLogin;
 }
 
 async function sendRegistrationConfirmationEmail(user, req) {
