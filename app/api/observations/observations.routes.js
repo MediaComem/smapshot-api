@@ -33,7 +33,7 @@ router.put("/observations/:id",
   authorize("volunteer","owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('PUT', '/observations/{id}'),
   validateRequestBodyWithJsonSchema('UpdateObservationRequest'),
-  controller.findObservation,
+  controller.findObservationUpdateDelete,
   controller.update
 );
 
@@ -52,7 +52,7 @@ router.delete("/observations/:id",
   authenticate(),
   authorize("volunteer", "owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('DELETE', '/observations/{id}'),
-  controller.findObservation,
+  controller.findObservationUpdateDelete,
   controller.delete
 );
 
