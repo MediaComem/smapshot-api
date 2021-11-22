@@ -107,7 +107,8 @@ exports.createImage = async (options = {}) => {
     geolocalisation_id: get(options, 'geolocalisation_id', null),
     original_state: get(options, 'original_state', 'initial'),
     state: get(options, 'state', 'initial'),
-    country_iso_a2: get(options, 'country_iso_a2', null)
+    country_iso_a2: get(options, 'country_iso_a2', null),
+    last_login: null
   };
 
   const result = await sequelize.query(

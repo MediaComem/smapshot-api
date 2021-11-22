@@ -5,6 +5,7 @@ const utils = require("../../utils/express");
 const config = require('../../../config');
 const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../../utils/params");
 const { getOwnerScope: getImageOwnerScope } = require('../images/images.utils');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -47,7 +48,11 @@ exports.getList = utils.route(async (req, res) => {
     models.sequelize.literal(
       `(case
       when iiif_data IS NOT NULL
-      THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+      THEN case 
+        WHEN iiif_data->>'size_info' IS NOT NULL
+          THEN json_build_object('image_url', NULL)
+          else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
+        end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',corrections.image_id,'.jpg'))
       end)`
     ),
@@ -80,7 +85,7 @@ exports.getList = utils.route(async (req, res) => {
       },
       {
         model: models.images,
-        attributes: ["id", "original_id", "title", "caption", "is_published", "orig_title", "orig_caption", media],
+        attributes: ["id", "original_id", "title", "caption", "is_published", "orig_title", "orig_caption", "iiif_data", media],
         where: cleanedWhereImages,
         include: [
           {
@@ -108,6 +113,21 @@ exports.getList = utils.route(async (req, res) => {
         required: false
       }
     ]
+  });
+
+  const iiifLevel0Promise = [];
+  corrections.forEach(correction => {
+    const image = correction.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+    }
+  })
+
+  await Promise.all(iiifLevel0Promise);
+
+  corrections.forEach(correction => {
+    delete correction.dataValues.image.dataValues.iiif_data;
   });
 
   res.status(200).send(corrections);

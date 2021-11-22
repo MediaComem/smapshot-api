@@ -33,6 +33,12 @@
         example: 1243
         schema:
           $ref: "#/components/schemas/ApiIdListParameter"
+      - name: image_id
+        in: query
+        description: Select only problems concerning images with the specified ID(s).
+        example: 1234
+        schema:
+          $ref: "#/components/schemas/ApiIdListParameter"
       - name: state
         in: query
         description: Select created/validated/owned_processed/admin_processed problems only. All are listed by default.

@@ -91,6 +91,9 @@ module.exports = (sequelize, DataTypes) => {
       active_expires: {
         type: DataTypes.DATE
       },
+      last_login: {
+        type: DataTypes.DATE
+      },
     },
     {
       hooks: {

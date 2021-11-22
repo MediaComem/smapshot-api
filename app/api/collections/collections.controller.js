@@ -7,9 +7,9 @@ const { authorizationError, notFoundError } = require("../../utils/errors");
 const { route } = require("../../utils/express");
 const { inUniqueOrList, cleanProp, getFieldI18n, parseBooleanQueryParam } = require("../../utils/params");
 const config = require('../../../config');
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
-
 
 const getCollections = async (req, res) => {
   const lang = req.getLocale();
@@ -73,7 +73,7 @@ const getCollections = async (req, res) => {
           is_main_challenge: whereClausePublic.is_main_challenge,
           owner_id: whereClausePublic.owner_id,
           [Op.or]: {
-            date_publi: { 
+            date_publi: {
               [Op.not]: null,
               [Op.lte]: today
             }, // only published collections
@@ -100,7 +100,11 @@ const getCollections = async (req, res) => {
           when banner_id IS NOT NULL
             THEN case
               when banner.iiif_data IS NOT NULL
-              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+              THEN case
+                when banner.iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('banner_url', NULL)
+                else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+              end
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
             end
             else null
@@ -112,13 +116,35 @@ const getCollections = async (req, res) => {
     include:[{
         model: models.images,
         as: "banner",
-        attributes: []
+        attributes: [
+          "iiif_data"
+        ]
       }],
     where: cleanProp(whereClause),
     order: [
       [ 'date_publi', 'ASC' ],
       [ 'id', 'ASC' ]
     ]
+  });
+
+  const iiifLevel0Promise = [];
+
+  // Check if banner URL exist (if not check if iiif level 0 server)
+  collections.forEach((collection) => {
+    const media = collection.dataValues.media;
+    const banner = collection.dataValues.banner.dataValues;
+    if (media && media.banner_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
+    }
+
+  });
+
+  await Promise.all(iiifLevel0Promise);
+
+  // Clean extra data
+  collections.forEach((collection) => {
+    delete collection.dataValues.banner;
   });
 
   return res.send(collections);
@@ -219,7 +245,11 @@ exports.getList = route(async (req, res) => {
           when collections.banner_id IS NOT NULL
             THEN case
               when banner.iiif_data IS NOT NULL
-              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+              THEN case 
+                when banner.iiif_data->>'size_info' IS NOT NULL
+                THEN json_build_object('banner_url', NULL)
+                else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
+              end
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
             end
             else null
@@ -231,7 +261,9 @@ exports.getList = route(async (req, res) => {
     include:[{
         model: models.images,
         as: "banner",
-        attributes: []
+        attributes: [
+          "iiif_data"
+        ]
       },
       {
         model: models.owners,
@@ -293,6 +325,23 @@ exports.getList = route(async (req, res) => {
       nGeoref: nGeoref[result.dataValues.id] || 0,
       media: result.dataValues.media
     };
+  });
+
+  const iiifLevel0Promise = [];
+
+  collections.forEach((collection) => {
+    const media = collection.media;
+    const banner = collection.banner.dataValues;
+    if (media && media.banner_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
+    }
+  });
+
+  await Promise.all(iiifLevel0Promise);
+
+  collections.forEach((collection) => {
+    delete collection.banner;
   });
 
   return res.send(collections.filter(collection => collection.nImages));
@@ -363,7 +412,11 @@ exports.getById = route(async (req, res) => {
         models.sequelize.literal(
         `(case
           when iiif_data IS NOT NULL
-          THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
+          THEN case 
+            when banner.iiif_data->>'size_info' IS NOT NULL
+              THEN json_build_object('banner_url', NULL)
+              else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
+          end
           else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
           end)`
         ),
@@ -373,7 +426,7 @@ exports.getById = route(async (req, res) => {
     include:[{
       model: models.images,
       as: "banner",
-      attributes: ["id"]
+      attributes: ["id", "iiif_data"]
     }],
     where
   });
@@ -382,6 +435,19 @@ exports.getById = route(async (req, res) => {
   if (!collection) {
     throw notFoundError(req);
   }
+
+  const iiifLevel0Promise = [];
+
+  const mediaInfo = media.dataValues.media;
+  const banner = media.dataValues.banner.dataValues;
+  if (mediaInfo && mediaInfo.banner_url === null &&
+    iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
+    iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
+  }
+
+  await Promise.all(iiifLevel0Promise);
+
+  delete media.dataValues.banner;
 
   res.send({
     id: collection.id,
