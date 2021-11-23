@@ -56,9 +56,26 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
   const whereCollections = { id: inUniqueOrList(req.query.collection_id) };
   const cleanedWhereCollections = cleanProp(whereCollections);
 
+  let volunteer_ids = req.query.volunteer_id;
+  if (onlyUser) { //get observations related to the volunteer role of the user if the option is set to true
+    if (typeof(volunteer_ids) ==='number') {
+      if (volunteer_ids && volunteer_ids !== userId) {
+        return [] //do not return anything for the onlyUser role
+      } 
+    } else if (volunteer_ids instanceof Array){
+      if (volunteer_ids.includes(userId)) {
+        volunteer_ids = userId; //return only user observation for the onlyUser role
+      } else {
+        return [] //do not return anything for onlyUser role
+      }
+    } else { //no volunteer_ids provided
+      volunteer_ids = userId;
+    }
+  }
+
   const whereVolunteers = {
-      id: onlyUser ? userId : inUniqueOrList(req.query.volunteer_id), //get observations related to the volunteer role of the user if the option is set to true
-      username: inUniqueOrList(iLikeFormatter(req.query.username_volunteer))
+    id: inUniqueOrList(volunteer_ids),
+    username: inUniqueOrList(iLikeFormatter(req.query.username_volunteer))
   };
   const cleanedWhereVolunteers = cleanProp(whereVolunteers);
   const attributes = [
@@ -93,8 +110,6 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
 
   const queryPromise = models.observations.findAll({
     attributes,
-    limit: req.query.limit || 30,
-    offset: req.query.offset || 0,
     where: cleanedWhereObs,
     order: [["id"]],
     include: [
@@ -146,13 +161,12 @@ exports.getList = utils.route(async (req, res) => {
   const isOwnerValidator = req.user ? req.user.isOwnerValidator() : false;
 
   //get observations according to the different roles of the user: superAdmin, owner or volunteer
+  let observationsAll;
 
   //CASE 1: user has role super admin
   if(isSuperUser){
     //get all observations with all attributes
-    const observationsAll = await getObservations(req, true/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/); 
-    res.status(200).send(observationsAll);
-    return;
+    observationsAll = await getObservations(req, true/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/); 
 
   //CASE 2: user has role owner administrator or validator
   } else if(isOwnerAdmin||isOwnerValidator){
@@ -165,19 +179,7 @@ exports.getList = utils.route(async (req, res) => {
     //get observations with restriction (only validated state, and validator and remark are not shown)
     const observationsPublic = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/); 
 
-    let observationsAll = [...observationsUser, ...observationsPrivate, ...observationsPublic];
-    //loop to suppress duplicated values
-    const ids = [];
-    const observationsUnique = [];
-    for (const obs of observationsAll) {
-      if (ids.includes(obs.id)) {
-        continue;
-      }
-      ids.push(obs.id);
-      observationsUnique.push(obs);
-    }
-    res.status(200).send(observationsUnique);
-    return;
+    observationsAll = [...observationsUser, ...observationsPrivate, ...observationsPublic];
 
     //CASE 3: user is not a super admin or an owner administrator/validator
   } else if(req.user){
@@ -187,27 +189,34 @@ exports.getList = utils.route(async (req, res) => {
     //get observations with restriction (only validated, and validator and remark are not shown)
     const observationsPublic = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/);
 
-    let observationsAll = [...observationsUser, ...observationsPublic];
-    //loop to suppress duplicated values
-    const ids = [];
-    const observationsUnique = [];
-    for (const obs of observationsAll) {
-      if (ids.includes(obs.id)) {
-        continue;
-      }
-      ids.push(obs.id);
-      observationsUnique.push(obs);
-    }
-    res.status(200).send(observationsUnique);
-    return;
+    observationsAll = [...observationsUser, ...observationsPublic];
 
     //CASE 4: user not authenticated
   } else if(!req.user){
     //get observations with restriction (only validated, and validator and remark are not shown)
-    const observationsPublic = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/);
-    res.status(200).send(observationsPublic);
-    return;
+    observationsAll = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/);
   }
+  
+  //RETURN
+  
+  //loop to suppress duplicated values
+  const ids = [];
+  const observationsUnique = [];
+  for (const obs of observationsAll) {
+    if (ids.includes(obs.id)) {
+      continue;
+    }
+    ids.push(obs.id);
+    observationsUnique.push(obs);
+  }
+
+  //limit and offset
+  const offsetList = req.query.offset || 0;
+  const limitList = req.query.limit || 30;
+
+  res.status(200).send(observationsUnique.slice(offsetList).slice(0,limitList));
+  return;
+  
 });
 
 exports.getRanking = utils.route(async (req, res) => {

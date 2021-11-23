@@ -123,6 +123,80 @@ describe('GET /observations', () => {
       await expectNoSideEffects(app, initialState);
     });
 
+    it('retrieve observations for super admin and specified owner_id', async () => {
+      //superadmin get unrestricted information (remark+validator) and all observations (all states)
+
+      let superAdmin = await createUser({ roles: [ 'super_admin' ], first_name: 'super', last_name: 'admin', username: 'superadmin' });
+      let tokenSuperAdmin = await generateJwtFor(superAdmin);
+      initialState = await loadInitialState();
+      
+      options= {
+        remark: true,
+        validator: true
+      };
+
+      const req = {
+        ...baseRequest,
+        headers: {
+          Authorization: `Bearer ${tokenSuperAdmin}`
+        },
+        query: {
+          owner_id: 1
+        }
+      };
+
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+      expect(res)
+        .to.have.status(200)
+        .and.have.jsonBody([
+          getExpectedObservation(observation1, options),
+          getExpectedObservation(observation4, options),
+          getExpectedObservation(observation6, options),
+        ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
+    it('retrieve observations for super admin and specified volunteer_id', async () => {
+      //superadmin get unrestricted information (remark+validator) and all observations (all states)
+
+      let superAdmin = await createUser({ roles: [ 'super_admin' ], first_name: 'super', last_name: 'admin', username: 'superadmin' });
+      let tokenSuperAdmin = await generateJwtFor(superAdmin);
+      initialState = await loadInitialState();
+      
+      options= {
+        remark: true,
+        validator: true
+      };
+
+      const req = {
+        ...baseRequest,
+        headers: {
+          Authorization: `Bearer ${tokenSuperAdmin}`
+        },
+        query: {
+          volunteer_id: 1
+        }
+      };
+
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+      expect(res)
+        .to.have.status(200)
+        .and.have.jsonBody([
+          getExpectedObservation(observation1, options),
+          getExpectedObservation(observation2, options),
+          getExpectedObservation(observation3, options),
+        ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
     it(`retrieve observations for owner admin`, async () => {
       //authenticated owner get their unrestricted observation and the unrestricted observations about their collection (all states,remark+validator), and restricted validated observations (no remark, no validator)
       
