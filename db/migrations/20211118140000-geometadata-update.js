@@ -3,10 +3,10 @@
 module.exports = {
   up: async (queryInterface) => {
     await queryInterface.sequelize.query(`
-      ALTER TABLE IF EXISTS geometadata DROP COLUMNS IF EXISTS (
+      ALTER TABLE geometadata DROP COLUMNS (
         git_revision_hash
       );
-      ALTER TABLE IF EXISTS geometadata ADD COLUMNS IF NOT EXISTS (
+      ALTER TABLE geometadata ADD COLUMNS (
         viewshed_git_revision_hash BYTEA DEFAULT NULL,
         toponyms_iterations INTEGER DEFAULT NULL,
         toponyms_count numeric[] DEFAULT NULL,
@@ -18,10 +18,10 @@ module.exports = {
 
   down: async (queryInterface) => {
     await queryInterface.sequelize.query(`
-      ALTER TABLE IF EXISTS geometadata ADD COLUMNS IF NOT EXISTS (
+      ALTER TABLE geometadata ADD COLUMNS (
         git_revision_hash BYTEA DEFAULT NULL
       );
-      ALTER TABLE IF EXISTS geometadata DROP COLUMNS IF EXISTS (
+      ALTER TABLE geometadata DROP COLUMNS (
         viewshed_git_revision_hash,
         toponyms_iterations,
         toponyms_count,
