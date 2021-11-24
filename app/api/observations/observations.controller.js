@@ -105,10 +105,7 @@ exports.findObservation = route(async (req, res, next) => {
 
 exports.findObservationUpdateDelete = route(async (req, res, next) => {
   const where = {};
-  const user = req.user;
-  if (user.hasRole('volunteer')) {
-    where.user_id = user.id;
-  }
+  where.user_id = req.user.id;
 
   const observation = await models.observations.findOne({
     where: {
