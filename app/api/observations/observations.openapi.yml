@@ -28,10 +28,8 @@
     description: |-
       ## Authorization
 
-      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
-
-      **Scope:** an owner administrator or validator can only see observations
-      related to the owner.
+      **Scope:** only owner administrator, validator or user can see non validated observations 
+      related to them. Others can only see validated observations.
     parameters:
       - $ref: "#/components/parameters/LanguageParameter"
       - $ref: "#/components/parameters/OffsetParameter"

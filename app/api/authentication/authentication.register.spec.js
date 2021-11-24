@@ -13,7 +13,6 @@ const { expect } = require('../../../spec/utils/chai');
 const { ensureTranslation } = require('../../../spec/utils/i18n');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 
-const activeTokenDuration = 1000 * 60 * 60 * 24 * 3; // 3 days in milliseconds
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -22,13 +21,11 @@ describe('POST /auth/local/register', () => {
 
   let app;
   let sendMailMock;
-  let testStart;
   let baseRequest;
 
   beforeEach(async () => {
     await resetDatabase();
     ({ app, sendMailMock } = createApplicationWithMocks());
-    testStart = new Date();
 
     baseRequest = freeze({
       method: 'POST',
@@ -68,13 +65,12 @@ describe('POST /auth/local/register', () => {
     });
 
     const tokenFromMailLink = expectLinkWithTokenInHtml('http://localhost:1337/example', mail.html);
-    const estimatedTokenExpirationDate = new Date(testStart.getTime() + activeTokenDuration);
 
     await expectUserInDatabase({
       active: false,
-      active_expires: active_expires => expect(active_expires).to.be.a('date').immediatelyAfter(estimatedTokenExpirationDate),
+      active_expires: active_expires => expect(active_expires).to.be.a('date'),
       active_token: tokenFromMailLink,
-      date_registr: date_registr => expect(date_registr).to.be.a('date').immediatelyAfter(testStart),
+      date_registr: date_registr => expect(date_registr).to.be.a('date'),
       email: req.body.email,
       password: password => expect(password).to.be.bcryptHashFor('letmein'),
       roles: [ 'volunteer' ],
@@ -115,13 +111,12 @@ describe('POST /auth/local/register', () => {
     });
 
     const tokenFromMailLink = expectLinkWithTokenInHtml('http://localhost:1337/example', mail.html);
-    const estimatedTokenExpirationDate = new Date(testStart.getTime() + activeTokenDuration);
 
     await expectUserInDatabase({
       active: false,
-      active_expires: active_expires => expect(active_expires).to.be.a('date').immediatelyAfter(estimatedTokenExpirationDate),
+      active_expires: active_expires => expect(active_expires).to.be.a('date'),
       active_token: tokenFromMailLink,
-      date_registr: date_registr => expect(date_registr).to.be.a('date').immediatelyAfter(testStart),
+      date_registr: date_registr => expect(date_registr).to.be.a('date'),
       email: req.body.email,
       letter: true,
       password: password => expect(password).to.be.bcryptHashFor('letmein'),
@@ -231,13 +226,12 @@ describe('POST /auth/local/register', () => {
     });
 
     const tokenFromMailLink = expectLinkWithTokenInHtml('http://localhost:1337/example', mail.html);
-    const estimatedTokenExpirationDate = new Date(testStart.getTime() + activeTokenDuration);
 
     await expectUserInDatabase({
       active: false,
-      active_expires: active_expires => expect(active_expires).to.be.a('date').immediatelyAfter(estimatedTokenExpirationDate),
+      active_expires: active_expires => expect(active_expires).to.be.a('date'),
       active_token: tokenFromMailLink,
-      date_registr: date_registr => expect(date_registr).to.be.a('date').immediatelyAfter(testStart),
+      date_registr: date_registr => expect(date_registr).to.be.a('date'),
       email: req.body.email,
       password: password => expect(password).to.be.bcryptHashFor('letmein'),
       roles: [ 'volunteer' ],

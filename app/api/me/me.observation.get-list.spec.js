@@ -1,6 +1,6 @@
 
 const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
-const { getExpectedObservation } = require('../../../spec/expectations/observations');
+const { getExpectedMeObservation } = require('../../../spec/expectations/observations');
 const { createObservation } = require('../../../spec/fixtures/observations');
 const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 const { freeze, testHttpRequest } = require('../../../spec/utils/api');
@@ -114,7 +114,7 @@ describe('GET /me/observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(volunteerObservation)
+          getExpectedMeObservation(volunteerObservation)
         ])
         .and.to.matchResponseDocumentation();
 

@@ -29,6 +29,9 @@ exports.submit = route(async (req, res) => {
 exports.update = route(async (req, res) => {
   await req.observation.update({
     state: 'created',
+    remark: null,
+    validator_id: null,
+    date_validated: null,
     observation: req.body.observation,
     coord_x: req.body.coord_x,
     coord_y: req.body.coord_y,
@@ -85,6 +88,26 @@ exports.findObservation = route(async (req, res, next) => {
 
   const observation = await models.observations.findOne({
     include,
+    where: {
+      ...where,
+      id: req.params.id
+    }
+  });
+
+  if (!observation) {
+    throw notFoundError(req);
+  }
+
+  req.observation = observation;
+  next();
+});
+
+
+exports.findObservationUpdateDelete = route(async (req, res, next) => {
+  const where = {};
+  where.user_id = req.user.id;
+
+  const observation = await models.observations.findOne({
     where: {
       ...where,
       id: req.params.id

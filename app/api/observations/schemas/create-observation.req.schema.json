@@ -7,19 +7,19 @@
       "$ref": "ApiId#"
     },
     "coord_x": {
-      "type": "number",
+      "type": ["number", "null"],
       "minimum": 0
     },
     "coord_y": {
-      "type": "number",
+      "type": ["number", "null"],
       "minimum": 0
     },
     "width": {
-      "type": "number",
+      "type": ["number", "null"],
       "minimum": 0
     },
     "height": {
-      "type": "number",
+      "type": ["number", "null"],
       "minimum": 0
     },
     "observation": {

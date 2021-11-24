@@ -15,13 +15,11 @@ setUpGlobalHooks();
 describe('POST /auth/local/login', () => {
 
   let app;
-  let testStart;
   let baseRequestFactory;
 
   beforeEach(async () => {
     await resetDatabase();
     ({ app } = createApplicationWithMocks());
-    testStart = new Date();
 
     baseRequestFactory = user => freeze({
       method: 'POST',
@@ -50,7 +48,7 @@ describe('POST /auth/local/login', () => {
       .to.have.status(200)
       .and.to.have.jsonBody({
         token: token => expect(token).to.be.jwtToken({
-          iat: iat => expect(iat).to.be.immediatelyAfter(testStart),
+          iat: iat => expect(iat).to.be.a('number'),
           id: user.id
         }),
         user: {

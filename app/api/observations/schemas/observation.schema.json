@@ -8,7 +8,7 @@
     },
     "date_created": {
       "type": "string",
-      "format": "date-time"
+      "format": "date"
     },
     "observation": {
       "type": "string"
@@ -16,27 +16,42 @@
     "state": {
       "$ref": "ObservationState$"
     },
+    "date_validated": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ]
+    },
     "remark": {
       "type": ["string", "null"]
     },
     "download_timestamp": {
-      "type": ["boolean", "null"]
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type":"string",
+          "format": "date-time"
+        }
+      ]
     },
     "coord_x": {
-      "type": "number",
-      "minimum": 0
+      "type": ["number", "null"]
     },
     "coord_y": {
-      "type": "number",
-      "minimum": 0
+      "type": ["number", "null"]
     },
     "width": {
-      "type": "number",
-      "minimum": 0
+      "type": ["number", "null"]
     },
     "height": {
-      "type": "number",
-      "minimum": 0
+      "type": ["number", "null"]
     },
     "image": {
       "type": "object",
@@ -61,7 +76,7 @@
             }
           },
           "additionalProperties": false,
-          "required": ["id", "name"]
+          "required": ["name"]
         },
         "collection": {
           "type": "object",

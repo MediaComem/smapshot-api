@@ -6,15 +6,32 @@ const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../
 
 const Op = Sequelize.Op;
 
-exports.getList = utils.route(async (req, res) => {
+//get observations according to the different roles of the user: superAdmin, owner or volunteer
+const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
   const lang = req.getLocale();
-  const isSuperUser = req.user ? req.user.isSuperAdmin() : false;
-  const userOwnerId = req.user ? req.user.owner_id : undefined;
+  const userOwnerId = onlyOwner ? req.user.owner_id : undefined;
+  const userId = onlyUser? req.user.id : undefined;
 
+  //only owner administrator, validator or user can see non validated observations related to them
+  let states = req.query.state;
+  //check if user is allowed to retrieve the state provided
+  if (!isSuperUser && !onlyOwner && !onlyUser) {
+    if (typeof(states) === 'string') { //if request contains one state
+      if (states && states !== "validated") {
+        return []; //return empty array if not allowed
+      }
+    } else if (states instanceof Array) { //if request contains more than one state
+      const allowedStates = states.filter(state => state === 'validated');
+      states = allowedStates;
+    } else { //if no state is provided, provide only validated
+      states = "validated";
+    }
+  }
+  
   let whereObs = {
     id: inUniqueOrList(req.query.id),
     image_id: inUniqueOrList(req.query.image_id),
-    state: req.user ? inUniqueOrList(req.query.state) : 'validated', // if not authenticated allow only validated
+    state: inUniqueOrList(states),
     date_created: {
       [Op.gte]: req.query.date_created_min,
       [Op.lte]: req.query.date_created_max
@@ -39,12 +56,29 @@ exports.getList = utils.route(async (req, res) => {
   const whereCollections = { id: inUniqueOrList(req.query.collection_id) };
   const cleanedWhereCollections = cleanProp(whereCollections);
 
+  let volunteer_ids = req.query.volunteer_id;
+  if (onlyUser) { //get observations related to the volunteer role of the user if the option is set to true
+    if (typeof(volunteer_ids) ==='number') {
+      if (volunteer_ids && volunteer_ids !== userId) {
+        return [] //do not return anything for the onlyUser role
+      } 
+    } else if (volunteer_ids instanceof Array){
+      if (volunteer_ids.includes(userId)) {
+        volunteer_ids = userId; //return only user observation for the onlyUser role
+      } else {
+        return [] //do not return anything for onlyUser role
+      }
+    } else { //no volunteer_ids provided
+      volunteer_ids = userId;
+    }
+  }
+
   const whereVolunteers = {
-    id: inUniqueOrList(req.query.volunteer_id),
+    id: inUniqueOrList(volunteer_ids),
     username: inUniqueOrList(iLikeFormatter(req.query.username_volunteer))
   };
   const cleanedWhereVolunteers = cleanProp(whereVolunteers);
-  const attributes = [ // if not authenticated, remark is not shown
+  const attributes = [
     "id",
     "date_created",
     "observation",
@@ -62,10 +96,9 @@ exports.getList = utils.route(async (req, res) => {
     attributes: [],
     required: false
   };
-  if (isSuperUser || req.user && req.user.owner_id) {
-    // display remark only for super admin and owner validator
+  if (isSuperUser || onlyOwner || onlyUser) {
+    // return remark and validator attributes only for super admin, owner of collection or the author of the observation
     attributes.push("remark");
-    // return validator attributes only for super admin or owner admin
     validator = {
       model: models.users,
       as: "validator",
@@ -77,8 +110,6 @@ exports.getList = utils.route(async (req, res) => {
 
   const queryPromise = models.observations.findAll({
     attributes,
-    limit: req.query.limit || 30,
-    offset: req.query.offset || 0,
     where: cleanedWhereObs,
     order: [["id"]],
     include: [
@@ -120,7 +151,72 @@ exports.getList = utils.route(async (req, res) => {
   let observations = await utils.handlePromise(queryPromise, {
     message: "Observations cannot be retrieved."
   });
-  res.status(200).send(observations);
+
+  return observations;
+}
+
+exports.getList = utils.route(async (req, res) => {
+  const isSuperUser = req.user ? req.user.isSuperAdmin() : false;
+  const isOwnerAdmin = req.user ? req.user.isOwnerAdmin() : false;
+  const isOwnerValidator = req.user ? req.user.isOwnerValidator() : false;
+
+  //get observations according to the different roles of the user: superAdmin, owner or volunteer
+  let observationsAll;
+
+  //CASE 1: user has role super admin
+  if(isSuperUser){
+    //get all observations with all attributes
+    observationsAll = await getObservations(req, true/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/); 
+
+  //CASE 2: user has role owner administrator or validator
+  } else if(isOwnerAdmin||isOwnerValidator){
+    //get all observations related to the volunteer role
+    const observationsUser = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, true/*onlyUser*/); 
+
+    //get all observations related to the owner role
+    const observationsPrivate = await getObservations(req, false/*isSuperAdmin*/, true/*onlyOwner*/, false/*onlyUser*/); 
+
+    //get observations with restriction (only validated state, and validator and remark are not shown)
+    const observationsPublic = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/); 
+
+    observationsAll = [...observationsUser, ...observationsPrivate, ...observationsPublic];
+
+    //CASE 3: user is not a super admin or an owner administrator/validator
+  } else if(req.user){
+    //get all observations related to the volunteer role
+    const observationsUser = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, true/*onlyUser*/);
+
+    //get observations with restriction (only validated, and validator and remark are not shown)
+    const observationsPublic = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/);
+
+    observationsAll = [...observationsUser, ...observationsPublic];
+
+    //CASE 4: user not authenticated
+  } else if(!req.user){
+    //get observations with restriction (only validated, and validator and remark are not shown)
+    observationsAll = await getObservations(req, false/*isSuperAdmin*/, false/*onlyOwner*/, false/*onlyUser*/);
+  }
+  
+  //RETURN
+  
+  //loop to suppress duplicated values
+  const ids = [];
+  const observationsUnique = [];
+  for (const obs of observationsAll) {
+    if (ids.includes(obs.id)) {
+      continue;
+    }
+    ids.push(obs.id);
+    observationsUnique.push(obs);
+  }
+
+  //limit and offset
+  const offsetList = req.query.offset || 0;
+  const limitList = req.query.limit || 30;
+
+  res.status(200).send(observationsUnique.slice(offsetList).slice(0,limitList));
+  return;
+  
 });
 
 exports.getRanking = utils.route(async (req, res) => {

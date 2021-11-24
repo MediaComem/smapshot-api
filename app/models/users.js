@@ -122,6 +122,14 @@ module.exports = (sequelize, DataTypes) => {
     return this.hasRole('super_admin');
   };
 
+  Users.prototype.isOwnerAdmin = function isOwnerAdmin() {
+    return this.hasRole('owner_admin');
+  };
+
+  Users.prototype.isOwnerValidator = function isOwnerValidator() {
+    return this.hasRole('owner_validator');
+  };
+
   Users.prototype.validPassword = function compare(password) {
     return bcrypt.compare(password, this.password);
   };

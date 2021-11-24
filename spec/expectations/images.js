@@ -11,7 +11,7 @@ const { compactObject } = require('../utils/fixtures');
  */
 exports.getExpectedImage = (image, options = {}) => {
   const { id, owner_id, collection_id, width, height, latitude, longitude,
-    date_shot, date_shot_min, date_shot_max, is_published } = image;
+    date_shot, date_georef, date_shot_min, date_shot_max, is_published } = image;
   const {
     media: expectedMedia,
     ...extraProperties
@@ -25,6 +25,7 @@ exports.getExpectedImage = (image, options = {}) => {
     owner_id,
     collection_id,
     width, height,
+    date_georef: date_georef === null ? null : date_georef.toISOString().slice(0,10),
     // The latitude and longitude returned by the API are computed and may not
     // be exactly equal to the original values from the fixtures.
     latitude: latitude === null ? null : actual => expect(actual).to.be.closeToWithPrecision(latitude),
