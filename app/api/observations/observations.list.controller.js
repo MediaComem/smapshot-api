@@ -241,6 +241,11 @@ exports.getList = utils.route(async (req, res) => {
     observationsUnique.push(obs);
   }
 
+  //order by id
+  observationsUnique.sort(function(obs1, obs2) {
+    return obs2.id - obs1.id;
+  });
+
   //limit and offset
   const offsetList = req.query.offset || 0;
   const limitList = req.query.limit || 30;
