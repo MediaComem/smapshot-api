@@ -110,12 +110,12 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation1, options),
-          getExpectedObservation(observation2, options),
-          getExpectedObservation(observation3, options),
-          getExpectedObservation(observation4, options),
-          getExpectedObservation(observation5, options),
           getExpectedObservation(observation6, options),
+          getExpectedObservation(observation5, options),
+          getExpectedObservation(observation4, options),
+          getExpectedObservation(observation3, options),
+          getExpectedObservation(observation2, options),
+          getExpectedObservation(observation1, options)
           
         ])
         .and.to.matchResponseDocumentation();
@@ -151,9 +151,9 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation1, options),
-          getExpectedObservation(observation4, options),
           getExpectedObservation(observation6, options),
+          getExpectedObservation(observation4, options),
+          getExpectedObservation(observation1, options)
         ])
         .and.to.matchResponseDocumentation();
 
@@ -188,9 +188,9 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation1, options),
-          getExpectedObservation(observation2, options),
           getExpectedObservation(observation3, options),
+          getExpectedObservation(observation2, options),
+          getExpectedObservation(observation1, options)
         ])
         .and.to.matchResponseDocumentation();
 
@@ -218,10 +218,10 @@ describe('GET /observations', () => {
         .to.have.status(200)
         .and.have.jsonBody([
           getExpectedObservation(observationOwnerAdmin, options={ remark: true, validator: true }), // their observation
-          getExpectedObservation(observation1, options={ remark: true, validator: true }), // observation from their collection: validated
-          getExpectedObservation(observation4, options={ remark: true, validator: true }), // observation from their collection: rejected
-          getExpectedObservation(observation6, options={ remark: true, validator: true }), // observation from their collection: created
-          getExpectedObservation(observation5, options={ remark: false, validator: false }), // public observation validated  
+          getExpectedObservation(observation6, options={ remark: true, validator: true }), // observation from their collection: created  
+          getExpectedObservation(observation5, options={ remark: false, validator: false }), // public observation validated   
+          getExpectedObservation(observation4, options={ remark: true, validator: true }), // observation from their collection: rejected                           
+          getExpectedObservation(observation1, options={ remark: true, validator: true }) // observation from their collection: validated
         ])
         .and.to.matchResponseDocumentation();
       
@@ -249,10 +249,10 @@ describe('GET /observations', () => {
         .to.have.status(200)
         .and.have.jsonBody([
           getExpectedObservation(observationOwnerValidator, options={ remark: true, validator: true }), // their observation
-          getExpectedObservation(observation1, options={ remark: true, validator: true }), // observation from their collection: validated
-          getExpectedObservation(observation4, options={ remark: true, validator: true }), // observation from their collection: rejected
           getExpectedObservation(observation6, options={ remark: true, validator: true }), // observation from their collection: created
-          getExpectedObservation(observation5, options={ remark: false, validator: false }), // public observation validated  
+          getExpectedObservation(observation5, options={ remark: false, validator: false }), // public observation validated            
+          getExpectedObservation(observation4, options={ remark: true, validator: true }), // observation from their collection: rejected
+          getExpectedObservation(observation1, options={ remark: true, validator: true }) // observation from their collection: validated
         ])
         .and.to.matchResponseDocumentation();
 
@@ -280,8 +280,8 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation4, options={ remark: true, validator: true }), // observation from their collection: rejected
           getExpectedObservation(observation6, options={ remark: true, validator: true }), // observation from their collection: created
+          getExpectedObservation(observation4, options={ remark: true, validator: true }) // observation from their collection: rejected
         ])
         .and.to.matchResponseDocumentation();
 
@@ -307,10 +307,10 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation1, options={ remark: true, validator: true }), //their observation: validated
-          getExpectedObservation(observation2, options={ remark: true, validator: true }), //their observation: rejected
+          getExpectedObservation(observation5, options={ remark: false, validator: false }), //public observation validated
           getExpectedObservation(observation3, options={ remark: true, validator: true }), //their observation: created
-          getExpectedObservation(observation5, options={ remark: false, validator: false }) //public observation validated
+          getExpectedObservation(observation2, options={ remark: true, validator: true }), //their observation: rejected
+          getExpectedObservation(observation1, options={ remark: true, validator: true }) //their observation: validated
         ])
         .and.to.matchResponseDocumentation();
 
@@ -336,8 +336,8 @@ describe('GET /observations', () => {
       expect(res)
         .to.have.status(200)
         .and.have.jsonBody([
-          getExpectedObservation(observation1, options), //public validated observation
-          getExpectedObservation(observation5, options) //public validated observation
+          getExpectedObservation(observation5, options), //public validated observation
+          getExpectedObservation(observation1, options) //public validated observation
         ])
         .and.to.matchResponseDocumentation();
 

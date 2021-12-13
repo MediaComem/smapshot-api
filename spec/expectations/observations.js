@@ -58,6 +58,7 @@ exports.getExpectedObservation = (
 ) => {
   const {
     locale: locale,
+    media: expectedMedia,
     remark: expectedRemark,
     validator: expectedValidator,
     ...extraProperties
@@ -109,6 +110,18 @@ exports.getExpectedObservation = (
 
   if (expectedRemark) {
     expected.remark = remark;
+  }
+
+  if (expectedMedia === undefined) {
+    expected.image.media = {
+      image_url: `http://localhost:1337/data/collections/${image.collection.id}/images/500/${image.id}.jpg`,
+      tiles: {
+        type: "dzi",
+        url: `http://localhost:1337/data/collections/${image.collection.id}/images/tiles/${image.id}.dzi`
+      }
+    };
+  } else if (expectedMedia !== false) {
+    expected.image.media = expectedMedia;
   }
 
   return compactObject(expected);

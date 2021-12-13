@@ -90,6 +90,29 @@
           },
           "additionalProperties": false,
           "required": ["id", "name"]
+        },
+        "media": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "image_url": {
+              "type": "string"
+            },
+            "tiles": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "url": {
+                "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false,
