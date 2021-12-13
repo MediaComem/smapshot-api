@@ -2,7 +2,9 @@ const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const utils = require("../../utils/express");
+const config = require('../../../config');
 const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../../utils/params");
+const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
 const Op = Sequelize.Op;
 
@@ -27,7 +29,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
       states = "validated";
     }
   }
-  
+
   let whereObs = {
     id: inUniqueOrList(req.query.id),
     image_id: inUniqueOrList(req.query.image_id),
@@ -61,7 +63,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
     if (typeof(volunteer_ids) ==='number') {
       if (volunteer_ids && volunteer_ids !== userId) {
         return [] //do not return anything for the onlyUser role
-      } 
+      }
     } else if (volunteer_ids instanceof Array){
       if (volunteer_ids.includes(userId)) {
         volunteer_ids = userId; //return only user observation for the onlyUser role
@@ -107,8 +109,25 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
     }
   }
 
+  const media = [
+    models.sequelize.literal(
+      `(case
+      when iiif_data IS NOT NULL
+      THEN case
+        WHEN iiif_data->>'size_info' IS NOT NULL
+          THEN json_build_object('image_url', NULL,
+                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+          else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'),
+                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+        end
+      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',observations.image_id,'.jpg'),
+                             'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/', observations.image_id,'.dzi')))
+      end)`
+    ),
+    "media"
+  ];
 
-  const queryPromise = models.observations.findAll({
+  const observations = await models.observations.findAll({
     attributes,
     where: cleanedWhereObs,
     order: [["id"]],
@@ -117,7 +136,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
       ...(!req.query.image_id ?
       [{
         model: models.images,
-        attributes: ["id", "original_id", "title", "is_published"],
+        attributes: ["id", "original_id", "title", "is_published", "iiif_data", media],
         where: cleanedWhereImages,
         include: [
           {
@@ -134,7 +153,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
       }]: [
         {
           model: models.images,
-          attributes: ["id", "original_id", "title", "is_published"],
+          attributes: ["id", "original_id", "title", "is_published", "iiif_data", media],
           where: cleanedWhereImages
         }
       ]),
@@ -148,8 +167,20 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
     ]
   });
 
-  let observations = await utils.handlePromise(queryPromise, {
-    message: "Observations cannot be retrieved."
+
+  const iiifLevel0Promise = [];
+  observations.forEach(observation => {
+    const image = observation.dataValues.image.dataValues;
+    if (image.media && image.media.image_url === null &&
+      iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
+      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+    }
+  })
+
+  await Promise.all(iiifLevel0Promise);
+
+  observations.forEach(observation => {
+    delete observation.dataValues.image.dataValues.iiif_data;
   });
 
   return observations;
