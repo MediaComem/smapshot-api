@@ -132,7 +132,7 @@ const getCollections = async (req, res) => {
   // Check if banner URL exist (if not check if iiif level 0 server)
   collections.forEach((collection) => {
     const media = collection.dataValues.media;
-    const banner = collection.dataValues.banner.dataValues;
+    const banner = collection.dataValues.banner ? collection.dataValues.banner.dataValues : null;
     if (media && media.banner_url === null &&
       iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
       iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
@@ -331,7 +331,7 @@ exports.getList = route(async (req, res) => {
 
   collections.forEach((collection) => {
     const media = collection.media;
-    const banner = collection.banner.dataValues;
+    const banner = collection.banner ? collection.banner.dataValues : null;
     if (media && media.banner_url === null &&
       iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
       iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
@@ -439,7 +439,7 @@ exports.getById = route(async (req, res) => {
   const iiifLevel0Promise = [];
 
   const mediaInfo = media.dataValues.media;
-  const banner = media.dataValues.banner.dataValues;
+  const banner = media.dataValues.banner ? media.dataValues.banner.dataValues : null;
   if (mediaInfo && mediaInfo.banner_url === null &&
     iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
     iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
