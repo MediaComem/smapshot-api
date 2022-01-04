@@ -5,6 +5,8 @@ module.exports = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        allowNull: false,
+        autoIncrement: true, // Automatically gets converted to SERIAL for postgres
         unique: true
       },
       first_name: {
@@ -24,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       freezeTableName: true // Model tableName will be the same as the model name
     }
   );
+
+  Photographers.associate = models => {
+    Photographers.belongsToMany(models.images, { through: 'images_photographers', as: 'images', foreignKey: 'photographer_id' });
+  };
 
   return Photographers;
 };

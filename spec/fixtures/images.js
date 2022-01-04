@@ -5,6 +5,8 @@ const { sequelize } = require('../../app/models');
 const { chance } = require('../utils/chance');
 const { get, getOrGenerate, getOrGenerateAssociation } = require('../utils/fixtures');
 const { createCollection } = require('./collections');
+const { createPhotographer } = require('./photographers');
+const { createImagesPhotographers } = require('./images_photographers');
 const { createAPrioriLocation } = require('./apriori_locations')
 /**
  * Inserts an image into the database. Column values that are not provided will
@@ -16,6 +18,7 @@ const { createAPrioriLocation } = require('./apriori_locations')
  *   or `collection`).
  * * The owner of the image (unless provided with `owner_id` or `owner`). It
  *   defaults to the owner of the generated collection.
+ * * The photographer of the image (anonym, unless `photographers` provided).
  *
  * If no collection or owner are provided, they are randomly generated. The
  * owner of the image will be the same as the owner of the collection.
@@ -28,7 +31,7 @@ const { createAPrioriLocation } = require('./apriori_locations')
 exports.createImage = async (options = {}) => {
   const view_types = [ null, 'terrestrial', 'lowOblique', 'highOblique', 'nadir' ];
 
-  let { owner, user, longitude, latitude, altitude, apriori_longitude, apriori_latitude, apriori_azimuth, apriori_exact } = options;
+  let { owner, user, longitude, latitude, altitude, apriori_longitude, apriori_latitude, apriori_azimuth, apriori_exact, photographers } = options;
   // ensure owner is consistent if given
   options.collection = { ...pick(options, "owner", "owner_id"), ...options.collection };
   const { collection, collection_id } = await getOrGenerateAssociation(options, createCollection, 'collection');
@@ -69,7 +72,6 @@ exports.createImage = async (options = {}) => {
     px: get(options, 'px', null),
     py: get(options, 'py', null),
     location: location,
-    photographer_id: get(options, 'photographer_id', null),
     user_id: get(options, 'user_id', user_id),
     geotags_array: get(options, 'geotags_array', []),
     view_type: get(options, 'view_type', chance.pickone(view_types)),
@@ -117,7 +119,7 @@ exports.createImage = async (options = {}) => {
       (
         collection_id, owner_id, name, date_inserted, date_shot, date_georef,
         link, license, azimuth, tilt, roll, focal, px, py, location,
-        photographer_id, user_id, geotags_array, view_type, apriori_altitude,
+        user_id, geotags_array, view_type, apriori_altitude,
         validator_id, is_published, exact_date, date_shot_min, date_shot_max, original_id,
         link_id, title, caption, height, width, orig_title, orig_caption,
         correction_enabled, observation_enabled, download_link, date_orig,
@@ -129,7 +131,7 @@ exports.createImage = async (options = {}) => {
       VALUES (
         :collection_id, :owner_id, :name, :date_inserted, :date_shot, :date_georef,
         :link, :license, :azimuth, :tilt, :roll, :focal, :px, :py, ${location},
-        :photographer_id, :user_id, array[:geotags_array]::text[], :view_type, :apriori_altitude,
+        :user_id, array[:geotags_array]::text[], :view_type, :apriori_altitude,
         :validator_id, :is_published, :exact_date, :date_shot_min, :date_shot_max, :original_id,
         :link_id, :title, :caption, :height, :width, :orig_title, :orig_caption,
         :correction_enabled, :observation_enabled, :download_link, :date_orig,
@@ -149,7 +151,7 @@ exports.createImage = async (options = {}) => {
   const rows = result[0];
   const insertedImage = rows[0];
 
-  // generate apriori_location if given (at least aprioir longitude and latitude required)
+  // generate apriori_location if given (at least apriori longitude and latitude required)
   if (apriori_longitude && apriori_latitude){
     await createAPrioriLocation({
       image_id: insertedImage.id,
@@ -161,6 +163,22 @@ exports.createImage = async (options = {}) => {
     });
   }
 
+  //generate photographers association
+  const insertedPhotographers=[];
+  if (photographers) { //photographers provided
+    insertedPhotographers.push(...photographers);
+  } else {
+    //none provided
+    const photographerAnonym = await createPhotographer({ first_name: null, last_name: 'Anonyme', link: null, company: null });
+    insertedPhotographers.push(photographerAnonym);
+  }
+  for (const insertedPhotographer of insertedPhotographers) {
+    await createImagesPhotographers({
+      image_id: insertedImage.id,
+      photographer_id: insertedPhotographer.id
+    })
+  }
+
   return {
     ...columns,
     collection,
@@ -169,6 +187,7 @@ exports.createImage = async (options = {}) => {
     latitude: latitude,
     longitude: longitude,
     altitude: altitude,
+    photographers: insertedPhotographers,
     id: insertedImage.id
   };
 };
