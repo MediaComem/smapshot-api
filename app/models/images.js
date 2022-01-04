@@ -16,11 +16,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true
       },
-      photographer_id: {
-        // Name of the photographer
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
       user_id: {
         // User
         type: DataTypes.INTEGER,
@@ -62,8 +57,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true
       },
+      orig_title: {
+        // Original image title
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
       caption: {
-        // original identifier which links the metadata with the image file
+        // Image caption
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      orig_caption: {
+        // Original image caption
         type: DataTypes.TEXT,
         allowNull: true
       },
@@ -281,6 +286,9 @@ module.exports = (sequelize, DataTypes) => {
       original_state: {
         type: DataTypes.TEXT,
         defaultValue: 'initial'
+      },
+      iiif_data: {
+        type: DataTypes
       }
     },
     {
@@ -291,7 +299,7 @@ module.exports = (sequelize, DataTypes) => {
   Images.associate = models => {
     Images.belongsTo(models.owners, { foreignKey: "owner_id" });
     Images.belongsTo(models.collections, { foreignKey: "collection_id" });
-    Images.belongsTo(models.photographers, { foreignKey: "photographer_id" });
+    Images.belongsToMany(models.photographers, { through: 'images_photographers', as: 'photographer', foreignKey: 'image_id' }); 
     Images.hasMany(models.apriori_locations, { foreignKey: "image_id" });
     Images.hasMany(models.observations, { foreignKey: "image_id" });
     Images.hasMany(models.images_views, { foreignKey: "image_id", as: "views" });

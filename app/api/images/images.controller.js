@@ -5,7 +5,7 @@ const models = require("../../models");
 const { userHasRole } = require("../../utils/authorization");
 const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
-const { notFoundError } = require('../../utils/errors');
+const { notFoundError, requestBodyValidationError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
 const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 
@@ -314,37 +314,54 @@ exports.getAttributes = utils.route(async (req, res) => {
       {
         model: models.collections,
         attributes: ["id", [getFieldI18n('collection', 'name', lang), "name"], "link"]
-      },
-      {
-        model: models.photographers,
-        as: "photographer",
-        attributes: ["id", [
-          models.Sequelize.literal(`
-            CASE
-            WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL AND company IS NOT NULL
-            	THEN photographer.first_name || ' ' || photographer.last_name || ', ' || company
-            WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL
-            	THEN photographer.first_name || ' ' || photographer.last_name
-            WHEN photographer.last_name IS NOT NULL AND photographer.company IS NOT NULL
-              THEN photographer.last_name || ', ' || photographer.company
-            WHEN photographer.first_name IS NOT NULL
-            	THEN photographer.first_name
-            WHEN photographer.last_name IS NOT NULL
-            	THEN photographer.last_name
-            WHEN photographer.company IS NOT NULL
-            	THEN photographer.company
-            ELSE 'unknown'
-            END
-            `), "name"], "link"]
       }
     ],
-    group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id", "photographer.id"],
+    group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id"],
     where
   });
 
   if (results === null) {
     throw notFoundError(req);
   }
+    
+  //add photographers
+  const resultsPhotographers = await models.images.findOne({
+    attributes: [],
+    include: [
+      {
+        model: models.photographers,
+        as: "photographer",
+        attributes: [
+          "id", 
+          [models.Sequelize.literal(`
+            CASE
+            WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL AND company IS NOT NULL
+              THEN photographer.first_name || ' ' || photographer.last_name || ', ' || company
+            WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL
+              THEN photographer.first_name || ' ' || photographer.last_name
+            WHEN photographer.last_name IS NOT NULL AND photographer.company IS NOT NULL
+              THEN photographer.last_name || ', ' || photographer.company
+            WHEN photographer.first_name IS NOT NULL
+              THEN photographer.first_name
+            WHEN photographer.last_name IS NOT NULL
+              THEN photographer.last_name
+            WHEN photographer.company IS NOT NULL
+              THEN photographer.company
+            ELSE 'unknown'
+            END
+            `),"name"], 
+          "link"
+        ],
+        group: ["photographer.image_id"]
+      }
+    ],
+    where
+  });
+
+  resultsPhotographers.dataValues.photographer.forEach((photographer) => {
+    delete photographer.dataValues.images_photographers;
+  });
+  results.dataValues.photographers = resultsPhotographers.dataValues.photographer;
 
   const iiifLevel0Promise = [];
 
@@ -403,6 +420,274 @@ exports.getFootprint = utils.route(async (req, res) => {
   res.status(200).send(result);
 });
 
+// POST /images
+// ==================
+
+exports.submitImage = utils.route(async (req, res) => {
+  
+  //CHECKS
+  //check image does not exist already
+  const existingImage = await models.images.findOne({
+    where: {
+      original_id: req.body.original_id,
+      collection_id: req.collection.id
+    }
+  });
+
+  if (existingImage) {
+    throw requestBodyValidationError(req, [
+      {
+        location: 'body',
+        path: '',
+        message: req.__('images.submitted.originalIdAlreadyExist'),
+        validation: 'imageOriginalIdExist'
+      }
+    ])
+  } 
+
+  //check if given photographers already exist and find them
+  let req_photographer_ids = req.body.photographer_ids;
+  if (!req_photographer_ids || req_photographer_ids.length === 0) {
+    req_photographer_ids = [3]; /* anonyme */
+  }
+  //throw error if no photographer with given id is found
+  const res_photographers = await findPhotographers(req, req_photographer_ids)
+
+
+  //CREATE ATTRIBUTES
+
+  //exact date
+  let exact_date_req;
+  if (req.body.date_shot) {
+    exact_date_req = true;
+  } else if (req.body.date_shot_min && req.body.date_shot_max) {
+    exact_date_req = false;
+  } else {
+    //if no date given throw error
+    throw requestBodyValidationError(req, [
+      {
+        location: 'body',
+        path: '',
+        message: req.__('images.submitted.dateRequired'),
+        validation: 'imageDateRequired'
+      }
+    ])
+  }
+
+  //INSERT IMAGE AND APRIORI LOCATION IN DATABASE
+
+  //table images
+  const newImage = await models.images.create({
+    original_id: req.body.original_id,
+    state: 'initial',
+    owner_id: req.collection.owner_id,
+    collection_id: req.collection.id,
+    is_published: req.body.is_published,
+    name: req.body.name,
+    date_inserted: models.sequelize.literal("current_timestamp"),
+    exact_date: exact_date_req,
+    iiif_data: {
+      image_service3_url: req.body.iiif_link
+    },
+    title: req.body.title,
+    orig_title: req.body.title,
+    caption: req.body.caption,
+    orig_caption: req.body.caption,
+    license: req.body.license,
+    download_link: req.body.download_link,
+    link: req.body.link,
+    shop_link: req.body.shop_link,
+    observation_enabled: req.body.observation_enabled,
+    correction_enabled: req.body.correction_enabled,
+    view_type: req.body.view_type,
+    height: req.body.height,
+    width: req.body.width,
+    date_orig: req.body.date_orig,
+    date_shot: req.body.date_shot,
+    date_shot_min: req.body.date_shot_min,
+    date_shot_max: req.body.date_shot_max,
+    apriori_altitude: req.body.apriori_location.altitude,
+  });
+
+  //add association in join table images_photographers
+  newImage.addPhotographer(res_photographers);
+
+  //table apriori_location
+  const req_apriori_location= req.body.apriori_location;
+  const longitude = req_apriori_location.longitude;
+  const latitude = req_apriori_location.latitude;
+  const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 0;
+  
+  const apriori_location_json = models.sequelize.fn(
+    "ST_SetSRID",
+    models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude ),
+    "4326"
+  );
+
+  const newAprioriLocation = await models.apriori_locations.create({
+    image_id: newImage.id,
+    original_id: newImage.original_id,
+    geom: apriori_location_json,
+    azimuth: req_apriori_location.azimuth,
+    exact: req_apriori_location.exact
+  });
+
+  //RESULTS SENT
+  const posted_image = newImage.dataValues
+
+  const posted_apriori_location = {
+    geom: newAprioriLocation.dataValues.geom, 
+    azimuth: parseFloat(newAprioriLocation.dataValues.azimuth),
+    exact: newAprioriLocation.dataValues.exact
+  }
+  posted_image.apriori_location = posted_apriori_location;
+  if (posted_image.apriori_altitude) {
+    posted_image.apriori_altitude = parseFloat(posted_image.apriori_altitude)
+  }
+
+  posted_image.photographers = res_photographers;
+  posted_image.geotags_array = null //to not send empty array
+
+  Object.keys(posted_image).forEach((property) => posted_image[property] === null && delete posted_image[property]);
+
+  res.status(201).send(posted_image);
+});
+
+// PUT /images/:id/attributes
+// ==========================
+
+exports.updateAttributes = utils.route(async (req, res) => {
+
+  //if width/height updated, check if image is already georeferenced
+  if (req.image.date_georef && (req.body.width || req.body.height || req.body.iiif_link) ) {
+
+    throw requestBodyValidationError(req, [
+      {
+        location: 'body',
+        path: '',
+        message: req.__('Image already georeferenced, iiif link or dimensions can\'t be changed.'),
+        validation: 'DimensionsAndIIIFUnmodifiables'
+      }
+    ])
+  }
+
+  //UPDATE PHOTOGRAPHERS
+  let req_photographer_ids = req.body.photographer_ids;
+  if (req_photographer_ids && req_photographer_ids.length !== 0) {
+
+    //check if given photographers id exist and throw error if not
+    const res_photographers = await findPhotographers(req, req_photographer_ids);
+
+    //delete any old associations in join table images_photographers
+    const imgPhotograph = await models.images.findOne({
+      where: {
+        id: req.image.id
+      },
+      include: {
+        model: models.photographers,
+        as: "photographer"
+      }
+    });
+    const oldPhotographers = [...imgPhotograph.dataValues.photographer];
+    req.image.removePhotographer(oldPhotographers);
+
+    //add new association in join table images_photographers
+    req.image.addPhotographer(res_photographers);
+  }
+
+  //UPDATE DATES
+  if (req.body.date_shot !== undefined || req.body.date_shot_min !== undefined || req.body.date_shot_max != undefined) {
+    
+    //check if date_shot OR date_shot_min + max still exist after request
+    const new_date_shot = req.body.date_shot !== undefined ? req.body.date_shot : req.image.date_shot;
+    const new_date_shot_min = req.body.date_shot_min !== undefined ? req.body.date_shot_min : req.image.date_shot_min;
+    const new_date_shot_max = req.body.date_shot_max != undefined ? req.body.date_shot_max : req.image.date_shot_max;
+    
+    if (!new_date_shot && (!new_date_shot_min || !new_date_shot_max)) {
+      throw requestBodyValidationError(req, [
+        {
+          location: 'body',
+          path: '',
+          message: req.__('images.submitted.dateRequired'),
+          validation: 'imageDateRequired'
+        }
+      ]);
+    }
+    //update image
+    const exact_date_req = new_date_shot ? true : false;
+
+    await req.image.update({
+      exact_date: exact_date_req,
+      date_shot: req.body.date_shot,
+      date_shot_min: req.body.date_shot_min,
+      date_shot_max: req.body.date_shot_max
+    });
+  }
+
+  //UPDATE A PRIORI LOCATIONS
+  if (req.body.apriori_location) {
+    const req_apriori_location= req.body.apriori_location;
+    const longitude = req_apriori_location.longitude;
+    const latitude = req_apriori_location.latitude;
+    const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 0;
+    
+    const apriori_location_json = models.sequelize.fn(
+      "ST_SetSRID",
+      models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude ),
+      "4326"
+    );
+
+    //delete previous a priori locations
+    await models.apriori_locations.destroy({
+      where: {
+        image_id: req.image.id
+      }
+    });
+    
+    //create new apriori locations
+    await models.apriori_locations.create({
+      image_id: req.image.id,
+      original_id: req.image.original_id,
+      geom: apriori_location_json,
+      azimuth: req_apriori_location.azimuth,
+      exact: req_apriori_location.exact
+    });
+
+    //update image
+    await req.image.update({
+      apriori_altitude: req_apriori_location.altitude,
+    });
+  }
+
+  //UPDATE IMAGE OTHER ATTRIBUTES
+  await req.image.update({
+    is_published: req.body.is_published,
+    name: req.body.name,
+    iiif_data: {
+      image_service3_url: req.body.iiif_link
+    },
+    title: req.body.title,
+    orig_title: req.body.title,
+    caption: req.body.caption,
+    orig_caption: req.body.caption,
+    license: req.body.license,
+    download_link: req.body.download_link,
+    link: req.body.link,
+    shop_link: req.body.shop_link,
+    observation_enabled: req.body.observation_enabled,
+    correction_enabled: req.body.correction_enabled,
+    view_type: req.body.view_type,
+    height: req.body.height,
+    width: req.body.width,
+    date_orig: req.body.date_orig
+  });
+
+  res.status(200).send({
+    message: "Image attributes have been updated."
+  });
+});
+
+
 // Utility functions & middlewares
 // ===============================
 
@@ -423,3 +708,43 @@ exports.findImage = utils.route(async (req, res, next) => {
   req.image = image;
   next();
 });
+
+exports.findCollection = utils.route(async (req, res, next) => {
+  const { where } = getOwnerScope(req);
+
+  const collection = await models.collections.findOne({
+    where: {
+      ...where,
+      id: req.body.collection_id
+    }
+  });
+
+  if (!collection) {
+    throw notFoundError(req);
+  }
+
+  req.collection = collection;
+  next();
+});
+
+
+//check if photographers exist and return them if yes when updating or posting images
+async function findPhotographers(req, photographer_ids) {
+  const photographers = await models.photographers.findAll({
+    where: {
+      id: photographer_ids
+    }
+  });
+
+  if ( photographers.length !== photographer_ids.length ) {
+    throw requestBodyValidationError(req, [
+      {
+        location: 'body',
+        path: '',
+        message: req.__('images.submitted.photographerDoesNotExist'),
+        validation: 'imagePhotographerDoesNotExist'
+      }
+    ]);
+  }
+  return photographers
+}

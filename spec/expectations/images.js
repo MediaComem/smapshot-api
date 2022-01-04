@@ -85,7 +85,7 @@ exports.getExpectedImageMetadata = (image, options = {}) => {
 exports.getExpectedImageAttributes = (image, options = {}) => {
   const { id, is_published, caption, link, download_link, shop_link, view_type, correction_enabled, license,
           date_shot, date_shot_min, date_shot_max, width, height,
-          owner, collection, photographer, user,
+          owner, collection, photographers, user,
           latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal,
           observation_enabled
         } = image;
@@ -131,11 +131,17 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
     link: collection.link
   };
 
-  expected.photographer = photographer ? {
-    id: photographer.id,
-    name: photographer.name[expectedLocale],
-    link: photographer.link
-  } : null;
+  photographers.forEach(function expectedPhotographer(photographer) {
+    const first_name = photographer.first_name?` ${photographer.first_name}` :'';
+    const last_name = photographer.last_name? photographer.last_name : '';
+    const company = photographer.company? `, ${photographer.company}` : '';
+    
+    photographer.name = last_name + first_name + company;
+    delete photographer.first_name;
+    delete photographer.last_name;
+    delete photographer.company;
+  });
+  expected.photographers = photographers;
 
   expected.georeferencer = user ? {
     id: user.id,
