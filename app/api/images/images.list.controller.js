@@ -360,19 +360,23 @@ const getImages = async (req, orderkey, count = true) => {
 
 exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
-  const iiifLevel0Promise = [];
-  images.rows.forEach((image) => {
-    const media = image.dataValues.media;
-    if (media && media.image_url === null &&
-        iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
-    }
-  })
-  await Promise.all(iiifLevel0Promise);
 
-  images.rows.forEach((image) => {
-    delete image.dataValues.iiif_data;
-  });
+  if(images.rows) {
+    // Update IIIF link if needed
+    const iiifLevel0Promise = [];
+    images.rows.forEach((image) => {
+      const media = image.dataValues.media;
+      if (media && media.image_url === null &&
+          iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
+        iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
+      }
+    })
+    await Promise.all(iiifLevel0Promise);
+
+    images.rows.forEach((image) => {
+      delete image.dataValues.iiif_data;
+    });
+  }
 
   res.status(200).send(images);
 });
@@ -381,19 +385,22 @@ exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
 
-  const iiifLevel0Promise = [];
-  images.rows.forEach((image) => {
-    const media = image.dataValues.media;
-    if (media && media.image_url === null &&
-        iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
-    }
-  })
-  await Promise.all(iiifLevel0Promise);
+  if(images.rows) {
+    // Update IIIF link if needed
+    const iiifLevel0Promise = [];
+    images.rows.forEach((image) => {
+      const media = image.dataValues.media;
+      if (media && media.image_url === null &&
+          iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
+        iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
+      }
+    })
+    await Promise.all(iiifLevel0Promise);
 
-  images.rows.forEach((image) => {
-    delete image.dataValues.iiif_data;
-  });
+    images.rows.forEach((image) => {
+      delete image.dataValues.iiif_data;
+    });
+  }
 
   // Send flattened objects
   res.status(200).send(images.map(obj => obj.id));
