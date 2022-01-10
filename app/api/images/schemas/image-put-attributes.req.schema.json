@@ -1,0 +1,134 @@
+{
+  "$id": "ImagePutRequest",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "iiif_link": {
+      "type": "string"
+    },
+    "is_published": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": "string"
+    },
+    "caption": {
+      "type": [ "string", "null" ]
+    },
+    "license": {
+      "type": "string"
+    },
+    "download_link": {
+      "type": [ "string", "null" ]
+    },
+    "link": {
+      "type": [ "string", "null" ]
+    },
+    "shop_link": {
+      "type": [ "string", "null" ]
+    },
+    "observation_enabled": {
+      "type": "boolean"
+    },
+    "correction_enabled": {
+      "type": "boolean"
+    },
+    "view_type": {
+      "type": "string",
+      "enum": [
+        "terrestrial",
+        "lowOblique",
+        "highOblique",
+        "nadir"
+      ]
+    },
+    "height": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "example": 3000
+    },
+    "width": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "example": 2000
+    },
+    "date_orig": {
+      "type": ["string","null"]
+    },
+    "date_shot": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "If known, date when the picture was shot/painted."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date_shot_min": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "Required if date_shot is not specified."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date_shot_max": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "Required if date_shot is not specified."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "apriori_location": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "altitude": {
+          "type": [ "number", "null" ]
+        },
+        "azimuth": {
+          "type": [ "number", "null" ]
+        },
+        "exact": {
+          "type": "boolean",
+          "example": "false",
+          "description": "false by default. If true, the camera position will be locked to that exact position during georeferencing."
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "photographer_ids": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

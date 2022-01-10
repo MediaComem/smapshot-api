@@ -1,0 +1,218 @@
+{
+  "$id": "ImagePostResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "date_inserted": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "$ref": "ImageState#"
+    },
+    "original_state": {
+      "$ref": "ImageState#"
+    },
+    "owner_id": {
+      "type": "number"
+    },
+    "exact_date": {
+      "type": "boolean"
+    },
+    "downloaded": {
+      "type": "boolean"
+    },
+    "viewshed_created": {
+      "type": "boolean"
+    },
+    "geotag_created": {
+      "type": "boolean"
+    },
+    "iiif_data": {
+      "type": "object",
+      "properties": {
+        "image_service3_url": {
+          "type": "string"
+        }
+      }
+    },
+    "is_published": {
+      "type": "boolean"
+    },
+    "original_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "orig_title": {
+      "type": "string"
+    },
+    "caption": {
+      "type": [ "string", "null" ]
+    },
+    "orig_caption": {
+      "type": [ "string", "null" ]
+    },
+    "collection_id": {
+      "type": "number"
+    },
+    "license": {
+      "type": "string"
+    },
+    "download_link": {
+      "type": [ "string", "null" ]
+    },
+    "link": {
+      "type": [ "string", "null" ]
+    },
+    "shop_link": {
+      "type": [ "string", "null" ]
+    },
+    "observation_enabled": {
+      "type": "boolean"
+    },
+    "correction_enabled": {
+      "type": "boolean"
+    },
+    "view_type": {
+      "type": "string",
+      "enum": [
+        "terrestrial",
+        "lowOblique",
+        "highOblique",
+        "nadir"
+      ]
+    },
+    "height": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "width": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "name": {
+      "type": "string"
+    },
+    "date_orig": {
+      "type": ["string","null"]
+    },
+    "date_shot": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "If known, date when the picture was shot/painted."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date_shot_min": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "Required if date_shot is not specified."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date_shot_max": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date",
+          "description": "Required if date_shot is not specified."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "apriori_altitude": {
+      "type": ["number", "null"]
+    },
+    "apriori_location": {
+      "type": "object",
+      "properties": {
+        "geom": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "coordinates": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3
+            }
+          }
+        },
+        "azimuth": {
+          "type": ["number", "null"]
+        },
+        "exact": {
+          "type": ["boolean"]
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "photographers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "first_name": {
+            "type": ["string", "null"]
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "company": {
+            "type": ["string", "null"]
+          },
+          "link": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date_inserted",
+    "state",
+    "original_state",
+    "owner_id",
+    "photographers",
+    "exact_date",
+    "iiif_data", 
+    "is_published", 
+    "original_id", 
+    "title", 
+    "collection_id", 
+    "view_type",
+    "license", 
+    "observation_enabled", 
+    "correction_enabled", 
+    "height", 
+    "width", 
+    "name",
+    "apriori_location"
+  ]
+}

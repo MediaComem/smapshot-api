@@ -16,7 +16,36 @@
               $ref: "#/components/schemas/ImageList"
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
+  post:
+      summary: Submit new images.
+      operationId: postImages
+      description: |-
+        ## Authorization
 
+        **Required role:** `owner_admin`.
+
+        **Required fields:** iiif_link, is_published, original_id, title, collection_id, view_type, license, observation_enabled, correction_enabled, height, width, name, [date_shot OR date_shot min and date_shot_max], apriori_locations (longitude, latitude) 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImagePostRequest"
+      responses:
+        "201":
+          description: Successful request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImagePostResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/RequestBodyValidationErrors"
 /images/id:
   get:
     summary: List image IDs.
@@ -221,7 +250,46 @@
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "404":
         $ref: "#/components/responses/NotFoundError"
+  put:
+    summary: Update the attributes of an image.
+    operationId: putImages
+    description: |-
+      ## Authorization
 
+      **Required role:** `owner_admin`.
+
+      If the image has been georeferenced, iiif link, height or width can't be updated.
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ImagePutRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
 /images/{imageId}/lock:
   post:
     summary: Lock an image.

@@ -1,0 +1,96 @@
+/photographers:
+  post:
+      summary: Submit a photographer.
+      operationId: postPhotographer
+      description: |-
+        ## Authorization
+
+        **Required role:** `owner_admin`.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostPhotographerRequest"
+      responses:
+        "201":
+          description: Successful request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photographer"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "422":
+          $ref: "#/components/responses/RequestBodyValidationErrors"
+
+  get:
+    summary: List photographers.
+    operationId: GetPhotographers
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin` or `superadmin`.
+
+    parameters:
+      - name: id
+        in: query
+        description: Filter photographers by id(s).
+        example: 160
+        schema:
+          errorMessage: should be a integer or an array of integers
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
+      - name: first_name
+        in: query
+        description: Filter photographers by first name. Return photographers whose first_name contains the specified value.
+        example: Ella
+        schema:
+          errorMessage: should be a string or an array of strings
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      - name: last_name
+        in: query
+        description: Filter photographers by last name. Return photographers whose last name contains the specified value.
+        example: Maillart
+        schema:
+          errorMessage: should be a string or an array of strings
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+      - name: company
+        in: query
+        description: Filter photographers by company. Return photographers whose company contains the specified value.
+        example: Photo Elysée
+        schema:
+          errorMessage: should be a string or an array of strings
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotographerList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+        

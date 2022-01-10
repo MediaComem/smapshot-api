@@ -194,32 +194,28 @@
         "link"
       ]
     },
-    "photographer": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "name": {
-              "type": "string"
-            },
-            "link": {
-              "type": "string"
-            }
+    "photographers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
           },
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "name",
-            "link"
-          ]
-        }
-      ]
+          "name": {
+            "type": "string"
+          },
+          "link": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "link"
+        ]
+      }
     },
     "pose": {
       "type": "object",

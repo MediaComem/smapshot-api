@@ -154,27 +154,32 @@ exports.getAttributes = utils.route(async (req, res) => {
         {
           model: models.photographers,
           as: "photographer",
-          attributes: ["id", [
-            models.Sequelize.literal(`
+          attributes: [
+            "id", 
+            [models.Sequelize.literal(`
               CASE
               WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL AND company IS NOT NULL
-                  THEN photographer.first_name || ' ' || photographer.last_name || ', ' || company
+                THEN photographer.first_name || ' ' || photographer.last_name || ', ' || company
               WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL
-                  THEN photographer.first_name || ' ' || photographer.last_name
+                THEN photographer.first_name || ' ' || photographer.last_name
               WHEN photographer.last_name IS NOT NULL AND photographer.company IS NOT NULL
                 THEN photographer.last_name || ', ' || photographer.company
               WHEN photographer.first_name IS NOT NULL
-                  THEN photographer.first_name
+                THEN photographer.first_name
               WHEN photographer.last_name IS NOT NULL
-                  THEN photographer.last_name
+                THEN photographer.last_name
               WHEN photographer.company IS NOT NULL
-                  THEN photographer.company
+                THEN photographer.company
               ELSE 'unknown'
               END
-              `), "name"], "link"]
+              `),"name"], 
+            "link"
+          ],
+          required: false
         }
       ],
-      group: ["images.id", "images.original_id", "observations.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id", "photographer.id"],
+      group: ["images.id", "images.original_id", "observations.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id",
+              "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id"],
       where: whereImages
     });
 
@@ -204,6 +209,12 @@ exports.getAttributes = utils.route(async (req, res) => {
     if (image === null) {
       throw notFoundError(req);
     }
+
+    image.dataValues.photographer.forEach((photographer) => {
+      delete photographer.dataValues.images_photographers;
+    });
+    image.dataValues.photographers = image.dataValues.photographer;
+    delete image.dataValues.photographer;
 
     const views = groupArray(imageViews, 'viewer_origin', 'viewer_type');
 

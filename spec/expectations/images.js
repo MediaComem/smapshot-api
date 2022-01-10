@@ -85,7 +85,7 @@ exports.getExpectedImageMetadata = (image, options = {}) => {
 exports.getExpectedImageAttributes = (image, options = {}) => {
   const { id, is_published, caption, link, download_link, shop_link, view_type, correction_enabled, license,
           date_shot, date_shot_min, date_shot_max, width, height,
-          owner, collection, photographer, user,
+          owner, collection, photographers, user,
           latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal,
           observation_enabled
         } = image;
@@ -131,11 +131,17 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
     link: collection.link
   };
 
-  expected.photographer = photographer ? {
-    id: photographer.id,
-    name: photographer.name[expectedLocale],
-    link: photographer.link
-  } : null;
+  photographers.forEach(function expectedPhotographer(photographer) {
+    const first_name = photographer.first_name?`${photographer.first_name} ` :'';
+    const last_name = photographer.last_name? photographer.last_name : '';
+    const company = photographer.company? `, ${photographer.company}` : '';
+    
+    photographer.name = first_name + last_name + company;
+    delete photographer.first_name;
+    delete photographer.last_name;
+    delete photographer.company;
+  });
+  expected.photographers = photographers;
 
   expected.georeferencer = user ? {
     id: user.id,
@@ -153,6 +159,117 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
   }
+
+  return compactObject(expected);
+};
+
+
+/**
+ * Builds expected image attributes from the PUT/POST image request
+ * Returns the expected image attributes JSON from the API for a given database row.
+ *
+ * @param {Object} request - The PUT/POST request
+ * @param {Object} [options] - Additional attributes not available in the request.
+ * @returns {Object} The expected API correction.
+ */
+exports.getExpectedRequestedImageAttributes = (request, options) => {
+
+  const { is_published, caption, link, download_link, shop_link, view_type, 
+    date_shot, date_shot_min, date_shot_max
+  } = request.body;
+
+  const requestBody = request.body;
+
+  const {
+    locale,
+  } = options;
+  const expectedLocale = locale || 'en';
+
+  const unrequiredAttributes = {
+    is_published,
+    caption,
+    link, download_link, shop_link,
+    view_type,
+    date_shot, date_shot_min, date_shot_max,
+    nObs: 0,
+    locked: false,
+    locked_user_id: null, 
+    delta_last_start: null,
+    georeferencer: null,
+    pose: {altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null }
+  };
+
+  const expected = {
+    ...requestBody,
+    ...unrequiredAttributes,
+    ...options
+  };
+
+  //photographers
+  options.photographers.forEach(function expectedPhotographer(photographer) {
+    const first_name = photographer.first_name?`${photographer.first_name} ` :'';
+    const last_name = photographer.last_name? photographer.last_name : '';
+    const company = photographer.company? `, ${photographer.company}` : '';
+    
+    photographer.name = first_name + last_name + company;
+    delete photographer.first_name;
+    delete photographer.last_name;
+    delete photographer.company;
+  });
+  expected.photographers = options.photographers;
+  delete expected.photographer_ids;
+
+  //owner
+  expected.owner = {
+    id: options.owner.id,
+    name: options.owner.name[expectedLocale],
+    slug: options.owner.slug,
+    link: options.owner.link
+  };
+
+  //collection
+  expected.collection = {
+    id: options.collection.id,
+    name: options.collection.name[expectedLocale],
+    link: options.collection.link
+  };
+  delete expected.collection_id;
+
+  //a priori locations
+  if (expected.apriori_location) {
+    expected.apriori_altitude =  expected.apriori_location.altitude;
+    expected.apriori_locations = [{
+      longitude: expected.apriori_location.longitude, 
+      latitude: expected.apriori_location.latitude, 
+      azimuth: expected.apriori_location.azimuth ? expected.apriori_location.azimuth : null, 
+      exact:  expected.apriori_location.exact ? expected.apriori_location.exact : false
+    }]
+    delete expected.apriori_location;
+
+    //state
+    expected.state = expected.apriori_locations[0].exact ? 'waiting_alignment' : 'initial';
+  }
+
+  //media
+  if (requestBody.iiif_link) {
+    expected.media = { 
+      image_url: expected.iiif_link + "/full/200,/0/default.jpg",
+      tiles: { type: 'iiif', url: expected.iiif_link + "/info.json"}
+    };
+    delete expected.iiif_link;
+  }
+
+  //date
+  if (expected.date_shot) {
+    expected.date_shot_min = expected.date_shot;
+    expected.date_shot_max = expected.date_shot;
+  }
+  delete expected.date_shot;
+
+  delete expected.date_orig;
+  delete expected.name;
+
+  Object.keys(expected).forEach((property) => expected[property] === undefined ? expected[property] = null : expected[property] );
 
   return compactObject(expected);
 };
