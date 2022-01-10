@@ -414,7 +414,8 @@ describe('POST /images', () => {
       expect(resget)
         .to.have.status(200)
         .and.to.have.jsonBody(
-          getExpectedRequestedImageAttributes(req, resget, { id: res.body.id, owner_id: 1})
+          getExpectedRequestedImageAttributes(req, 
+            { id: res.body.id, owner: owner1, collection: collection1, photographers: [photographerAnonym] })
         )
         .and.to.matchResponseDocumentation();
     });
@@ -513,7 +514,8 @@ describe('POST /images', () => {
       expect(resget)
         .to.have.status(200)
         .and.to.have.jsonBody(
-          getExpectedRequestedImageAttributes(requestOwner, resget, { id: res.body.id, owner_id: 1})
+          getExpectedRequestedImageAttributes(requestOwner, 
+            { id: res.body.id, owner: owner1, collection: collection1, photographers: [photographer1, photographer2] })
         )
         .and.to.matchResponseDocumentation();
     });

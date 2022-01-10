@@ -169,74 +169,70 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
  * Returns the expected image attributes JSON from the API for a given database row.
  *
  * @param {Object} request - The PUT/POST request
- * @param {Object} results - The results from the GET request to compare.
- * @param {Object} [options] - Additional attributes not available in the request (id and owner_id from image).
+ * @param {Object} [options] - Additional attributes not available in the request.
  * @returns {Object} The expected API correction.
  */
-exports.getExpectedRequestedImageAttributes = (request, results, options) => {
+exports.getExpectedRequestedImageAttributes = (request, options) => {
 
   const { is_published, caption, link, download_link, shop_link, view_type, 
     date_shot, date_shot_min, date_shot_max
   } = request.body;
-  
+
   const requestBody = request.body;
-  const resultsBody = results.body;
 
-  let expected;
-  if (request.method === 'POST') {
-    const unrequiredAttributes = {
-      is_published,
-      caption,
-      link, download_link, shop_link,
-      view_type,
-      date_shot, date_shot_min, date_shot_max,
-      nObs: 0,
-      locked: false, 
-      locked_user_id: null, 
-      delta_last_start: null,
-      georeferencer: null,
-      pose: {altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null }
-    };
+  const {
+    locale,
+  } = options;
+  const expectedLocale = locale || 'en';
 
-    expected = {
-      ...requestBody,
-      ...unrequiredAttributes,
-      ...options
-    };
+  const unrequiredAttributes = {
+    is_published,
+    caption,
+    link, download_link, shop_link,
+    view_type,
+    date_shot, date_shot_min, date_shot_max,
+    nObs: 0,
+    locked: false,
+    locked_user_id: null, 
+    delta_last_start: null,
+    georeferencer: null,
+    pose: {altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null }
+  };
 
-  } else if (request.method === 'PUT') {
-    expected = {
-      ...resultsBody,
-      ...requestBody,
-      ...options
-    };
-  }
+  const expected = {
+    ...requestBody,
+    ...unrequiredAttributes,
+    ...options
+  };
 
   //photographers
-  let reqIdPhotographers;
-  if (requestBody.photographer_ids) {
-    reqIdPhotographers = requestBody.photographer_ids;
-  } else {
-    reqIdPhotographers = [3];
-  }
-  delete expected.photographers;
-  expected.photographers = resultsBody.photographers.filter(photographer => reqIdPhotographers.includes(photographer.id));
+  options.photographers.forEach(function expectedPhotographer(photographer) {
+    const first_name = photographer.first_name?`${photographer.first_name} ` :'';
+    const last_name = photographer.last_name? photographer.last_name : '';
+    const company = photographer.company? `, ${photographer.company}` : '';
+    
+    photographer.name = first_name + last_name + company;
+    delete photographer.first_name;
+    delete photographer.last_name;
+    delete photographer.company;
+  });
+  expected.photographers = options.photographers;
   delete expected.photographer_ids;
 
   //owner
-  const reqOwnerId = options.owner_id;
-  const resOwnerId = resultsBody.owner.id;
-  if (reqOwnerId === resOwnerId) {
-    expected.owner = resultsBody.owner;
-  }
-  delete expected.owner_id;
+  expected.owner = {
+    id: options.owner.id,
+    name: options.owner.name[expectedLocale],
+    slug: options.owner.slug,
+    link: options.owner.link
+  };
 
   //collection
-  const reqCollectionId = expected.collection_id;
-  const resCollectionId = resultsBody.collection.id;
-  if (reqCollectionId === resCollectionId) {
-    expected.collection = resultsBody.collection;
-  }
+  expected.collection = {
+    id: options.collection.id,
+    name: options.collection.name[expectedLocale],
+    link: options.collection.link
+  };
   delete expected.collection_id;
 
   //a priori locations

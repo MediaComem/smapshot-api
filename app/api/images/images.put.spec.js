@@ -188,6 +188,36 @@ describe('PUT /images/:id/attributes', () => {
     const photographer1 = await createPhotographer();
     const photographer2 = await createPhotographer();
 
+    const attributesToUpdate = {
+      iiif_link: "updated",
+      is_published: false,
+      title: "updated",
+      caption: "updated",
+      license: "updated",
+      download_link: "updated",
+      link: "updated",
+      shop_link: "updated",
+      observation_enabled: true,
+      correction_enabled: true,
+      view_type: "lowOblique",
+      height: 3010,
+      width: 2010,
+      date_orig: "updated",
+      date_shot: "2022-01-04",
+      date_shot_min: null,
+      date_shot_max: null,
+      apriori_location: {
+        longitude: 100,
+        latitude: 100,
+        altitude: 1000,
+        azimuth: 1,
+        exact: false
+      },
+      photographer_ids: [
+        photographer1.id, photographer2.id
+      ]
+    };
+
     const req = {
       method: 'PUT',
       path: `/images/${imageToUpdate.id}/attributes`,
@@ -195,33 +225,7 @@ describe('PUT /images/:id/attributes', () => {
         Authorization: `Bearer ${token1}`
       },
       body: {
-          iiif_link: "updated",
-          is_published: false,
-          title: "updated",
-          caption: "updated",
-          license: "updated",
-          download_link: "updated",
-          link: "updated",
-          shop_link: "updated",
-          observation_enabled: true,
-          correction_enabled: true,
-          view_type: "lowOblique",
-          height: 3010,
-          width: 2010,
-          date_orig: "updated",
-          date_shot: "2022-01-04",
-          date_shot_min: null,
-          date_shot_max: null,
-          apriori_location: {
-            longitude: 100,
-            latitude: 100,
-            altitude: 1000,
-            azimuth: 1,
-            exact: false
-          },
-          photographer_ids: [
-            photographer1.id, photographer2.id
-          ]
+        ...attributesToUpdate
       }
     };
 
@@ -249,7 +253,8 @@ describe('PUT /images/:id/attributes', () => {
     expect(resget)
       .to.have.status(200)
       .and.to.have.jsonBody(
-        getExpectedRequestedImageAttributes(req, resget, { id: imageToUpdate.id, owner_id: imageToUpdate.owner.id})
+        getExpectedRequestedImageAttributes(req, 
+          { id: imageToUpdate.id, original_id: imageToUpdate.original_id, owner: imageToUpdate.owner, collection: collection1, photographers: [photographer1, photographer2], ...attributesToUpdate })
       )
       .and.to.matchResponseDocumentation();
   });
