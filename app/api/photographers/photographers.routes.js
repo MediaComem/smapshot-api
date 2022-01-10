@@ -17,7 +17,7 @@ router.get("/photographers",
 // Post photographers.
 router.post("/photographers",
   authenticate({ required: true }),
-  authorize("owner_admin"),
+  authorize("owner_admin", "super_admin"),
   validateRequestBodyWithJsonSchema('PostPhotographerRequest'),
   controller.postPhotographers
 );

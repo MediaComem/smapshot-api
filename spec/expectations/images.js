@@ -132,11 +132,11 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
   };
 
   photographers.forEach(function expectedPhotographer(photographer) {
-    const first_name = photographer.first_name?` ${photographer.first_name}` :'';
+    const first_name = photographer.first_name?`${photographer.first_name} ` :'';
     const last_name = photographer.last_name? photographer.last_name : '';
     const company = photographer.company? `, ${photographer.company}` : '';
     
-    photographer.name = last_name + first_name + company;
+    photographer.name = first_name + last_name + company;
     delete photographer.first_name;
     delete photographer.last_name;
     delete photographer.company;
@@ -159,6 +159,121 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
   }
+
+  return compactObject(expected);
+};
+
+
+/**
+ * Builds expected image attributes from the PUT/POST image request
+ * Returns the expected image attributes JSON from the API for a given database row.
+ *
+ * @param {Object} request - The PUT/POST request
+ * @param {Object} results - The results from the GET request to compare.
+ * @param {Object} [options] - Additional attributes not available in the request (id and owner_id from image).
+ * @returns {Object} The expected API correction.
+ */
+exports.getExpectedRequestedImageAttributes = (request, results, options) => {
+
+  const { is_published, caption, link, download_link, shop_link, view_type, 
+    date_shot, date_shot_min, date_shot_max
+  } = request.body;
+  
+  const requestBody = request.body;
+  const resultsBody = results.body;
+
+  let expected;
+  if (request.method === 'POST') {
+    const unrequiredAttributes = {
+      is_published,
+      caption,
+      link, download_link, shop_link,
+      view_type,
+      date_shot, date_shot_min, date_shot_max,
+      nObs: 0,
+      locked: false, 
+      locked_user_id: null, 
+      delta_last_start: null,
+      georeferencer: null,
+      pose: {altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null }
+    };
+
+    expected = {
+      ...requestBody,
+      ...unrequiredAttributes,
+      ...options
+    };
+
+  } else if (request.method === 'PUT') {
+    expected = {
+      ...resultsBody,
+      ...requestBody,
+      ...options
+    };
+  }
+
+  //photographers
+  let reqIdPhotographers;
+  if (requestBody.photographer_ids) {
+    reqIdPhotographers = requestBody.photographer_ids;
+  } else {
+    reqIdPhotographers = [3];
+  }
+  delete expected.photographers;
+  expected.photographers = resultsBody.photographers.filter(photographer => reqIdPhotographers.includes(photographer.id));
+  delete expected.photographer_ids;
+
+  //owner
+  const reqOwnerId = options.owner_id;
+  const resOwnerId = resultsBody.owner.id;
+  if (reqOwnerId === resOwnerId) {
+    expected.owner = resultsBody.owner;
+  }
+  delete expected.owner_id;
+
+  //collection
+  const reqCollectionId = expected.collection_id;
+  const resCollectionId = resultsBody.collection.id;
+  if (reqCollectionId === resCollectionId) {
+    expected.collection = resultsBody.collection;
+  }
+  delete expected.collection_id;
+
+  //a priori locations
+  if (expected.apriori_location) {
+    expected.apriori_altitude =  expected.apriori_location.altitude;
+    expected.apriori_locations = [{
+      longitude: expected.apriori_location.longitude, 
+      latitude: expected.apriori_location.latitude, 
+      azimuth: expected.apriori_location.azimuth ? expected.apriori_location.azimuth : null, 
+      exact:  expected.apriori_location.exact ? expected.apriori_location.exact : false
+    }]
+    delete expected.apriori_location;
+
+    //state
+    expected.state = expected.apriori_locations[0].exact ? 'waiting_alignment' : 'initial';
+  }
+
+  //media
+  if (requestBody.iiif_link) {
+    expected.media = { 
+      image_url: expected.iiif_link + "/full/200,/0/default.jpg",
+      tiles: { type: 'iiif', url: expected.iiif_link + "/info.json"}
+    };
+    delete expected.iiif_link;
+  }
+
+  //date
+  if (expected.date_shot) {
+    expected.date_shot_min = expected.date_shot;
+    expected.date_shot_max = expected.date_shot;
+  }
+  delete expected.date_shot;
+
+  delete expected.date_orig;
+  delete expected.name;
+
+  Object.keys(expected).forEach((property) => expected[property] === undefined ? expected[property] = null : expected[property] );
 
   return compactObject(expected);
 };

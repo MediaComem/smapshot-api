@@ -24,7 +24,7 @@
 
         **Required role:** `owner_admin`.
 
-        **Required fields:** iiif_link, is_published, original_id, title, collection_id, license, observation_enabled, correction_enabled, height, width, name, [date_shot OR date_shot min and date_shot_max], apriori_locations (longitude, latitude) 
+        **Required fields:** iiif_link, is_published, original_id, title, collection_id, view_type, license, observation_enabled, correction_enabled, height, width, name, [date_shot OR date_shot min and date_shot_max], apriori_locations (longitude, latitude) 
       requestBody:
         required: true
         content:

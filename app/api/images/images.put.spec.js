@@ -1,5 +1,6 @@
 const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
 const { createImage } = require('../../../spec/fixtures/images');
+const { getExpectedRequestedImageAttributes } = require('../../../spec/expectations/images');
 const { typeError } = require('../../../spec/expectations/errors');
 const { freeze, testHttpRequest } = require('../../../spec/utils/api');
 const { resetDatabase } = require('../../../spec/utils/db');
@@ -8,6 +9,8 @@ const { expect } = require('../../../spec/utils/chai');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 const { ensureTranslation } = require('../../../spec/utils/i18n');
+const { createPhotographer } = require('../../../spec/fixtures/photographers');
+const { createCollection } = require('../../../spec/fixtures/collections');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -15,6 +18,7 @@ setUpGlobalHooks();
 describe('PUT /images/:id/attributes', () => {
   let app;
   let baseRequest;
+  let collection1;
   let image, user1, token1;
   let initialState;
 
@@ -22,7 +26,8 @@ describe('PUT /images/:id/attributes', () => {
     await resetDatabase();
     ({ app } = createApplicationWithMocks());
 
-    image = await createImage({ date_georef: '2017-02-05'});
+    collection1 = await createCollection();
+    image = await createImage({ collection: collection1, date_georef: '2017-02-05'});
     user1 = await createUser({ roles: ['volunteer', 'owner_admin'], owner_id: 1 });
     token1 = await generateJwtFor(user1);
 
@@ -58,7 +63,7 @@ describe('PUT /images/:id/attributes', () => {
   });
 
 
-  it('only owners are authorized to update images', async () => {
+  it('does not authorize owner_validator to update images', async () => {
 
     const user2 = await createUser({ owner_id: 1, roles: ['volunteer', 'owner_validator'] });
     const token2 = await generateJwtFor(user2);
@@ -166,7 +171,7 @@ describe('PUT /images/:id/attributes', () => {
         {
           location: 'body', 
           path:"",
-          message: 'Image already georeferenced, iiif link or dimensions can\'t be changed.', //TO DO translation
+          message: 'Image already georeferenced, iiif link or dimensions can\'t be changed.',
           validation: 'DimensionsAndIIIFUnmodifiables'
         }
       ])
@@ -178,14 +183,45 @@ describe('PUT /images/:id/attributes', () => {
 
   it('correctly updates image attributes', async () => {
 
+    //new image to update
+    const imageToUpdate = await createImage({ collection: collection1 });
+    const photographer1 = await createPhotographer();
+    const photographer2 = await createPhotographer();
+
     const req = {
       method: 'PUT',
-      path: `/images/${image.id}/attributes`,
+      path: `/images/${imageToUpdate.id}/attributes`,
       headers: {
         Authorization: `Bearer ${token1}`
       },
       body: {
-        title: 'title_updated'
+          iiif_link: "updated",
+          is_published: false,
+          title: "updated",
+          caption: "updated",
+          license: "updated",
+          download_link: "updated",
+          link: "updated",
+          shop_link: "updated",
+          observation_enabled: true,
+          correction_enabled: true,
+          view_type: "lowOblique",
+          height: 3010,
+          width: 2010,
+          date_orig: "updated",
+          date_shot: "2022-01-04",
+          date_shot_min: null,
+          date_shot_max: null,
+          apriori_location: {
+            longitude: 100,
+            latitude: 100,
+            altitude: 1000,
+            azimuth: 1,
+            exact: false
+          },
+          photographer_ids: [
+            photographer1.id, photographer2.id
+          ]
       }
     };
 
@@ -197,7 +233,25 @@ describe('PUT /images/:id/attributes', () => {
     })
     .and.to.matchResponseDocumentation();
 
-    await expectNoSideEffects(app, initialState);
+    //check if correctly inserted in DB
+    const reqget = {
+      method: 'GET',
+      path: `/images/${imageToUpdate.id}/attributes`,
+      headers: {
+        Authorization: `Bearer ${token1}`
+      }
+    };
+
+    expect(reqget).to.matchRequestDocumentation();
+    
+    const resget = await testHttpRequest(app, reqget);
+
+    expect(resget)
+      .to.have.status(200)
+      .and.to.have.jsonBody(
+        getExpectedRequestedImageAttributes(req, resget, { id: imageToUpdate.id, owner_id: imageToUpdate.owner.id})
+      )
+      .and.to.matchResponseDocumentation();
   });
 })
 

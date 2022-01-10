@@ -86,7 +86,7 @@ module.exports = () => {
   // Post a new image.
     router.post("/images",
     authenticate(),
-    authorize("owner_admin"),
+    authorize("owner_admin", "super_admin"),
     validateRequestBodyWithJsonSchema('ImagePostRequest'),
     controller.findCollection,
     controller.submitImage
@@ -95,7 +95,7 @@ module.exports = () => {
   // Update the attributes of an image.
     router.put("/images/:id/attributes",
     authenticate(),
-    authorize("owner_admin"),
+    authorize("owner_admin", "super_admin"),
     validateDocumentedRequestParametersFor('PUT', '/images/{id}/attributes'),
     validateRequestBodyWithJsonSchema('ImagePutRequest'),
     controller.findImage,

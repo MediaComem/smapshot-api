@@ -79,19 +79,12 @@
       "type": "boolean"
     },
     "view_type": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string",
-          "enum": [
-            "terrestrial",
-            "lowOblique",
-            "highOblique",
-            "nadir"
-          ]
-        }
+      "type": "string",
+      "enum": [
+        "terrestrial",
+        "lowOblique",
+        "highOblique",
+        "nadir"
       ]
     },
     "height": {
@@ -213,6 +206,7 @@
     "original_id", 
     "title", 
     "collection_id", 
+    "view_type",
     "license", 
     "observation_enabled", 
     "correction_enabled", 

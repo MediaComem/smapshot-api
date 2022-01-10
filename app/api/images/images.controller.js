@@ -275,8 +275,8 @@ exports.getAttributes = utils.route(async (req, res) => {
     id: req.params.id
   };
 
-  // Unpublished images can only be accessed by super administrators.
-  if (!userHasRole(req, 'super_admin')) {
+  // Unpublished images can only be accessed by super administrators and owner administrators.
+  if (!userHasRole(req, 'super_admin') && !userHasRole(req, 'owner_admin')) {
     where.is_published = true;
   }
 
@@ -314,25 +314,12 @@ exports.getAttributes = utils.route(async (req, res) => {
       {
         model: models.collections,
         attributes: ["id", [getFieldI18n('collection', 'name', lang), "name"], "link"]
-      }
-    ],
-    group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id"],
-    where
-  });
-
-  if (results === null) {
-    throw notFoundError(req);
-  }
-    
-  //add photographers
-  const resultsPhotographers = await models.images.findOne({
-    attributes: [],
-    include: [
+      },
       {
         model: models.photographers,
         as: "photographer",
         attributes: [
-          "id", 
+          "id",
           [models.Sequelize.literal(`
             CASE
             WHEN photographer.first_name IS NOT NULL AND photographer.last_name IS NOT NULL AND company IS NOT NULL
@@ -349,19 +336,26 @@ exports.getAttributes = utils.route(async (req, res) => {
               THEN photographer.company
             ELSE 'unknown'
             END
-            `),"name"], 
+            `),"name"],
           "link"
         ],
-        group: ["photographer.image_id"]
+        required: false
       }
     ],
+    group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id",
+            "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id"],
     where
   });
 
-  resultsPhotographers.dataValues.photographer.forEach((photographer) => {
+  if (results === null) {
+    throw notFoundError(req);
+  }
+    
+  results.dataValues.photographer.forEach((photographer) => {
     delete photographer.dataValues.images_photographers;
   });
-  results.dataValues.photographers = resultsPhotographers.dataValues.photographer;
+  results.dataValues.photographers = results.dataValues.photographer;
+  delete results.dataValues.photographer;
 
   const iiifLevel0Promise = [];
 
@@ -430,7 +424,7 @@ exports.submitImage = utils.route(async (req, res) => {
   const existingImage = await models.images.findOne({
     where: {
       original_id: req.body.original_id,
-      collection_id: req.collection.id
+      collection_id: req.body.collection_id
     }
   });
 
@@ -479,9 +473,10 @@ exports.submitImage = utils.route(async (req, res) => {
   //table images
   const newImage = await models.images.create({
     original_id: req.body.original_id,
-    state: 'initial',
+    state: req.body.apriori_location.exact ? 'waiting_alignment' : 'initial',
+    original_state: req.body.apriori_location.exact ? 'waiting_alignment' : 'initial',
     owner_id: req.collection.owner_id,
-    collection_id: req.collection.id,
+    collection_id: req.body.collection_id,
     is_published: req.body.is_published,
     name: req.body.name,
     date_inserted: models.sequelize.literal("current_timestamp"),
@@ -516,7 +511,7 @@ exports.submitImage = utils.route(async (req, res) => {
   const req_apriori_location= req.body.apriori_location;
   const longitude = req_apriori_location.longitude;
   const latitude = req_apriori_location.latitude;
-  const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 0;
+  const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 1000;
   
   const apriori_location_json = models.sequelize.fn(
     "ST_SetSRID",
@@ -656,6 +651,8 @@ exports.updateAttributes = utils.route(async (req, res) => {
     //update image
     await req.image.update({
       apriori_altitude: req_apriori_location.altitude,
+      state: req_apriori_location.exact ? 'waiting_alignment' : 'initial',
+      original_state: req_apriori_location.exact ? 'waiting_alignment' : 'initial',
     });
   }
 
@@ -663,9 +660,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   await req.image.update({
     is_published: req.body.is_published,
     name: req.body.name,
-    iiif_data: {
+    iiif_data: req.body.iiif_link ? {
       image_service3_url: req.body.iiif_link
-    },
+    } : req.image.iiif_data,
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,

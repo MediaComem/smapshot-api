@@ -40,19 +40,12 @@
       "type": "boolean"
     },
     "view_type": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string",
-          "enum": [
-            "terrestrial",
-            "lowOblique",
-            "highOblique",
-            "nadir"
-          ]
-        }
+      "type": "string",
+      "enum": [
+        "terrestrial",
+        "lowOblique",
+        "highOblique",
+        "nadir"
       ]
     },
     "height": {
@@ -125,7 +118,7 @@
         "exact": {
           "type": "boolean",
           "example": "false",
-          "description": "false by default"
+          "description": "false by default. If true, the camera position will be locked to that exact position during georeferencing."
         }
       },
       "additionalProperties": false,
@@ -155,6 +148,7 @@
     "original_id", 
     "title", 
     "collection_id", 
+    "view_type",
     "license", 
     "observation_enabled", 
     "correction_enabled", 

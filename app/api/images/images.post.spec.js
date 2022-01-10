@@ -1,5 +1,6 @@
 const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
 const { createImage } = require('../../../spec/fixtures/images');
+const { getExpectedRequestedImageAttributes } = require('../../../spec/expectations/images');
 const { missingPropertyError } = require('../../../spec/expectations/errors');
 const { freeze, testHttpRequest } = require('../../../spec/utils/api');
 const { resetDatabase } = require('../../../spec/utils/db');
@@ -117,6 +118,7 @@ describe('POST /images', () => {
           original_id: "original_id_1",
           title: "TEST title",
           collection_id: collection1.id,
+          view_type: "terrestrial",
           license: "Zentralbibliothek Zürich",
           observation_enabled: true,
           correction_enabled: false,
@@ -137,10 +139,12 @@ describe('POST /images', () => {
       initialState = await loadInitialState();
 
       //not existing collection
-      baseRequestOwner.body.collection_id = 20;
-      
       const req = {
-        ...baseRequestOwner
+        ...baseRequestOwner,
+        body: {
+          ...baseRequestOwner.body,
+          collection_id: 20
+        }
       };
   
       expect(req).to.matchRequestDocumentation();
@@ -168,10 +172,12 @@ describe('POST /images', () => {
 
       initialState = await loadInitialState();
 
-      baseRequestOwner.body.collection_id = collection2.id;
-  
       const req = {
-        ...baseRequestOwner
+        ...baseRequestOwner,
+        body: {
+          ...baseRequestOwner.body,
+          collection_id: collection2.id
+        }
       };
 
       expect(req).to.matchRequestDocumentation();
@@ -225,10 +231,12 @@ describe('POST /images', () => {
     it('does not allow to post if photographer does not exist already', async () => {
       initialState = await loadInitialState();
 
-      baseRequestOwner.body.photographer_ids = [100];
-  
       const req = {
-        ...baseRequestOwner
+        ...baseRequestOwner,
+        body: {
+          ...baseRequestOwner.body,
+          photographer_ids: [100]
+        }
       };
 
       expect(req).to.matchRequestDocumentation();
@@ -254,11 +262,13 @@ describe('POST /images', () => {
     it('does not allow to post images if no date is provided', async () => {
       initialState = await loadInitialState();
 
-      baseRequestOwner.body.date_shot= undefined;
-      baseRequestOwner.body.date_shot_min= "2021-11-29";
-      
       const req = {
-        ...baseRequestOwner
+        ...baseRequestOwner,
+        body: {
+          ...baseRequestOwner.body,
+          date_shot: undefined,
+          date_shot_min: "2021-11-29"
+        }
       };
 
       expect(req).to.matchRequestDocumentation();
@@ -284,14 +294,13 @@ describe('POST /images', () => {
     it('control mandatory fields', async () => {
       initialState = await loadInitialState();
 
-      baseRequestOwner.body = {
-        original_id: "original_id_1",
-        collection_id: 1,
-        date_shot: "2021-11-29"
-      };
-
       const req = {
-        ...baseRequestOwner
+        ...baseRequestOwner,
+        body: {
+          original_id: "original_id_1",
+          collection_id: 1,
+          date_shot: "2021-11-29"
+        }
       };
 
       expect(req).to.matchRequestDocumentation({ invalidBody: true });
@@ -309,6 +318,9 @@ describe('POST /images', () => {
         }),
         missingPropertyError({
           property: 'title'
+        }),
+        missingPropertyError({
+          property: 'view_type'
         }),
         missingPropertyError({
           property: 'license'
@@ -376,7 +388,7 @@ describe('POST /images', () => {
             coordinates: [
               8.30999999,
               47.19999999,
-              0
+              1000
             ]
           },
           azimuth: null,
@@ -389,6 +401,22 @@ describe('POST /images', () => {
       expect(res)
       .to.have.jsonBody(resJsonbody);
 
+      //check if correctly inserted in DB
+      const reqget = {
+        method: 'GET',
+        path: `/images/${res.body.id}/attributes`
+      };
+
+      expect(reqget).to.matchRequestDocumentation();
+      
+      const resget = await testHttpRequest(app, reqget);
+
+      expect(resget)
+        .to.have.status(200)
+        .and.to.have.jsonBody(
+          getExpectedRequestedImageAttributes(req, resget, { id: res.body.id, owner_id: 1})
+        )
+        .and.to.matchResponseDocumentation();
     });
 
 
@@ -439,8 +467,8 @@ describe('POST /images', () => {
         ...requestOwner.body,
         id: 1,
         owner_id: 1,
-        state: 'initial',
-        original_state: 'initial',
+        state: 'waiting_alignment',
+        original_state: 'waiting_alignment',
         iiif_data: {
           image_service3_url: 'https://www.e-rara.ch/zuz/i3f/v20/9380556'
         },
@@ -472,6 +500,22 @@ describe('POST /images', () => {
       expect(res)
       .to.have.jsonBody(resJsonbody)
 
+      //check if correctly inserted in DB
+      const reqget = {
+        method: 'GET',
+        path: `/images/${res.body.id}/attributes`
+      };
+
+      expect(reqget).to.matchRequestDocumentation();
+      
+      const resget = await testHttpRequest(app, reqget);
+
+      expect(resget)
+        .to.have.status(200)
+        .and.to.have.jsonBody(
+          getExpectedRequestedImageAttributes(requestOwner, resget, { id: res.body.id, owner_id: 1})
+        )
+        .and.to.matchResponseDocumentation();
     });
   });
 })

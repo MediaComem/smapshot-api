@@ -115,5 +115,32 @@ describe('POST /photographers', () => {
       })
       .and.to.matchResponseDocumentation();
 
+    //check if correctly inserted in DB
+    const reqget = {
+      method: 'GET',
+      path: '/photographers',
+      headers: {
+        Authorization: `Bearer ${tokenownerAdmin1}`
+      },
+      query: {
+        id: [1]
+      }
+    };
+
+    expect(reqget).to.matchRequestDocumentation();
+    
+    const resget = await testHttpRequest(app, reqget);
+
+    expect(resget)
+      .to.have.status(200)
+      .and.have.jsonBody([{
+        id: 1,
+        first_name: "Marie",
+        last_name: 'Colin',
+        link: "https://resource.test.net/",
+        company: "sari",
+        nImages: 0
+      }])
+      .and.to.matchResponseDocumentation();
   });
 })
