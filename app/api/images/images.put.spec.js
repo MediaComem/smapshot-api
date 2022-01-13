@@ -189,7 +189,10 @@ describe('PUT /images/:id/attributes', () => {
     const photographer2 = await createPhotographer();
 
     const attributesToUpdate = {
-      iiif_link: "updated",
+      iiif_data: {
+        image_service3_url:"updated",
+        regionByPx: [300,200,2500,1500]
+      },
       is_published: false,
       title: "updated",
       caption: "updated",

@@ -113,7 +113,9 @@ describe('POST /images', () => {
           Authorization: `Bearer ${tokenOwnerAdmin1}`
         }, 
         body : {
-          iiif_link: "https://www.e-rara.ch/zuz/i3f/v20/9380556",
+          iiif_data: {
+            image_service3_url: "https://www.e-rara.ch/zuz/i3f/v20/9380556"
+          },
           is_published: true,
           original_id: "original_id_1",
           title: "TEST title",
@@ -311,7 +313,7 @@ describe('POST /images', () => {
       .to.have.status(422)
       .and.to.have.requestBodyValidationErrors([
         missingPropertyError({
-          property: 'iiif_link'
+          property: 'iiif_data'
         }),
         missingPropertyError({
           property: 'is_published'
@@ -373,9 +375,6 @@ describe('POST /images', () => {
         owner_id: 1,
         state: 'initial',
         original_state: 'initial',
-        iiif_data: {
-          image_service3_url: 'https://www.e-rara.ch/zuz/i3f/v20/9380556'
-        },
         exact_date: true,
         date_orig: "Null",
         downloaded: false,
@@ -396,7 +395,6 @@ describe('POST /images', () => {
         }
       };
       resJsonbody.photographers = [photographerAnonym];
-      delete resJsonbody['iiif_link'];
 
       expect(res)
       .to.have.jsonBody(resJsonbody);
@@ -430,6 +428,10 @@ describe('POST /images', () => {
         },
         body: {
           ...baseRequestOwner.body,
+          iiif_data: {
+            image_service3_url: "https://www.e-rara.ch/zuz/i3f/v20/9380556",
+            regionByPx: [20,10,100,500]
+          },
           caption: "test caption",
           download_link: "https://www.e-rara.ch/zuz/i3f/v20/9380556",
           link: "https://www.e-rara.ch/zuz/i3f/v20/9380556",
@@ -470,9 +472,6 @@ describe('POST /images', () => {
         owner_id: 1,
         state: 'waiting_alignment',
         original_state: 'waiting_alignment',
-        iiif_data: {
-          image_service3_url: 'https://www.e-rara.ch/zuz/i3f/v20/9380556'
-        },
         exact_date: false,
         downloaded: false,
         viewshed_created: false, 
@@ -494,7 +493,6 @@ describe('POST /images', () => {
         }
       };
       resJsonbody.photographers = [photographer1, photographer2];
-      delete resJsonbody['iiif_link'];
       delete resJsonbody['date_shot'];
       delete resJsonbody['photographer_ids'];
 

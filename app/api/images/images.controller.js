@@ -439,6 +439,25 @@ exports.submitImage = utils.route(async (req, res) => {
     ])
   } 
 
+  //check iiif_data
+  if (req.body.iiif_data.regionByPx) {
+    const [x,y,w,h] = req.body.iiif_data.regionByPx;
+    //tests x + y is < width/height image and w,h is > 0
+    const test_xy = x < req.body.width && y < req.body.height;
+    const test_wh = w > 0 && h > 0;
+
+    if (!test_xy || !test_wh) {
+      throw requestBodyValidationError(req, [
+        {
+          location: 'body',
+          path: '',
+          message: req.__('Region parameters not correct.'),
+          validation: 'WrongRegionParameters'
+        }
+      ])
+    }
+  }
+
   //check if given photographers already exist and find them
   let req_photographer_ids = req.body.photographer_ids;
   if (!req_photographer_ids || req_photographer_ids.length === 0) {
@@ -482,7 +501,8 @@ exports.submitImage = utils.route(async (req, res) => {
     date_inserted: models.sequelize.literal("current_timestamp"),
     exact_date: exact_date_req,
     iiif_data: {
-      image_service3_url: req.body.iiif_link
+      image_service3_url: req.body.iiif_data.image_service3_url,
+      regionByPx: req.body.iiif_data.regionByPx
     },
     title: req.body.title,
     orig_title: req.body.title,
@@ -554,7 +574,7 @@ exports.submitImage = utils.route(async (req, res) => {
 exports.updateAttributes = utils.route(async (req, res) => {
 
   //if width/height updated, check if image is already georeferenced
-  if (req.image.date_georef && (req.body.width || req.body.height || req.body.iiif_link) ) {
+  if (req.image.date_georef && (req.body.width || req.body.height || req.body.iiif_data) ) {
 
     throw requestBodyValidationError(req, [
       {
@@ -564,6 +584,28 @@ exports.updateAttributes = utils.route(async (req, res) => {
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
+  }
+
+  //check iiif_data
+  if (req.body.iiif_data.regionByPx) {
+    const [x,y,w,h] = req.body.iiif_data.regionByPx;
+    
+    //tests x + y is < width/height image and w,h is > 0
+    const imgWidth = req.body.width? req.body.width : req.image.width;
+    const imgHeight = req.body.height? req.body.height : req.image.height;
+    const test_xy = x < imgWidth && y < imgHeight;
+    const test_wh = w > 0 && h > 0;
+
+    if (!test_xy || !test_wh) {
+      throw requestBodyValidationError(req, [
+        {
+          location: 'body',
+          path: '',
+          message: req.__('Region parameters not correct.'),
+          validation: 'WrongRegionParameters'
+        }
+      ])
+    }
   }
 
   //UPDATE PHOTOGRAPHERS
@@ -660,8 +702,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   await req.image.update({
     is_published: req.body.is_published,
     name: req.body.name,
-    iiif_data: req.body.iiif_link ? {
-      image_service3_url: req.body.iiif_link
+    iiif_data: req.body.iiif_data ? {
+      image_service3_url: req.body.iiif_data.image_service3_url,
+      regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
     title: req.body.title,
     orig_title: req.body.title,

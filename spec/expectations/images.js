@@ -251,12 +251,12 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
   }
 
   //media
-  if (requestBody.iiif_link) {
+  if (requestBody.iiif_data) {
     expected.media = { 
-      image_url: expected.iiif_link + "/full/200,/0/default.jpg",
-      tiles: { type: 'iiif', url: expected.iiif_link + "/info.json"}
+      image_url: expected.iiif_data.image_service3_url + "/full/200,/0/default.jpg",
+      tiles: { type: 'iiif', url: expected.iiif_data.image_service3_url + "/info.json"}
     };
-    delete expected.iiif_link;
+    delete expected.iiif_data;
   }
 
   //date

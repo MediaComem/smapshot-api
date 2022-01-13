@@ -22,7 +22,7 @@
       description: |-
         ## Authorization
 
-        **Required role:** `owner_admin`.
+        **Required role:** `owner_admin` or `superadmin`.
 
         **Required fields:** iiif_link, is_published, original_id, title, collection_id, view_type, license, observation_enabled, correction_enabled, height, width, name, [date_shot OR date_shot min and date_shot_max], apriori_locations (longitude, latitude) 
       requestBody:
@@ -256,9 +256,9 @@
     description: |-
       ## Authorization
 
-      **Required role:** `owner_admin`.
+      **Required role:** `owner_admin` or `superadmin`.
 
-      If the image has been georeferenced, iiif link, height or width can't be updated.
+      If the image has been georeferenced, iiif_data, height or width can't be updated.
     parameters:
       - name: id
         in: path
