@@ -52,6 +52,8 @@ const parseAttributes = (query) => {
       THEN case
         WHEN iiif_data->>'size_info' IS NOT NULL
         THEN json_build_object('image_url', NULL)
+        WHEN iiif_data->>'regionByPx' IS NOT NULL
+        THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/200,/0/default.jpg'))
         else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
         end
       else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'))

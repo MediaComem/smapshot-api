@@ -246,6 +246,10 @@ exports.getAttributes = utils.route(async (req, res) => {
                 THEN json_build_object('image_url', NULL,
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
+                WHEN iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/200,/0/default.jpg'),
+                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                   'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
@@ -259,6 +263,10 @@ exports.getAttributes = utils.route(async (req, res) => {
               WHEN iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('image_url', NULL,
                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+                WHEN iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/200,/0/default.jpg'),
+                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
                 END
@@ -502,7 +510,7 @@ exports.submitImage = utils.route(async (req, res) => {
     exact_date: exact_date_req,
     iiif_data: {
       image_service3_url: req.body.iiif_data.image_service3_url,
-      regionByPx: req.body.iiif_data.regionByPx
+      regionByPx: req.body.iiif_data.regionByPx ? req.body.iiif_data.regionByPx.toString() : null
     },
     title: req.body.title,
     orig_title: req.body.title,
@@ -587,8 +595,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   }
 
   //check iiif_data
-  if (req.body.iiif_data.regionByPx) {
-    const [x,y,w,h] = req.body.iiif_data.regionByPx;
+  const regionByPx = req.body.iiif_data ? req.body.iiif_data.regionByPx : undefined;
+  if (regionByPx) {
+    const [x,y,w,h] = regionByPx;
     
     //tests x + y is < width/height image and w,h is > 0
     const imgWidth = req.body.width? req.body.width : req.image.width;
@@ -704,7 +713,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
     name: req.body.name,
     iiif_data: req.body.iiif_data ? {
       image_service3_url: req.body.iiif_data.image_service3_url,
-      regionByPx: req.body.iiif_data.regionByPx
+      regionByPx: req.body.iiif_data.regionByPx ? req.body.iiif_data.regionByPx.toString() : null
     } : req.image.iiif_data,
     title: req.body.title,
     orig_title: req.body.title,

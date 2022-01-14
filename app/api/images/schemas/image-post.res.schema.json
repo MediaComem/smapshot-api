@@ -38,21 +38,7 @@
           "type": "string"
         },
         "regionByPx": {
-          "oneOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "minItems": 4,
-              "maxItems": 4,
-              "example": [794,586,2379,1511]
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": ["string", "null"]
         }
       },
       "additionalProperties": false,

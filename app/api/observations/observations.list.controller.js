@@ -117,6 +117,9 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
         WHEN iiif_data->>'size_info' IS NOT NULL
           THEN json_build_object('image_url', NULL,
                                  'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+          WHEN iiif_data->>'regionByPx' IS NOT NULL
+          THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/500,/0/default.jpg'),
+                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
           else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'),
                                  'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
         end
