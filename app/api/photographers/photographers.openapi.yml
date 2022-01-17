@@ -5,7 +5,7 @@
       description: |-
         ## Authorization
 
-        **Required role:** `owner_admin`.
+        **Required role:** `owner_admin` or `superadmin`.
 
       requestBody:
         required: true

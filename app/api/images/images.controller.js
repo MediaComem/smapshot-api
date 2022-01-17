@@ -554,13 +554,13 @@ exports.submitImage = utils.route(async (req, res) => {
 exports.updateAttributes = utils.route(async (req, res) => {
 
   //if width/height updated, check if image is already georeferenced
-  if (req.image.date_georef && (req.body.width || req.body.height || req.body.iiif_link) ) {
+  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.iiif_link || req.body.apriori_location) ) {
 
     throw requestBodyValidationError(req, [
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif link or dimensions can\'t be changed.'),
+        message: req.__('Image already georeferenced, iiif link, dimensions or apriori_location can\'t be changed.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
@@ -624,7 +624,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
     const req_apriori_location= req.body.apriori_location;
     const longitude = req_apriori_location.longitude;
     const latitude = req_apriori_location.latitude;
-    const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 0;
+    const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 1000;
     
     const apriori_location_json = models.sequelize.fn(
       "ST_SetSRID",
