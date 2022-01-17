@@ -67,7 +67,7 @@ async function getDbImage(image_id) {
           THEN case
             WHEN iiif_data->>'regionByPx' IS NOT NULL
               THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/',(images.iiif_data->>'regionByPx'),'/1024,1024,/0/default.jpg'))
-            ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
+              ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
             end
           ELSE
               json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/1024/',images.id,'.jpg'))
