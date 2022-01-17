@@ -27,7 +27,7 @@ describe('PUT /images/:id/attributes', () => {
     ({ app } = createApplicationWithMocks());
 
     collection1 = await createCollection();
-    image = await createImage({ collection: collection1, date_georef: '2017-02-05'});
+    image = await createImage({ collection: collection1, state: 'validated'});
     user1 = await createUser({ roles: ['volunteer', 'owner_admin'], owner_id: 1 });
     token1 = await generateJwtFor(user1);
 
@@ -171,7 +171,7 @@ describe('PUT /images/:id/attributes', () => {
         {
           location: 'body', 
           path:"",
-          message: 'Image already georeferenced, iiif link or dimensions can\'t be changed.',
+          message: 'Image already georeferenced, iiif link, dimensions or apriori_location can\'t be changed.',
           validation: 'DimensionsAndIIIFUnmodifiables'
         }
       ])
