@@ -139,7 +139,10 @@
         }
       },
       "additionalProperties": false,
-      "required": []
+      "required": [
+        "longitude",
+        "latitude"
+      ]
     },
     "photographer_ids": {
       "oneOf": [
