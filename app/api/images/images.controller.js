@@ -247,7 +247,7 @@ exports.getAttributes = utils.route(async (req, res) => {
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/200,/0/default.jpg'),
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
                                    'regionByPx', iiif_data->>'regionByPx')
@@ -265,7 +265,7 @@ exports.getAttributes = utils.route(async (req, res) => {
                 THEN json_build_object('image_url', NULL,
                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
                 WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/',(iiif_data->>'regionByPx'),'/200,/0/default.jpg'),
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
                                     'regionByPx', iiif_data->>'regionByPx')
@@ -514,7 +514,7 @@ exports.submitImage = utils.route(async (req, res) => {
     exact_date: exact_date_req,
     iiif_data: {
       image_service3_url: req.body.iiif_data.image_service3_url,
-      regionByPx: req.body.iiif_data.regionByPx ? req.body.iiif_data.regionByPx.toString() : null
+      regionByPx: req.body.iiif_data.regionByPx
     },
     title: req.body.title,
     orig_title: req.body.title,
@@ -717,7 +717,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
     name: req.body.name,
     iiif_data: req.body.iiif_data ? {
       image_service3_url: req.body.iiif_data.image_service3_url,
-      regionByPx: req.body.iiif_data.regionByPx ? req.body.iiif_data.regionByPx.toString() : null
+      regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
     title: req.body.title,
     orig_title: req.body.title,
