@@ -24,12 +24,9 @@ exports.getOwnerScope = req => {
       attributes: [],
       where
     });
-  } else if (user.hasRole('volunteer')) {
-    where.user_id = user.id;
   } else if (!user.isSuperAdmin()) {
-    // A super administrator can do anything. Any other user should not reach
-    // this point.
-    throw new Error(`Cannot determine owner scope for user ${user.id} with unsupported role(s) ${user.roles.join(', ')}`);
+    // scope volunteers to see only their own observations
+    where.user_id = user.id;
   }
 
   return { include, where };
