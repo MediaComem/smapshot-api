@@ -171,13 +171,51 @@ describe('PUT /images/:id/attributes', () => {
         {
           location: 'body', 
           path:"",
-          message: 'Image already georeferenced, iiif link, dimensions or apriori_location can\'t be changed.',
+          message: 'Image already georeferenced, iiif data or dimensions can\'t be changed.',
           validation: 'DimensionsAndIIIFUnmodifiables'
         }
       ])
       .and.to.matchResponseDocumentation();
 
     await expectNoSideEffects(app, initialState);
+  });
+
+
+  it('check requested JSON body for regionByPx', async () => {
+
+    //new image to update
+    const imageToUpdate = await createImage({ collection: collection1 });
+    initialState = await loadInitialState();
+    
+    const req = {
+      method: 'PUT',
+      path: `/images/${imageToUpdate.id}/attributes`,
+      headers: {
+        Authorization: `Bearer ${token1}`
+      },
+      body: {
+        iiif_data: {
+          image_service3_url:"updated",
+          regionByPx: ["300","200","2500, 1500"]
+        }
+      }
+    };
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+    .to.have.status(422)
+    .and.to.have.requestBodyValidationErrors([
+      { location: 'body', validation: 'minItems', message: 'should NOT have fewer than 4 items', path: '/iiif_data/regionByPx' },
+      { location: 'body', validation: 'type', message: 'should be null', path: '/iiif_data/regionByPx' },
+      { location: 'body', validation: 'oneOf', message: 'should match exactly one schema in oneOf', path: '/iiif_data/regionByPx' },
+      { location: 'body', validation: 'type', message: 'should be integer', path: '/iiif_data/regionByPx/0' },
+      { location: 'body', validation: 'type', message: 'should be integer', path: '/iiif_data/regionByPx/1' },
+      { location: 'body', validation: 'type', message: 'should be integer', path: '/iiif_data/regionByPx/2' }
+    ])
+      .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
   });
 
 

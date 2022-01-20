@@ -374,6 +374,9 @@ describe('POST /images', () => {
         id: 1,
         owner_id: 1,
         state: 'initial',
+        iiif_data: {
+          image_service3_url:"https://www.e-rara.ch/zuz/i3f/v20/9380556"
+        },
         original_state: 'initial',
         exact_date: true,
         date_orig: "Null",

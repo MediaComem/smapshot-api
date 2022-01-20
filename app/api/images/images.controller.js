@@ -250,7 +250,7 @@ exports.getAttributes = utils.route(async (req, res) => {
                 THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
-                                   'regionByPx', iiif_data->>'regionByPx')
+                                   'regionByPx', iiif_data->'regionByPx')
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
@@ -268,7 +268,7 @@ exports.getAttributes = utils.route(async (req, res) => {
                 THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
-                                    'regionByPx', iiif_data->>'regionByPx')
+                                    'regionByPx', iiif_data->'regionByPx')
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
