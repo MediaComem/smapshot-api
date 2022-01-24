@@ -246,6 +246,11 @@ exports.getAttributes = utils.route(async (req, res) => {
                 THEN json_build_object('image_url', NULL,
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
+                WHEN iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
+                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                   'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
+                                   'regionByPx', iiif_data->'regionByPx')
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
@@ -259,12 +264,19 @@ exports.getAttributes = utils.route(async (req, res) => {
               WHEN iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('image_url', NULL,
                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+                WHEN iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
+                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
+                                    'regionByPx', iiif_data->'regionByPx')
                 ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
-                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
+                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
+                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 END
         ELSE
             json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
-                              'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')))
+                              'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
+                              'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         end)`
       ),
       "media"
@@ -439,6 +451,25 @@ exports.submitImage = utils.route(async (req, res) => {
     ])
   } 
 
+  //check iiif_data
+  if (req.body.iiif_data.regionByPx) {
+    const [x,y,w,h] = req.body.iiif_data.regionByPx;
+    //tests x + y is < width/height image and w,h is > 0
+    const test_xy = x < req.body.width && y < req.body.height;
+    const test_wh = w > 0 && h > 0;
+
+    if (!test_xy || !test_wh) {
+      throw requestBodyValidationError(req, [
+        {
+          location: 'body',
+          path: '',
+          message: req.__('Region parameters not correct.'),
+          validation: 'WrongRegionParameters'
+        }
+      ])
+    }
+  }
+
   //check if given photographers already exist and find them
   let req_photographer_ids = req.body.photographer_ids;
   if (!req_photographer_ids || req_photographer_ids.length === 0) {
@@ -482,7 +513,8 @@ exports.submitImage = utils.route(async (req, res) => {
     date_inserted: models.sequelize.literal("current_timestamp"),
     exact_date: exact_date_req,
     iiif_data: {
-      image_service3_url: req.body.iiif_link
+      image_service3_url: req.body.iiif_data.image_service3_url,
+      regionByPx: req.body.iiif_data.regionByPx
     },
     title: req.body.title,
     orig_title: req.body.title,
@@ -560,10 +592,33 @@ exports.updateAttributes = utils.route(async (req, res) => {
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif link, dimensions or apriori_location can\'t be changed.'),
+        message: req.__('Image already georeferenced, iiif data or dimensions can\'t be changed.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
+  }
+
+  //check iiif_data
+  const regionByPx = req.body.iiif_data ? req.body.iiif_data.regionByPx : undefined;
+  if (regionByPx) {
+    const [x,y,w,h] = regionByPx;
+    
+    //tests x + y is < width/height image and w,h is > 0
+    const imgWidth = req.body.width? req.body.width : req.image.width;
+    const imgHeight = req.body.height? req.body.height : req.image.height;
+    const test_xy = x < imgWidth && y < imgHeight;
+    const test_wh = w > 0 && h > 0;
+
+    if (!test_xy || !test_wh) {
+      throw requestBodyValidationError(req, [
+        {
+          location: 'body',
+          path: '',
+          message: req.__('Region parameters not correct.'),
+          validation: 'WrongRegionParameters'
+        }
+      ])
+    }
   }
 
   //UPDATE PHOTOGRAPHERS
@@ -660,8 +715,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   await req.image.update({
     is_published: req.body.is_published,
     name: req.body.name,
-    iiif_data: req.body.iiif_link ? {
-      image_service3_url: req.body.iiif_link
+    iiif_data: req.body.iiif_data ? {
+      image_service3_url: req.body.iiif_data.image_service3_url,
+      regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
     title: req.body.title,
     orig_title: req.body.title,

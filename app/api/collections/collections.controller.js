@@ -103,6 +103,8 @@ const getCollections = async (req, res) => {
               THEN case
                 when banner.iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('banner_url', NULL)
+                WHEN banner.iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/',(banner.iiif_data->>'regionByPx'),'/${image_width},/0/default.jpg'))
                 else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
               end
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
@@ -248,6 +250,8 @@ exports.getList = route(async (req, res) => {
               THEN case 
                 when banner.iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('banner_url', NULL)
+                WHEN banner.iiif_data->>'regionByPx' IS NOT NULL
+                THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/',(banner.iiif_data->>'regionByPx'),'/${image_width},/0/default.jpg'))
                 else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
               end
               else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
@@ -415,7 +419,9 @@ exports.getById = route(async (req, res) => {
           THEN case 
             when banner.iiif_data->>'size_info' IS NOT NULL
               THEN json_build_object('banner_url', NULL)
-              else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
+              WHEN banner.iiif_data->>'regionByPx' IS NOT NULL
+              THEN json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/',(banner.iiif_data->>'regionByPx'),'/${image_width},/0/default.jpg'))
+              else json_build_object('banner_url', CONCAT((banner.iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
           end
           else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collections.id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/', collections.banner_id,'.jpg'))
           end)`

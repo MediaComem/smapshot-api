@@ -154,7 +154,8 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
       tiles: {
         type: 'dzi',
         url: `http://localhost:1337/data/collections/${collection.id}/images/tiles/${id}.dzi`
-      }
+      },
+      model_3d_url: `http://localhost:1337/data/collections/${collection.id}/gltf/${id}.gltf`
     };
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
@@ -251,12 +252,18 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
   }
 
   //media
-  if (requestBody.iiif_link) {
+  if (requestBody.iiif_data) {
+    const region = requestBody.iiif_data.regionByPx ? requestBody.iiif_data.regionByPx : "full";
     expected.media = { 
-      image_url: expected.iiif_link + "/full/200,/0/default.jpg",
-      tiles: { type: 'iiif', url: expected.iiif_link + "/info.json"}
+      image_url: expected.iiif_data.image_service3_url + "/" + region + "/200,/0/default.jpg",
+      tiles: { type: 'iiif', url: expected.iiif_data.image_service3_url + "/info.json"},
+      model_3d_url: `http://localhost:1337/data/collections/${expected.collection.id}/gltf/${expected.id}.gltf`,
     };
-    delete expected.iiif_link;
+    if (requestBody.iiif_data.regionByPx) {
+      //return regionByPx only if not null 
+      expected.media.regionByPx = requestBody.iiif_data.regionByPx;
+    }
+    delete expected.iiif_data;
   }
 
   //date
