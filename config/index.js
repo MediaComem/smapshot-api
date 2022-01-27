@@ -77,6 +77,6 @@ exports.smtp = {
   allowInvalidCertificate: parseEnvBoolean('MAIL_ALLOW_INVALID_CERTIFICATE', { default: false })
 };
 
-exports.proxyGeoreferencerMode = parseEnv('PROXY_GEOREFERENCER_MODE', { required: false });
+exports.proxyGeoreferencerMode = parseEnvBoolean('PROXY_GEOREFERENCER_MODE', { required: false });
 
 exports.timezone = parseEnv('TZ', { required: false });
