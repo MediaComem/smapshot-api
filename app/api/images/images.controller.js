@@ -586,7 +586,7 @@ exports.submitImage = utils.route(async (req, res) => {
 exports.updateAttributes = utils.route(async (req, res) => {
 
   //if width/height updated, check if image is already georeferenced
-  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.iiif_link || req.body.apriori_location) ) {
+  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.iiif_data || req.body.apriori_location) ) {
 
     throw requestBodyValidationError(req, [
       {

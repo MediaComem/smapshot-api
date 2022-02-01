@@ -158,8 +158,9 @@ describe('PUT /images/:id/attributes', () => {
         Authorization: `Bearer ${token1}`
       },
       body: {
-        width: 1000,
-        height: 1000
+        iiif_data: {
+          image_service3_url: "https://www.e-rara.ch/zuz/i3f/v20/11598395/"
+        }
       }
     };
 
