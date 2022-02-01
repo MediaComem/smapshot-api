@@ -57,7 +57,7 @@ exports.getList = utils.route(async (req, res) => {
               when iiif_data->>'size_info' IS NOT NULL
               THEN json_build_object('banner_url', NULL)
               WHEN iiif_data->>'regionByPx' IS NOT NULL
-              THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'))
+              THEN json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'))
               else json_build_object('banner_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'))
             end  
             else json_build_object('banner_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',banner.id,'.jpg'))
