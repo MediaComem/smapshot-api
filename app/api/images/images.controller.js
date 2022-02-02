@@ -5,9 +5,10 @@ const models = require("../../models");
 const { userHasRole } = require("../../utils/authorization");
 const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
-const { notFoundError, requestBodyValidationError } = require('../../utils/errors');
+const { notFoundError, requestBodyValidationError, poseEstimationError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
 const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const pose = require("../pose-estimation/pose-estimation.controller");
 
 // PUT /images/:id/state
 // =====================
@@ -586,7 +587,7 @@ exports.submitImage = utils.route(async (req, res) => {
 exports.updateAttributes = utils.route(async (req, res) => {
 
   //if width/height updated, check if image is already georeferenced
-  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.iiif_data || req.body.apriori_location) ) {
+  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.apriori_location) ) {
 
     throw requestBodyValidationError(req, [
       {
@@ -599,8 +600,10 @@ exports.updateAttributes = utils.route(async (req, res) => {
   }
 
   //check iiif_data
+  let oldImageData = undefined;
   const regionByPx = req.body.iiif_data ? req.body.iiif_data.regionByPx : undefined;
   if (regionByPx) {
+    oldImageData = await getDbImage(req.image.id);
     const [x,y,w,h] = regionByPx;
     
     //tests x + y is < width/height image and w,h is > 0
@@ -735,6 +738,25 @@ exports.updateAttributes = utils.route(async (req, res) => {
     date_orig: req.body.date_orig
   });
 
+  //recompute pose if new cropping and image is goelocalised
+  if (regionByPx && (oldImageData.state === 'waiting_validation' || oldImageData.state === 'validated')) {
+    const oldGCPs = oldImageData['geolocalisation.gcp_json'];
+    const newGCPsOffset = oldGCPs.map( gcp => {
+      return {
+        ...gcp,
+        x: gcp.x-regionByPx[0],
+        xReproj: gcp.xReproj-regionByPx[0],
+        y: gcp.y-regionByPx[1],
+        yReproj: gcp.yReproj-regionByPx[1]
+      };
+    });
+    try {
+      await pose.computePoseNewCrop(req, req.image.id, newGCPsOffset, regionByPx);
+    } catch {
+      throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
+    }
+  }
+
   res.status(200).send({
     message: "Image attributes have been updated."
   });
@@ -800,4 +822,27 @@ async function findPhotographers(req, photographer_ids) {
     ]);
   }
   return photographers
+}
+
+//fetch image data
+async function getDbImage(image_id){
+  const query = models.images.findOne({
+    raw: true,
+    attributes: [
+      "iiif_data"
+    ],
+    include: [
+      {
+        model: models.geolocalisations,
+        attributes: [
+          "gcp_json"
+        ],
+        required:false
+      }
+    ],
+    where: {
+      id: parseInt(image_id, 10)
+    }
+  });
+  return await query
 }
