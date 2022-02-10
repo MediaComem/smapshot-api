@@ -80,7 +80,7 @@ Command                   | Description
 :------------------------ | :------------------------------------------------------------------
 `npm run compose:app`     | Start the application and install dependencies the first time.
 
-Visit http://localhost:1337 once the application has started.
+Visit http://localhost:1337/docs/ once the application has started.
 
 ### Run the automated tests
 
