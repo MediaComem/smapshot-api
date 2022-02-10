@@ -30,7 +30,22 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
 
 ## Initial setup
 
+### Fetch (or ask for) a database dump
+
+* As root on the production server:
+  * `cp /data/backups/smapshot-backend/smapshot_database_daily/{datetime of the previous day}/smapshot_database_daily.tar /tmp/`
+* As username on your local machine, run the following steps:
+  * `scp {username}@{servername-or-ip}:/tmp/smapshot_database_daily.tar /home/{username}/Download/`
+  * `cd /home/{username}/Download/`
+  * `tar -xvf smapshot_database_daily.tar`
+  * `cd ./smapshot_database_daily/databases/`
+  * `gzip -d PostgreSQL.sql.gz`
+  * `rm /home/{username}/Download/smapshot_database_daily.tar`
+### Set your environment
+
 * Copy the `.env.sample` file to `.env` and adapt it to your local environment.
+  * Especially set up Facebook and Google OAuth credentials.
+  * Set up the `DUMP_FILE` variable to reference the previousely fetched PostgreSQL database dump, e.g. `/home/{username}/Downloads/smapshot_database_daily/databases/PostgreSQL.sql`.
 
   > If you are developing with Docker Compose, you do not need to configure the database connection, as the database is created and configured for you.
 * You can download sample images from [the Switch
