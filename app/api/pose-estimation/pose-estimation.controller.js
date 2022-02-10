@@ -69,13 +69,13 @@ function computeGCPRatio(_gcpArray, _width, _height) {
    return surfaceRatio;
  }
 
-async function computePoseNewCrop(req, id, gcps, regionByPx) {
+async function computePoseNewCrop(req, id, gcps, imageDimensions) {
   const image_id = parseInt(id);
   const image = await getDbImage(image_id);
-  const gcpArrayString = JSON.stringify(gcps)
+  const gcpArrayString = JSON.stringify(gcps);
   let results;
   try {
-    results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, regionByPx[2], regionByPx[3], 0)
+    results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, imageDimensions[2], imageDimensions[3], 0);
   } catch(error) {
     throw poseEstimationError(req);
   }
@@ -86,7 +86,7 @@ async function computePoseNewCrop(req, id, gcps, regionByPx) {
     const {imageCoordinatesForGltf, longitude, latitude, altitude, roll, tilt, azimuth, focal} = results;
 
     // Compute surface covered with gcps
-    const ratio = computeGCPRatio(gcps, regionByPx[2], regionByPx[3]);
+    const ratio = computeGCPRatio(gcps, imageDimensions[2], imageDimensions[3]);
 
     // Update values stored in image
     await models.images.update(
@@ -106,7 +106,7 @@ async function computePoseNewCrop(req, id, gcps, regionByPx) {
       }
     );
 
-    // Update values stored in geolocalisation
+    // Update values stored in geolocalisation (except the gcps)
     await models.geolocalisations.update(
       {
         location: models.sequelize.fn(

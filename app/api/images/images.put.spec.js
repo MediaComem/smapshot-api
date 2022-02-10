@@ -149,7 +149,7 @@ describe('PUT /images/:id/attributes', () => {
   });
 
 
-  it('does not authorize to update georeferenced image', async () => {
+  it('does not authorize to update iiif_url of georeferenced image', async () => {
 
     const req = {
       method: 'PUT',
@@ -159,7 +159,8 @@ describe('PUT /images/:id/attributes', () => {
       },
       body: {
         iiif_data: {
-          image_service3_url: "https://www.e-rara.ch/zuz/i3f/v20/11598395/"
+          image_service3_url: "https://www.otherurl",
+          regionByPx: [300,200,2500,1500]
         }
       }
     };
@@ -172,7 +173,7 @@ describe('PUT /images/:id/attributes', () => {
         {
           location: 'body', 
           path:"",
-          message: 'Image already georeferenced, iiif data or dimensions can\'t be changed.',
+          message: 'Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.',
           validation: 'DimensionsAndIIIFUnmodifiables'
         }
       ])
@@ -220,7 +221,7 @@ describe('PUT /images/:id/attributes', () => {
   });
 
 
-  it('correctly updates image attributes', async () => {
+  it('correctly updates attributes of a non georeferenced image', async () => {
 
     //new image to update
     const imageToUpdate = await createImage({ collection: collection1 });

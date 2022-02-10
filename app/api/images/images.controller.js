@@ -585,15 +585,19 @@ exports.submitImage = utils.route(async (req, res) => {
 // ==========================
 
 exports.updateAttributes = utils.route(async (req, res) => {
-
-  //if width/height updated, check if image is already georeferenced
-  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.apriori_location) ) {
-
+  //If image is already georeferenced: does not allow to update width, height ,apriori_locations or iiif_data.image_service3_url.
+  const isGeoreferenced = req.image.state === 'waiting_validation' || req.image.state === 'validated';
+  const IsDimensionsUpdated = Boolean(req.body.width || req.body.height);
+  const IsAprioriLocationUpdated = Boolean(req.body.apriori_location);
+  //const IsImageIIIF = Boolean(req.image.iiif_data); //check if updated image is a iiif image
+  const imageOriginalUrl = req.image.iiif_data ? req.image.iiif_data.image_service3_url : null;
+  const isIIIFImageUrlUpdated = Boolean(req.body.iiif_data && !(req.body.iiif_data.image_service3_url === imageOriginalUrl));
+  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated) ) {
     throw requestBodyValidationError(req, [
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif data or dimensions can\'t be changed.'),
+        message: req.__('Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
@@ -736,20 +740,33 @@ exports.updateAttributes = utils.route(async (req, res) => {
     date_orig: req.body.date_orig
   });
 
-  //recompute pose if new cropping and image is goelocalised
-  if (regionByPx && (req.image.state === 'waiting_validation' || req.image.state === 'validated')) {
+  //RECOMPUTE POSE
+  //if image is already geolocalised and new iiif_data, recompute pose
+  if (isGeoreferenced && req.body.iiif_data) {
+    //fetch original gcps calculated on full image (no offset due to cropping) stored in database
     const oldGCPs = req.image.geolocalisation.gcp_json;
-    const newGCPsOffset = oldGCPs.map( gcp => {
-      return {
-        ...gcp,
-        x: gcp.x-regionByPx[0],
-        xReproj: gcp.xReproj-regionByPx[0],
-        y: gcp.y-regionByPx[1],
-        yReproj: gcp.yReproj-regionByPx[1]
-      };
-    });
+    let newGCPsOffset;
+    let imageDimensions;
+
+    //if new region, recompute new GCP offsets
+    if (regionByPx) {
+      imageDimensions = regionByPx; 
+      newGCPsOffset = oldGCPs.map( gcp => {
+        return {
+          ...gcp,
+          x: gcp.x-regionByPx[0],
+          xReproj: gcp.xReproj-regionByPx[0],
+          y: gcp.y-regionByPx[1],
+          yReproj: gcp.yReproj-regionByPx[1]
+        };
+      });
+    } else if (!regionByPx) {
+      //if region removed, recompute with old original gcps
+      imageDimensions = [0,0, req.image.width, req.image.height]; 
+      newGCPsOffset = oldGCPs;
+    }
     try {
-      await pose.computePoseNewCrop(req, req.image.id, newGCPsOffset, regionByPx);
+      await pose.computePoseNewCrop(req, req.image.id, newGCPsOffset, imageDimensions);
     } catch {
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
