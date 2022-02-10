@@ -30,21 +30,34 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
 
 ## Initial setup
 
-* Copy the `.env.sample` file to `.env` and adapt it to your local environment.
+### Fetch (or ask for) a database dump
 
-  > If you are developing with Docker Compose, you do not need to configure the
-  > database connection, as the database is created and configured for you.
+* As root on the production server:
+  * `cp /data/backups/smapshot-backend/smapshot_database_daily/{datetime of the previous day}/smapshot_database_daily.tar /tmp/`
+* As username on your local machine, run the following steps:
+  * `scp {username}@{servername-or-ip}:/tmp/smapshot_database_daily.tar /home/{username}/Download/`
+  * `cd /home/{username}/Download/`
+  * `tar -xvf smapshot_database_daily.tar`
+  * `cd ./smapshot_database_daily/databases/`
+  * `gzip -d PostgreSQL.sql.gz`
+  * `rm /home/{username}/Download/smapshot_database_daily.tar`
+### Set your environment
+
+* Copy the `.env.sample` file to `.env` and adapt it to your local environment.
+  * Especially set up Facebook and Google OAuth credentials.
+  * Set up the `DUMP_FILE` variable to reference the previousely fetched PostgreSQL database dump, e.g. `/home/{username}/Downloads/smapshot_database_daily/databases/PostgreSQL.sql`.
+
+  > If you are developing with Docker Compose, you do not need to configure the database connection, as the database is created and configured for you.
 * You can download sample images from [the Switch
   drive](https://drive.switch.ch/index.php/apps/files/?dir=/Smapshot/Sample%20Data&fileid=1891746707).
-  Unzip the contents of the `data.zip` file into the `public/data` directory in
-  this repository.
-* Once you have set up the database in the following sections, if you do not
-  have a `super_admin` user account (password `super_admin`), you can add one with:
+  Unzip the contents of the `data.zip` file into the `public/data` directory in this repository.
 
-  ```sql
-  INSERT INTO public.users (first_name, last_name, email, username, date_registr, letter, lang, "password", roles, active)
-  VALUES ('Franck', 'Dulin', 'super_admin@smapshot.ch', 'super_admin', now(), TRUE, 'fr','$2b$12$v80JamELNdJnvHyVAQrUZOaIRJJ2BI48vTsZop4s5mgoA9jbcX4Ni','{volunteer,super_admin}',TRUE);
-  ```
+* A super admin demo account is created in the database during the intialization. It can be used to login in the API using the following information:
+  * first_name: Frank
+  * last_name: Dulin
+  * email: super_admin@smapshot.ch
+  * username: super_admin
+  * password: super_admin
 
 ## Develop with Docker Compose (recommended)
 
@@ -65,10 +78,9 @@ npm run compose:migrate
 
 Command                   | Description
 :------------------------ | :------------------------------------------------------------------
-`npm run compose`         | Start the application and install dependencies the first time.
-`npm run compose:install` | Run `npm install` to install missing/updated dependencies (slower).
+`npm run compose:app`     | Start the application and install dependencies the first time.
 
-Visit http://localhost:1337 once the application has started.
+Visit http://localhost:1337/docs/ once the application has started.
 
 ### Run the automated tests
 

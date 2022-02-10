@@ -7,7 +7,6 @@
   "bin": "./bin/www",
   "scripts": {
     "compose:app": "docker-compose up -d --build app",
-    "compose:install": "npx cross-env DOCKER_INSTALL_DEPENDENCIES=1 npm run compose",
     "compose:migrate": "docker-compose build base app && docker-compose run --rm app npm run migrate:wait",
     "compose:sequelize-cli": "docker-compose build base app && docker-compose run --rm app npx sequelize-cli",
     "compose:test": "docker-compose build base test_app && docker-compose run --rm test_app",
