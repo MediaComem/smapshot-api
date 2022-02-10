@@ -54,6 +54,8 @@ services:
       # Mount a persistent Docker volume into the container so that PostgreSQL
       # data survives container restart.
       - "db_data:/var/lib/postgresql/data"
+      - ./init_db.sh:/docker-entrypoint-initdb.d/11_init_db.sh
+      - "${DUMP_PATH}:/tmp/dump.sql"
 
   # Vector tiles generation for points container
   vt_generate:
