@@ -52,7 +52,7 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
   drive](https://drive.switch.ch/index.php/apps/files/?dir=/Smapshot/Sample%20Data&fileid=1891746707).
   Unzip the contents of the `data.zip` file into the `public/data` directory in this repository.
 
-* The demo super admin account to be used within the API is as follows:
+* A super admin demo account is created in the database during the intialization. It can be used to login in the API using the following information:
   * first_name: Frank
   * last_name: Dulin
   * email: super_admin@smapshot.ch
