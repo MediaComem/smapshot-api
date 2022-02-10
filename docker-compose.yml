@@ -4,6 +4,7 @@ version: "3.8"
 services:
   # Application container (Node.js server).
   app:
+    hostname: app
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -41,6 +42,7 @@ services:
   # Database container (PostgreSQL with PostGIS).
   db:
     image: postgis/postgis:13-3.1-alpine
+    hostname: db
     environment:
       POSTGRES_DB: smapshot_v2
       POSTGRES_USER: postgres
@@ -60,6 +62,7 @@ services:
   # Vector tiles generation for points container
   vt_generate:
     image: mediacomem/vtmarkersgenerator:2.3.1
+    hostname: vt_generate
     environment:
       # Always connect the application running in this container to the database
       # running in the `db` container. These environment variables take
@@ -85,6 +88,7 @@ services:
   # Serve vector tiles generated from vt_generate container
   vt_serve:
     image: mediacomem/mbtileserver:1.0.0
+    hostname: vt_serve
     environment:
       TILE_DIR: "/tilesets"
       MBTILESERVER_ARGS: "--disable-preview --disable-svc-list"
@@ -100,6 +104,7 @@ services:
 
   # Test application container (Mocha test runner).
   test_app:
+    hostname: test_app
     build:
       context: .
       dockerfile: Dockerfile.test
@@ -132,6 +137,7 @@ services:
   # Test database container (PostgreSQL with PostGIS).
   test_db:
     image: postgis/postgis:13-3.1-alpine
+    hostname: test_db
     environment:
       POSTGRES_DB: smapshot_test
       POSTGRES_USER: postgres
@@ -141,6 +147,7 @@ services:
   # Base image with compile-time and runtime dependencies.
   base:
     image: smapshot/base
+    hostname: base
     build:
       context: .
       dockerfile: Dockerfile.base
