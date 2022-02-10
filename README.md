@@ -32,12 +32,10 @@ The online documentation is available at https://smapshot.heig-vd.ch/api/v1/docs
 
 * Copy the `.env.sample` file to `.env` and adapt it to your local environment.
 
-  > If you are developing with Docker Compose, you do not need to configure the
-  > database connection, as the database is created and configured for you.
+  > If you are developing with Docker Compose, you do not need to configure the database connection, as the database is created and configured for you.
 * You can download sample images from [the Switch
   drive](https://drive.switch.ch/index.php/apps/files/?dir=/Smapshot/Sample%20Data&fileid=1891746707).
-  Unzip the contents of the `data.zip` file into the `public/data` directory in
-  this repository.
+  Unzip the contents of the `data.zip` file into the `public/data` directory in this repository.
 * Once you have set up the database in the following sections, if you do not
   have a `super_admin` user account (password `super_admin`), you can add one with:
 
@@ -65,8 +63,7 @@ npm run compose:migrate
 
 Command                   | Description
 :------------------------ | :------------------------------------------------------------------
-`npm run compose`         | Start the application and install dependencies the first time.
-`npm run compose:install` | Run `npm install` to install missing/updated dependencies (slower).
+`npm run compose:app`     | Start the application and install dependencies the first time.
 
 Visit http://localhost:1337 once the application has started.
 
