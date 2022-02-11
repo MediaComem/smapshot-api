@@ -614,7 +614,10 @@ exports.updateAttributes = utils.route(async (req, res) => {
     const test_xy = x < imgWidth && y < imgHeight;
     const test_wh = w > 0 && h > 0;
 
-    if (!test_xy || !test_wh) {
+    //conditions for recomputing correctly: cropping dimensions must be inside the original dimensions of the image
+    const test_maxWidthHeight = x + w <= imgWidth && y + h <= imgHeight;
+
+    if (!test_xy || !test_wh || !test_maxWidthHeight) {
       throw requestBodyValidationError(req, [
         {
           location: 'body',
