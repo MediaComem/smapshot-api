@@ -25,7 +25,8 @@ async function getDbImage(image_id){
       "state",
       "view_type",
       "collection_id",
-      "geolocalisation_id"
+      "geolocalisation_id",
+      "iiif_data"
     ],
     include: [
       {
@@ -204,12 +205,31 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
   if (image.state !== "initial" && image.state !== 'waiting_alignment' && image.view_type !== 'terrestrial') {
     // Compute Pose
     // ------------
-    const GCPs = image['geolocalisation.gcp_json']
-    const gcpArrayString = JSON.stringify(GCPs)
+    let GCPs;
+    //if image cropped, offset the gcps stored in db with the region
+    const GCPs_db = image['geolocalisation.gcp_json'];
+    if (image.iiif_data && image.iiif_data.regionByPx) {
+      GCPs = GCPs_db.map( gcp => {
+        return {
+          ...gcp,
+          x: gcp.x-image.iiif_data.regionByPx[0],
+          xReproj: gcp.xReproj-image.iiif_data.regionByPx[0],
+          y: gcp.y-image.iiif_data.regionByPx[1],
+          yReproj: gcp.yReproj-image.iiif_data.regionByPx[1]
+        };
+      });
+    } else {
+      GCPs = GCPs_db;
+    }
+    const gcpArrayString = JSON.stringify(GCPs);
+
+    //if image cropped, get new width and height
+    const image_width = image.iiif_data && image.iiif_data.regionByPx ? image.iiif_data.regionByPx[2] : image.width;
+    const image_height = image.iiif_data && image.iiif_data.regionByPx ? image.iiif_data.regionByPx[3] : image.height;
 
     let results;
     try {
-      results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image.width, image.height, 0)
+      results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image_width, image_height, 0)
     } catch(error) {
       throw poseEstimationError(req);
     }
@@ -221,7 +241,7 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
      const {imageCoordinatesForGltf, longitude, latitude, altitude, roll, tilt, azimuth, focal} = results;
 
      // Compute surface covered with gcps
-     const ratio = computeGCPRatio(GCPs, image.width, image.height);
+     const ratio = computeGCPRatio(GCPs, image_width, image_height);
 
      // Update values stored in image
      await models.images.update(

@@ -231,7 +231,7 @@ describe('PUT /images/:id/attributes', () => {
     const attributesToUpdate = {
       iiif_data: {
         image_service3_url:"updated",
-        regionByPx: [300,200,2500,1500]
+        regionByPx: [300,200,1700,1500]
       },
       is_published: false,
       title: "updated",
