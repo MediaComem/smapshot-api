@@ -5,9 +5,10 @@ const models = require("../../models");
 const { userHasRole } = require("../../utils/authorization");
 const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
-const { notFoundError, requestBodyValidationError } = require('../../utils/errors');
+const { notFoundError, requestBodyValidationError, poseEstimationError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
 const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const pose = require("../pose-estimation/pose-estimation.controller");
 
 // PUT /images/:id/state
 // =====================
@@ -584,15 +585,19 @@ exports.submitImage = utils.route(async (req, res) => {
 // ==========================
 
 exports.updateAttributes = utils.route(async (req, res) => {
-
-  //if width/height updated, check if image is already georeferenced
-  if ( (req.image.state === 'waiting_validation' || req.image.state === 'validated') && (req.body.width || req.body.height || req.body.iiif_data || req.body.apriori_location) ) {
-
+  //If image is already georeferenced: does not allow to update width, height ,apriori_locations or iiif_data.image_service3_url.
+  const isGeoreferenced = req.image.state === 'waiting_validation' || req.image.state === 'validated';
+  const IsDimensionsUpdated = Boolean(req.body.width || req.body.height);
+  const IsAprioriLocationUpdated = Boolean(req.body.apriori_location);
+  //const IsImageIIIF = Boolean(req.image.iiif_data); //check if updated image is a iiif image
+  const imageOriginalUrl = req.image.iiif_data ? req.image.iiif_data.image_service3_url : null;
+  const isIIIFImageUrlUpdated = Boolean(req.body.iiif_data && !(req.body.iiif_data.image_service3_url === imageOriginalUrl));
+  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated) ) {
     throw requestBodyValidationError(req, [
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif data or dimensions can\'t be changed.'),
+        message: req.__('Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
@@ -609,7 +614,10 @@ exports.updateAttributes = utils.route(async (req, res) => {
     const test_xy = x < imgWidth && y < imgHeight;
     const test_wh = w > 0 && h > 0;
 
-    if (!test_xy || !test_wh) {
+    //conditions for recomputing correctly: cropping dimensions must be inside the original dimensions of the image
+    const test_maxWidthHeight = x + w <= imgWidth && y + h <= imgHeight;
+
+    if (!test_xy || !test_wh || !test_maxWidthHeight) {
       throw requestBodyValidationError(req, [
         {
           location: 'body',
@@ -735,6 +743,38 @@ exports.updateAttributes = utils.route(async (req, res) => {
     date_orig: req.body.date_orig
   });
 
+  //RECOMPUTE POSE
+  //if image is already geolocalised and new iiif_data, recompute pose
+  if (isGeoreferenced && req.body.iiif_data) {
+    //fetch original gcps calculated on full image (no offset due to cropping) stored in database
+    const oldGCPs = req.image.geolocalisation.gcp_json;
+    let newGCPsOffset;
+    let imageDimensions;
+
+    //if new region, recompute new GCP offsets
+    if (regionByPx) {
+      imageDimensions = regionByPx; 
+      newGCPsOffset = oldGCPs.map( gcp => {
+        return {
+          ...gcp,
+          x: gcp.x-regionByPx[0],
+          xReproj: gcp.xReproj-regionByPx[0],
+          y: gcp.y-regionByPx[1],
+          yReproj: gcp.yReproj-regionByPx[1]
+        };
+      });
+    } else if (!regionByPx) {
+      //if region removed, recompute with old original gcps
+      imageDimensions = [0,0, req.image.width, req.image.height]; 
+      newGCPsOffset = oldGCPs;
+    }
+    try {
+      await pose.computePoseNewCrop(req, req.image.id, newGCPsOffset, imageDimensions);
+    } catch {
+      throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
+    }
+  }
+
   res.status(200).send({
     message: "Image attributes have been updated."
   });
@@ -748,6 +788,15 @@ exports.findImage = utils.route(async (req, res, next) => {
   const { where } = getOwnerScope(req);
 
   const image = await models.images.findOne({
+    include: [
+      {
+        model: models.geolocalisations,
+        attributes: [
+          "gcp_json"
+        ],
+        required:false
+      }
+    ],
     where: {
       ...where,
       id: req.params.id
@@ -801,3 +850,4 @@ async function findPhotographers(req, photographer_ids) {
   }
   return photographers
 }
+

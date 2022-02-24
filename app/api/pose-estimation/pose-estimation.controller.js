@@ -25,7 +25,8 @@ async function getDbImage(image_id){
       "state",
       "view_type",
       "collection_id",
-      "geolocalisation_id"
+      "geolocalisation_id",
+      "iiif_data"
     ],
     include: [
       {
@@ -68,6 +69,71 @@ function computeGCPRatio(_gcpArray, _width, _height) {
    const surfaceRatio = Math.round((areaBbox / areaImage) * 100);
    return surfaceRatio;
  }
+
+async function computePoseNewCrop(req, id, gcps, imageDimensions) {
+  const image_id = parseInt(id);
+  const image = await getDbImage(image_id);
+  const gcpArrayString = JSON.stringify(gcps);
+  let results;
+  try {
+    results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, imageDimensions[2], imageDimensions[3], 0);
+  } catch(error) {
+    throw poseEstimationError(req);
+  }
+
+  if (!results) {
+    throw poseEstimationError(req);
+  } else {
+    const {imageCoordinatesForGltf, longitude, latitude, altitude, roll, tilt, azimuth, focal} = results;
+
+    // Compute surface covered with gcps
+    const ratio = computeGCPRatio(gcps, imageDimensions[2], imageDimensions[3]);
+
+    // Update values stored in image
+    await models.images.update(
+      {
+        location: models.sequelize.fn(
+          "ST_SetSRID",
+          models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
+          "4326"
+        ),
+        roll: roll,
+        tilt: tilt,
+        azimuth: azimuth,
+        focal: focal
+      },
+      {
+        where: { id: image_id }
+      }
+    );
+
+    // Update values stored in geolocalisation (except the gcps)
+    await models.geolocalisations.update(
+      {
+        location: models.sequelize.fn(
+          "ST_SetSRID",
+          models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
+          "4326"
+        ),
+        roll: roll,
+        tilt: tilt,
+        azimuth: azimuth,
+        focal: focal,
+        surface_ratio: ratio
+      },
+      {
+        where: { id: image.geolocalisation_id }
+      }
+    );
+
+    try {
+      await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
+    } catch {
+      throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
+    }
+  }
+  
+}
 
 // Get parameters sent by the client
 exports.computePoseCreateGltf = route(async (req, res) => {
@@ -139,12 +205,31 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
   if (image.state !== "initial" && image.state !== 'waiting_alignment' && image.view_type !== 'terrestrial') {
     // Compute Pose
     // ------------
-    const GCPs = image['geolocalisation.gcp_json']
-    const gcpArrayString = JSON.stringify(GCPs)
+    let GCPs;
+    //if image cropped, offset the gcps stored in db with the region
+    const GCPs_db = image['geolocalisation.gcp_json'];
+    if (image.iiif_data && image.iiif_data.regionByPx) {
+      GCPs = GCPs_db.map( gcp => {
+        return {
+          ...gcp,
+          x: gcp.x-image.iiif_data.regionByPx[0],
+          xReproj: gcp.xReproj-image.iiif_data.regionByPx[0],
+          y: gcp.y-image.iiif_data.regionByPx[1],
+          yReproj: gcp.yReproj-image.iiif_data.regionByPx[1]
+        };
+      });
+    } else {
+      GCPs = GCPs_db;
+    }
+    const gcpArrayString = JSON.stringify(GCPs);
+
+    //if image cropped, get new width and height
+    const image_width = image.iiif_data && image.iiif_data.regionByPx ? image.iiif_data.regionByPx[2] : image.width;
+    const image_height = image.iiif_data && image.iiif_data.regionByPx ? image.iiif_data.regionByPx[3] : image.height;
 
     let results;
     try {
-      results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image.width, image.height, 0)
+      results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image_width, image_height, 0)
     } catch(error) {
       throw poseEstimationError(req);
     }
@@ -156,7 +241,7 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
      const {imageCoordinatesForGltf, longitude, latitude, altitude, roll, tilt, azimuth, focal} = results;
 
      // Compute surface covered with gcps
-     const ratio = computeGCPRatio(GCPs, image.width, image.height);
+     const ratio = computeGCPRatio(GCPs, image_width, image_height);
 
      // Update values stored in image
      await models.images.update(
@@ -205,3 +290,5 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
    return res.json({ success: true, message: "Image id: " + image_id + " is not georeferenced or is terrestrial." });
   }
 });
+
+exports.computePoseNewCrop = computePoseNewCrop

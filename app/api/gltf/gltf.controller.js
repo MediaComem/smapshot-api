@@ -25,7 +25,12 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
   }
   const image = await getDbImage(image_id);
   if (image.state !== "initial" && image.state !== 'waiting_alignment') {
-    let results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.width, image.height, image.focal)
+    let results;
+    if (image.iiif_data && image.iiif_data.regionByPx) {
+      results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.iiif_data.regionByPx[2], image.iiif_data.regionByPx[3], image.focal);
+    } else {
+      results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.width, image.height, image.focal);
+    }
     if (!results) {
      res.status(400).send({ message: req.__('pose.3dModelCreationError') });
     } else {

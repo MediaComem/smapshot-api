@@ -39,6 +39,11 @@ exports.createImage = async (options = {}) => {
     // retrieve the owner created when generating the collection
     owner = collection.owner;
   }
+  //retrieve iiif_data if given
+  let iiif_data = null;
+  if (options.iiif_data) {
+    iiif_data = options.iiif_data.regionByPx ? `json_build_object('image_service3_url','${options.iiif_data.image_service3_url}','regionByPx',json_build_array(${options.iiif_data.regionByPx}))`:`json_object('{image_service3_url,${options.iiif_data.image_service3_url}}')`;
+  }
 
   // TODO: images which are in state "waiting_validation" or "validated" should
   // probably have the following attributes randomly generated: azimuth, tilt,
@@ -110,6 +115,7 @@ exports.createImage = async (options = {}) => {
     original_state: get(options, 'original_state', 'initial'),
     state: get(options, 'state', 'initial'),
     country_iso_a2: get(options, 'country_iso_a2', null),
+    iiif_data: iiif_data,
     last_login: null
   };
 
@@ -126,7 +132,7 @@ exports.createImage = async (options = {}) => {
         downloaded, download_timestamp, footprint, viewshed_simple, viewshed_precise,
         viewshed_created, viewshed_timestamp, geotag_created, geotag_timestamp,
         geotags_json, date_validated, last_start, last_start_user_id, shop_link,
-        geolocalisation_id, state, original_state, country_iso_a2
+        geolocalisation_id, state, original_state, country_iso_a2, iiif_data
       )
       VALUES (
         :collection_id, :owner_id, :name, :date_inserted, :date_shot, :date_georef,
@@ -138,7 +144,7 @@ exports.createImage = async (options = {}) => {
         :downloaded, :download_timestamp, :footprint, :viewshed_simple, :viewshed_precise,
         :viewshed_created, :viewshed_timestamp, :geotag_created, :geotag_timestamp,
         :geotags_json, :date_validated, :last_start, :last_start_user_id, :shop_link,
-        :geolocalisation_id, :state, :original_state, :country_iso_a2
+        :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}
       )
       RETURNING id
     `,
