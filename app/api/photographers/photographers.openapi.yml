@@ -80,6 +80,17 @@
             - type: array
               items:
                 type: string
+      - name: link
+        in: query
+        description: Filter photographers by link. Return photographers whose link contains the specified value.
+        example: https://resource.net/
+        schema:
+          errorMessage: should be a string or an array of strings
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
     responses:
       "200":
         description: Successful request.

@@ -29,7 +29,8 @@ exports.getList = utils.route(async (req, res) => {
     id: inUniqueOrList(req.query.id),
     first_name: addLikeToValue(req.query.first_name),
     last_name: addLikeToValue(req.query.last_name),
-    company: addLikeToValue(req.query.company)
+    company: addLikeToValue(req.query.company),
+    link: addLikeToValue(req.query.link)
   }
   const cleanedWherePhotographers = cleanProp(wherePhotographers);
  
