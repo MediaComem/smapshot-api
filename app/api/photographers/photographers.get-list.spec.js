@@ -100,11 +100,11 @@ describe('GET /photographers', () => {
       //creation of photographers
       photographerAnonym = await createPhotographer({ first_name: null, last_name: 'Anonyme', link: null, company: null });
       photographer1 = await createPhotographer({  first_name: 'Jean-Marie-Jacques', last_name: 'Dupuis', company: 'sari' });
-      photographer2 = await createPhotographer();
+      photographer2 = await createPhotographer({ link: 'https://resource.test.net/' });
       photographer3 = await createPhotographer({  first_name: 'Marie', last_name: 'Colin', company: 'ethz' }); //no images
       photographer4 = await createPhotographer({  company: 'ethz' });
-      photographer5 = await createPhotographer();
-      photographer6 = await createPhotographer(); //no images
+      photographer5 = await createPhotographer({ link: 'https://resource.test.net/1' });
+      photographer6 = await createPhotographer({ link: 'https://resource.test.net/2' }); //no images
       
       //creation of images
       await createImage({ original_id: 'original_id1', collection: col1, photographers: [photographer1] });
@@ -258,6 +258,35 @@ describe('GET /photographers', () => {
           getExpectedPhotographer(photographer4, { nImages: 2 }),
           getExpectedPhotographer(photographer3, { nImages: 0 }),
           getExpectedPhotographer(photographer1, { nImages: 1 })
+        ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
+
+    it('retrieve list of photographers for specified links ', async () => {
+      initialState = await loadInitialState();
+
+      const req = {
+        ...baseRequest,
+        headers: {
+          Authorization: `Bearer ${tokenOwnerAdmin1}`
+        },
+        query: {
+          link: ['https://resource.test.net/']
+        }
+      };
+
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+      expect(res)
+        .to.have.status(200)
+        .and.have.jsonBody([
+          getExpectedPhotographer(photographer6, { nImages: 0 }),
+          getExpectedPhotographer(photographer5, { nImages: 2 }),
+          getExpectedPhotographer(photographer2, { nImages: 1 })
         ])
         .and.to.matchResponseDocumentation();
 
