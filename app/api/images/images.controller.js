@@ -458,8 +458,10 @@ exports.submitImage = utils.route(async (req, res) => {
     //tests x + y is < width/height image and w,h is > 0
     const test_xy = x < req.body.width && y < req.body.height;
     const test_wh = w > 0 && h > 0;
+    //conditions for recomputing correctly: cropping dimensions must be inside the original dimensions of the image
+    const test_maxWidthHeight = x + w <= req.body.width && y + h <= req.body.height;
 
-    if (!test_xy || !test_wh) {
+    if (!test_xy || !test_wh || !test_maxWidthHeight) {
       throw requestBodyValidationError(req, [
         {
           location: 'body',
