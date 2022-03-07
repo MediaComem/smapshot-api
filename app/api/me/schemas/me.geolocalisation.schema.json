@@ -28,7 +28,7 @@
         "id": {
           "$ref": "ApiId#"
         },
-        "name": {
+        "original_id": {
           "type": "string"
         },
         "title": {

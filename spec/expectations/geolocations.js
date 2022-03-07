@@ -29,7 +29,7 @@ exports.getExpectedGeolocation = (
     date_georef: date_georef.toISOString(),
     image: {
       id: image.id,
-      name: image.name,
+      original_id: image.original_id,
       title: image.title,
       owner: {
         id: image.owner.id,

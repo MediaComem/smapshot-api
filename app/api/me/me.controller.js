@@ -141,7 +141,7 @@ exports.getGeolocalisations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "iiif_data", media],
         include: [
           {
             model: models.owners,
@@ -222,7 +222,7 @@ exports.getObservations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "iiif_data", media],
         include: [
           {
             model: models.owners,
@@ -314,7 +314,7 @@ exports.getCorrections = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "name", "title", "caption", "orig_title", "orig_caption", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "caption", "orig_title", "orig_caption", "iiif_data", media],
         include: [
           {
             model: models.owners,

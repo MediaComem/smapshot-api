@@ -45,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
       name: {
         // Name of the image
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
       },
       date_shot: {
         // Date of the photography

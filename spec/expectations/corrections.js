@@ -30,7 +30,7 @@ exports.getExpectedCorrection = (
     date_created: date_created.toISOString(),
     image: {
       id: image.id,
-      name: image.name,
+      original_id: image.original_id,
       title: image.title,
       caption: image.caption,
       orig_title: image.orig_title,

@@ -512,7 +512,6 @@ exports.submitImage = utils.route(async (req, res) => {
     owner_id: req.collection.owner_id,
     collection_id: req.body.collection_id,
     is_published: req.body.is_published,
-    name: req.body.name,
     date_inserted: models.sequelize.literal("current_timestamp"),
     exact_date: exact_date_req,
     iiif_data: {
@@ -591,9 +590,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   const isGeoreferenced = req.image.state === 'waiting_validation' || req.image.state === 'validated';
   const IsDimensionsUpdated = Boolean(req.body.width || req.body.height);
   const IsAprioriLocationUpdated = Boolean(req.body.apriori_location);
-  //const IsImageIIIF = Boolean(req.image.iiif_data); //check if updated image is a iiif image
   const imageOriginalUrl = req.image.iiif_data ? req.image.iiif_data.image_service3_url : null;
   const isIIIFImageUrlUpdated = Boolean(req.body.iiif_data && !(req.body.iiif_data.image_service3_url === imageOriginalUrl));
+
   if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated) ) {
     throw requestBodyValidationError(req, [
       {
@@ -724,7 +723,6 @@ exports.updateAttributes = utils.route(async (req, res) => {
   //UPDATE IMAGE OTHER ATTRIBUTES
   await req.image.update({
     is_published: req.body.is_published,
-    name: req.body.name,
     iiif_data: req.body.iiif_data ? {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
