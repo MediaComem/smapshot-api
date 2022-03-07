@@ -126,7 +126,6 @@ describe('POST /images', () => {
           correction_enabled: false,
           height: 200,
           width: 600,
-          name: "e-rara.ch/zuz/i3f/v20/9380556",
           date_shot: "2021-11-29",
           apriori_location: {
             longitude: 8.30999999,
@@ -340,9 +339,6 @@ describe('POST /images', () => {
           property: 'width'
         }),
         missingPropertyError({
-          property: 'name'
-        }),
-        missingPropertyError({
           property: 'apriori_location'
         })
       ])
@@ -433,7 +429,7 @@ describe('POST /images', () => {
           ...baseRequestOwner.body,
           iiif_data: {
             image_service3_url: "https://www.e-rara.ch/zuz/i3f/v20/9380556",
-            regionByPx: [20,10,100,500]
+            regionByPx: [20,10,100,190]
           },
           caption: "test caption",
           download_link: "https://www.e-rara.ch/zuz/i3f/v20/9380556",

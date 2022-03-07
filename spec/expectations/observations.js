@@ -29,7 +29,7 @@ exports.getExpectedMeObservation = (
     date_created: date_created.toISOString().slice(0,10),
     image: {
       id: image.id,
-      name: image.name,
+      original_id: image.original_id,
       title: image.title,
       owner: {
         id: image.owner.id,

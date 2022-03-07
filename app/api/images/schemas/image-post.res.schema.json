@@ -116,9 +116,6 @@
       "type": "integer",
       "exclusiveMinimum": 0
     },
-    "name": {
-      "type": "string"
-    },
     "date_orig": {
       "type": ["string","null"]
     },
@@ -232,8 +229,7 @@
     "observation_enabled", 
     "correction_enabled", 
     "height", 
-    "width", 
-    "name",
+    "width",
     "apriori_location"
   ]
 }

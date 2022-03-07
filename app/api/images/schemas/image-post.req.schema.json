@@ -36,7 +36,8 @@
       "type": "boolean"
     },
     "original_id": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 50
     },
     "title": {
       "type": "string"
@@ -83,9 +84,6 @@
       "type": "integer",
       "exclusiveMinimum": 0,
       "example": 2000
-    },
-    "name": {
-      "type": "string"
     },
     "date_orig": {
       "type": ["string","null"]
@@ -179,8 +177,7 @@
     "observation_enabled", 
     "correction_enabled", 
     "height", 
-    "width", 
-    "name",
+    "width",
     "apriori_location"
   ]
 }
