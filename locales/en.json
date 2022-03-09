@@ -47,7 +47,6 @@
     "images": {
         "submitted": {
             "success": "Your image has been successfully submitted.",
-            "dateRequired": "Date_shot, or date_shot_min / date_shot_max is needed.",
             "originalIdAlreadyExist": "An image with this original_id already exists in the database.",
             "photographerDoesNotExist": "The photographer with specified id does not exist."
         }

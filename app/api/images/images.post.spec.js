@@ -126,7 +126,6 @@ describe('POST /images', () => {
           correction_enabled: false,
           height: 200,
           width: 600,
-          date_shot: "2021-11-29",
           apriori_location: {
             longitude: 8.30999999,
             latitude: 47.19999999
@@ -260,38 +259,6 @@ describe('POST /images', () => {
     });
 
 
-    it('does not allow to post images if no date is provided', async () => {
-      initialState = await loadInitialState();
-
-      const req = {
-        ...baseRequestOwner,
-        body: {
-          ...baseRequestOwner.body,
-          date_shot: undefined,
-          date_shot_min: "2021-11-29"
-        }
-      };
-
-      expect(req).to.matchRequestDocumentation();
-  
-      const res = await testHttpRequest(app, req);
-  
-      expect(res)
-      .to.have.status(422)
-      .and.to.have.requestBodyValidationErrors([
-        {
-          location: 'body', 
-          path:"",
-          message: ensureTranslation('images.submitted.dateRequired'),
-          validation: "imageDateRequired"
-        }
-      ])
-      .and.to.matchResponseDocumentation();
-
-      await expectNoSideEffects(app, initialState);
-    });
-
-
     it('control mandatory fields', async () => {
       initialState = await loadInitialState();
 
@@ -299,8 +266,7 @@ describe('POST /images', () => {
         ...baseRequestOwner,
         body: {
           original_id: "original_id_1",
-          collection_id: 1,
-          date_shot: "2021-11-29"
+          collection_id: 1
         }
       };
 
@@ -374,7 +340,7 @@ describe('POST /images', () => {
           image_service3_url:"https://www.e-rara.ch/zuz/i3f/v20/9380556"
         },
         original_state: 'initial',
-        exact_date: true,
+        exact_date: false,
         date_orig: "Null",
         downloaded: false,
         viewshed_created: false, 
