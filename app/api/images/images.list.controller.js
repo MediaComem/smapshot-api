@@ -281,6 +281,21 @@ const getImages = async (req, orderkey, count = true) => {
     ));
   }
 
+  const today = new Date();
+    today.setHours(23);
+    today.setMinutes(59);
+
+  const includeCollectionFilter = {
+    model: models.collections,
+    attributes: ["id", "date_publi"],
+    where: {
+      date_publi: {
+        [Op.not]: null,
+        [Op.lte]: today // future publish date is not yet published
+      },
+    }
+  };
+
   if (!isGeoref) {
     let whereClauseApriori = {}
     let includeOption = null;
@@ -303,10 +318,6 @@ const getImages = async (req, orderkey, count = true) => {
       orderByApriori = models.sequelize.literal(`apriori_locations.geom <-> st_setsrid(ST_makepoint(${query.longitude}, ${query.latitude}), 4326)`);
     }
 
-    const today = new Date();
-    today.setHours(23);
-    today.setMinutes(59);
-
     const orderById = [["id"]];
     includeOption = [{
       model: models.apriori_locations,
@@ -320,16 +331,7 @@ const getImages = async (req, orderkey, count = true) => {
       duplicating: false,
       order: orderBy === 'distance' ? orderByApriori : undefined
     },
-    {
-      model: models.collections,
-      attributes: ["id", "date_publi"],
-      where: {
-        date_publi: {
-          [Op.not]: null,
-          [Op.lte]: today // future publish date is not yet published
-        },
-      }
-    },
+    includeCollectionFilter
   ];
     const sequelizeQuery = {
       subQuery: false,
@@ -363,7 +365,8 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'distance' ? orderByNearest: orderById
+      order: orderBy === 'distance' ? orderByNearest: orderById,
+      include: [includeCollectionFilter]
     };
     if (count) {
       const response = await models.images.findAndCountAll(sequelizeQuery);
