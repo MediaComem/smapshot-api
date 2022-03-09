@@ -303,6 +303,10 @@ const getImages = async (req, orderkey, count = true) => {
       orderByApriori = models.sequelize.literal(`apriori_locations.geom <-> st_setsrid(ST_makepoint(${query.longitude}, ${query.latitude}), 4326)`);
     }
 
+    const today = new Date();
+    today.setHours(23);
+    today.setMinutes(59);
+
     const orderById = [["id"]];
     includeOption = [{
       model: models.apriori_locations,
@@ -315,7 +319,18 @@ const getImages = async (req, orderkey, count = true) => {
       required: true,
       duplicating: false,
       order: orderBy === 'distance' ? orderByApriori : undefined
-    }];
+    },
+    {
+      model: models.collections,
+      attributes: ["id", "date_publi"],
+      where: {
+        date_publi: {
+          [Op.not]: null,
+          [Op.lte]: today // future publish date is not yet published
+        },
+      }
+    },
+  ];
     const sequelizeQuery = {
       subQuery: false,
       attributes: attributes,
