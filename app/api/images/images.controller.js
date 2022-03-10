@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const Sequelize = require("sequelize");
 
 const config = require('../../../config');
 const models = require("../../models");
@@ -9,6 +10,8 @@ const { notFoundError, requestBodyValidationError, poseEstimationError } = requi
 const { getOwnerScope } = require('./images.utils');
 const iiifLevel0Utils = require('../../utils/IIIFLevel0');
 const pose = require("../pose-estimation/pose-estimation.controller");
+
+const Op = Sequelize.Op;
 
 // PUT /images/:id/state
 // =====================
@@ -175,6 +178,10 @@ exports.checkLock = utils.route(async (req, res) => {
 exports.getAttributes = utils.route(async (req, res) => {
   const lang = req.getLocale();
 
+  const today = new Date();
+  today.setHours(23);
+  today.setMinutes(59);
+
   let attributes = [
     "id",
     "is_published",
@@ -326,7 +333,13 @@ exports.getAttributes = utils.route(async (req, res) => {
       },
       {
         model: models.collections,
-        attributes: ["id", [getFieldI18n('collection', 'name', lang), "name"], "link"]
+        attributes: ["id", [getFieldI18n('collection', 'name', lang), "name"], "link", "date_publi"],
+        where: {
+          date_publi: {
+            [Op.not]: null,
+            [Op.lte]: today // future publish date is not yet published
+          },
+        }
       },
       {
         model: models.photographers,
