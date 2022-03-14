@@ -672,8 +672,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
   }
 
   //exact_date
-  const date_shotExists = Boolean(req.body.date_shot !== undefined ? req.body.date_shot : req.image.date_shot);
-  const exact_date_req = date_shotExists ? true : false;
+  //if date_shot is sent in the request, take the new value. Else, keep the value stored in the DB.
+  const date_shot = req.body.date_shot !== undefined ? req.body.date_shot : req.image.date_shot;
+  const exact_date_req = date_shot ? true : false;
 
   //UPDATE IMAGE OTHER ATTRIBUTES
   await req.image.update({
@@ -697,7 +698,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
     width: req.body.width,
     date_orig: req.body.date_orig,
     exact_date: exact_date_req,
-    date_shot: req.body.date_shot,
+    date_shot: date_shot,
     date_shot_min: req.body.date_shot_min,
     date_shot_max: req.body.date_shot_max
   });
