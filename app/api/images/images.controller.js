@@ -177,6 +177,7 @@ exports.checkLock = utils.route(async (req, res) => {
 
 exports.getAttributes = utils.route(async (req, res) => {
   const lang = req.getLocale();
+  const image_width = req.query.image_width ? parseInt(req.query.image_width) : 200;
 
   const today = new Date();
   today.setHours(23);
@@ -249,40 +250,40 @@ exports.getAttributes = utils.route(async (req, res) => {
       models.sequelize.literal(
       `(CASE
         WHEN iiif_data IS NOT NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN case 
+            THEN case
               WHEN iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('image_url', NULL,
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
                                    'regionByPx', iiif_data->'regionByPx')
-                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
+                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'),
                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 END
         WHEN iiif_data IS NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
+            THEN json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',images.id,'.jpg'),
                                    'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         WHEN iiif_data IS NOT NULL
-            THEN case 
+            THEN case
               WHEN iiif_data->>'size_info' IS NOT NULL
                 THEN json_build_object('image_url', NULL,
                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
                 WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'),
+                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'),
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
                                     'regionByPx', iiif_data->'regionByPx')
-                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'),
+                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'),
                                     'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
                                     'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
                 END
         ELSE
-            json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'),
+            json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',images.id,'.jpg'),
                               'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
                               'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
         end)`
