@@ -496,26 +496,6 @@ exports.submitImage = utils.route(async (req, res) => {
   const res_photographers = await findPhotographers(req, req_photographer_ids)
 
 
-  //CREATE ATTRIBUTES
-
-  //exact date
-  let exact_date_req;
-  if (req.body.date_shot) {
-    exact_date_req = true;
-  } else if (req.body.date_shot_min && req.body.date_shot_max) {
-    exact_date_req = false;
-  } else {
-    //if no date given throw error
-    throw requestBodyValidationError(req, [
-      {
-        location: 'body',
-        path: '',
-        message: req.__('images.submitted.dateRequired'),
-        validation: 'imageDateRequired'
-      }
-    ])
-  }
-
   //INSERT IMAGE AND APRIORI LOCATION IN DATABASE
 
   //table images
@@ -527,7 +507,6 @@ exports.submitImage = utils.route(async (req, res) => {
     collection_id: req.body.collection_id,
     is_published: req.body.is_published,
     date_inserted: models.sequelize.literal("current_timestamp"),
-    exact_date: exact_date_req,
     iiif_data: {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
@@ -546,6 +525,7 @@ exports.submitImage = utils.route(async (req, res) => {
     height: req.body.height,
     width: req.body.width,
     date_orig: req.body.date_orig,
+    exact_date: req.body.date_shot ? true : false,
     date_shot: req.body.date_shot,
     date_shot_min: req.body.date_shot_min,
     date_shot_max: req.body.date_shot_max,
@@ -668,35 +648,6 @@ exports.updateAttributes = utils.route(async (req, res) => {
     req.image.addPhotographer(res_photographers);
   }
 
-  //UPDATE DATES
-  if (req.body.date_shot !== undefined || req.body.date_shot_min !== undefined || req.body.date_shot_max != undefined) {
-    
-    //check if date_shot OR date_shot_min + max still exist after request
-    const new_date_shot = req.body.date_shot !== undefined ? req.body.date_shot : req.image.date_shot;
-    const new_date_shot_min = req.body.date_shot_min !== undefined ? req.body.date_shot_min : req.image.date_shot_min;
-    const new_date_shot_max = req.body.date_shot_max != undefined ? req.body.date_shot_max : req.image.date_shot_max;
-    
-    if (!new_date_shot && (!new_date_shot_min || !new_date_shot_max)) {
-      throw requestBodyValidationError(req, [
-        {
-          location: 'body',
-          path: '',
-          message: req.__('images.submitted.dateRequired'),
-          validation: 'imageDateRequired'
-        }
-      ]);
-    }
-    //update image
-    const exact_date_req = new_date_shot ? true : false;
-
-    await req.image.update({
-      exact_date: exact_date_req,
-      date_shot: req.body.date_shot,
-      date_shot_min: req.body.date_shot_min,
-      date_shot_max: req.body.date_shot_max
-    });
-  }
-
   //UPDATE A PRIORI LOCATIONS
   if (req.body.apriori_location) {
     const req_apriori_location= req.body.apriori_location;
@@ -734,6 +685,11 @@ exports.updateAttributes = utils.route(async (req, res) => {
     });
   }
 
+  //exact_date
+  //if date_shot is sent in the request, take the new value. Else, keep the value stored in the DB.
+  const date_shot = req.body.date_shot !== undefined ? req.body.date_shot : req.image.date_shot;
+  const exact_date_req = date_shot ? true : false;
+
   //UPDATE IMAGE OTHER ATTRIBUTES
   await req.image.update({
     is_published: req.body.is_published,
@@ -754,7 +710,11 @@ exports.updateAttributes = utils.route(async (req, res) => {
     view_type: req.body.view_type,
     height: req.body.height,
     width: req.body.width,
-    date_orig: req.body.date_orig
+    date_orig: req.body.date_orig,
+    exact_date: exact_date_req,
+    date_shot: date_shot,
+    date_shot_min: req.body.date_shot_min,
+    date_shot_max: req.body.date_shot_max
   });
 
   //RECOMPUTE POSE

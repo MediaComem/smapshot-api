@@ -98,7 +98,7 @@
         {
           "type": "string",
           "format": "date",
-          "description": "Required if date_shot is not specified."
+          "description": "If known, date range when the picture was shot/painted."
         },
         {
           "type": "null"
@@ -110,7 +110,7 @@
         {
           "type": "string",
           "format": "date",
-          "description": "Required if date_shot is not specified."
+          "description": "If known, date range when the picture was shot/painted."
         },
         {
           "type": "null"

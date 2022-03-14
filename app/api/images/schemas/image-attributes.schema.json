@@ -158,12 +158,26 @@
       "type": ["number", "null"]
     },
     "date_shot_min": {
-      "type": "string",
-      "format": "date"
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "date_shot_max": {
-      "type": "string",
-      "format": "date"
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "media": {
       "type": [
