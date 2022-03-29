@@ -25,6 +25,19 @@
     "image_id": {
       "$ref": "ApiId#"
     },
+    "regionByPx": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "gcps": {
       "oneOf": [
         {

@@ -206,9 +206,9 @@ exports.getAttributes = utils.route(async (req, res) => {
     'height',
     'iiif_data',
     'country_iso_a2',
-    [models.sequelize.literal("ST_X(location)"), "longitude"],
-    [models.sequelize.literal("ST_Y(location)"), "latitude"],
-    [models.sequelize.literal("ST_Z(location)"), "altitude"],
+    [models.sequelize.literal("ST_X(images.location)"), "longitude"],
+    [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
+    [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
     [
       models.sequelize.literal(
         `(case
@@ -367,10 +367,16 @@ exports.getAttributes = utils.route(async (req, res) => {
           "link"
         ],
         required: false
+      },
+      {
+        model: models.geolocalisations,
+        attributes: ["id","region_px"],
+        required:false
       }
     ],
     group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id",
-            "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id"],
+            "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id",
+            "geolocalisation.user_id", "geolocalisation.id", "geolocalisation.image_id"],
     where
   });
 
@@ -383,6 +389,48 @@ exports.getAttributes = utils.route(async (req, res) => {
   });
   results.dataValues.photographers = results.dataValues.photographer;
   delete results.dataValues.photographer;
+
+  //GEOLOCALISATIONS POSES - get all validated poses
+  const res_geolocs = await models.geolocalisations.findAll({
+    attributes: [
+      "id", "image_id", "state", "region_px", "azimuth", "tilt", "roll", "focal",
+      [models.sequelize.literal("ST_X(location)"), "longitude"],
+      [models.sequelize.literal("ST_Y(location)"), "latitude"],
+      [models.sequelize.literal("ST_Z(location)"), "altitude"]
+    ],    
+    where: {
+      image_id: req.params.id,
+      state: 'validated' //in visit mode, only show the parts that have been validated.
+    }
+  });
+
+  let poses = [];
+  for (const geoloc of res_geolocs) {
+    //gltf_url for the front-end
+    let region_url = "";
+    if (geoloc.dataValues.region_px) {
+      region_url = `_${geoloc.dataValues.region_px[0]}_${geoloc.dataValues.region_px[1]}_${geoloc.dataValues.region_px[2]}_${geoloc.dataValues.region_px[3]}`;
+    }
+    const pose = {
+      geolocalisation_id: geoloc.dataValues.id,
+      image_id: geoloc.dataValues.image_id,
+      state: geoloc.dataValues.state,
+      regionByPx: geoloc.dataValues.region_px,
+      gltf_url: `/data/collections/${results.dataValues.collection.dataValues.id}/gltf/${geoloc.dataValues.image_id}${region_url}.gltf`,
+      altitude: geoloc.dataValues.altitude,
+      latitude: geoloc.dataValues.latitude,
+      longitude: geoloc.dataValues.longitude,
+      azimuth: parseFloat(geoloc.dataValues.azimuth),
+      tilt: parseFloat(geoloc.dataValues.tilt),
+      roll: parseFloat(geoloc.dataValues.roll),
+      focal: parseFloat(geoloc.dataValues.focal)
+      //country_iso_a2
+      //heightAboveGround ??
+      //locationLocked ??
+    };
+    poses.push(pose);
+  }
+  results.dataValues.poses = poses;
 
   const iiifLevel0Promise = [];
 
@@ -397,6 +445,22 @@ exports.getAttributes = utils.route(async (req, res) => {
   delete results.dataValues.iiif_data;
 
   // Group POSE attributes.
+
+  // Build gltf_url
+  let gltf_url = null;
+  let region_px = null;
+  let geoloc_id = null;
+  if (results.dataValues.geolocalisation) {
+    region_px =  results.dataValues.geolocalisation.region_px;
+    geoloc_id = results.dataValues.geolocalisation.id;
+    let region_url = "";
+    if (region_px) {
+      region_url = `_${region_px[0]}_${region_px[1]}_${region_px[2]}_${region_px[3]}`;
+    }
+    gltf_url = `/data/collections/${results.dataValues.collection.dataValues.id}/gltf/${results.dataValues.id}${region_url}.gltf`;
+    delete results.dataValues.geolocalisation;
+  }
+
   const {
     caption,
     altitude,
@@ -413,7 +477,7 @@ exports.getAttributes = utils.route(async (req, res) => {
   res.status(200).send({
     ...partialObject,
     caption,
-    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2 }
+    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
   });
 });
 

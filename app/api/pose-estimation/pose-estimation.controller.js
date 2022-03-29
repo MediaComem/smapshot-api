@@ -108,6 +108,8 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
     );
 
     // Update values stored in geolocalisation (except the gcps)
+    const image_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+
     await models.geolocalisations.update(
       {
         location: models.sequelize.fn(
@@ -119,7 +121,8 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
         tilt: tilt,
         azimuth: azimuth,
         focal: focal,
-        surface_ratio: ratio
+        surface_ratio: ratio,
+        region_px: image_region
       },
       {
         where: { id: image.geolocalisation_id }
@@ -127,7 +130,7 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
     );
 
     try {
-      await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
+      await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
     } catch {
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
@@ -149,9 +152,9 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
 
-   // Get image collection id
+   // Get image collection id and region
    const sql = `
-       SELECT collection_id
+       SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
        FROM images
        WHERE id = ${id}
    `;
@@ -159,6 +162,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      type: models.sequelize.QueryTypes.SELECT
    });
    const collection_id = queryCollectionIdPromise[0].collection_id;
+   const regionByPx = queryCollectionIdPromise[0].regionbypx;
 
    // Compute Pose
    // ------------
@@ -185,10 +189,21 @@ exports.computePoseCreateGltf = route(async (req, res) => {
 
      // Compute surface covered with gcps
      const ratio = computeGCPRatio(GCPs, width, height);
-     filteredResults.gcpPercentSurface = ratio
+     filteredResults.gcpPercentSurface = ratio;
+
+     //Add region and url_gltf in results
+     filteredResults.image_id = id;
+     filteredResults.regionByPx = regionByPx;
+
+     //Build gltf_url
+     let region_url = "";
+      if (regionByPx) {
+        region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
+      }
+     filteredResults.gltf_url = `/data/collections/${collection_id}/gltf/${id}${region_url}.gltf`;
 
      try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id)
+       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
        res.status(201).send(filteredResults);
      } catch {
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
@@ -262,6 +277,8 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
      );
 
      // Update values stored in geolocalisation
+     const image_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+
      await models.geolocalisations.update(
        {
          location: models.sequelize.fn(
@@ -273,14 +290,15 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
          tilt: tilt,
          azimuth: azimuth,
          focal: focal,
-         surface_ratio: ratio
+         surface_ratio: ratio,
+         region_px: image_region
        },
        {
          where: { id: image.geolocalisation_id }
        }
      );
      try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
+       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
      } catch {
        throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
      }

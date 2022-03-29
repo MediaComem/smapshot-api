@@ -33,9 +33,9 @@ exports.getAttributes = utils.route(async (req, res) => {
         'width',
         'height',
         'country_iso_a2',
-        [models.sequelize.literal("ST_X(location)"), "longitude"],
-        [models.sequelize.literal("ST_Y(location)"), "latitude"],
-        [models.sequelize.literal("ST_Z(location)"), "altitude"],
+        [models.sequelize.literal("ST_X(images.location)"), "longitude"],
+        [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
+        [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
         [
           models.sequelize.literal(
             `(case
@@ -183,10 +183,16 @@ exports.getAttributes = utils.route(async (req, res) => {
             "link"
           ],
           required: false
+        },
+        {
+          model: models.geolocalisations,
+          attributes: ["id", "region_px"],
+          required:false
         }
       ],
       group: ["images.id", "images.original_id", "observations.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id",
-              "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id"],
+              "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id",
+              "geolocalisation.user_id", "geolocalisation.id", "geolocalisation.image_id"],
       where: whereImages
     });
 
@@ -225,12 +231,79 @@ exports.getAttributes = utils.route(async (req, res) => {
 
     const views = groupArray(imageViews, 'viewer_origin', 'viewer_type');
 
+    //GEOLOCALISATIONS POSES - get all validated poses
+    const res_geolocs = await models.geolocalisations.findAll({
+      attributes: [
+        "id", "image_id", "state", "region_px", "azimuth", "tilt", "roll", "focal",
+        [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
+        [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
+        [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"]
+      ],
+      include: [
+        {
+          model: models.images,
+          attributes: ["original_id"],
+          where: {
+            original_id: req.params.original_id
+          },
+          required: true
+        }
+      ],
+      where: {
+        state: 'validated' //in visit mode, only show the parts that have been validated.
+      }
+    });
+
+    let poses = [];
+    for (const geoloc of res_geolocs) {
+      //gltf_url for the front-end
+      let region_url = "";
+      if (geoloc.dataValues.region_px) {
+        region_url = `_${geoloc.dataValues.region_px[0]}_${geoloc.dataValues.region_px[1]}_${geoloc.dataValues.region_px[2]}_${geoloc.dataValues.region_px[3]}`;
+      }
+      const pose = {
+        geolocalisation_id: geoloc.dataValues.id,
+        image_id: geoloc.dataValues.image_id,
+        state: geoloc.dataValues.state,
+        regionByPx: geoloc.dataValues.region_px,
+        gltf_url: `/data/collections/${image.dataValues.collection.dataValues.id}/gltf/${geoloc.dataValues.image_id}${region_url}.gltf`,
+        altitude: geoloc.dataValues.altitude,
+        latitude: geoloc.dataValues.latitude,
+        longitude: geoloc.dataValues.longitude,
+        azimuth: parseFloat(geoloc.dataValues.azimuth),
+        tilt: parseFloat(geoloc.dataValues.tilt),
+        roll: parseFloat(geoloc.dataValues.roll),
+        focal: parseFloat(geoloc.dataValues.focal)
+        //country_iso_a2
+        //heightAboveGround ??
+        //locationLocked ??
+      };
+      poses.push(pose);
+    }
+    image.dataValues.poses = poses;
+
     // Group POSE attributes
+
+    // Build gltf_url
+    let gltf_url = null;
+    let region_px = null;
+    let geoloc_id = null;
+    if (image.dataValues.geolocalisation) {
+      region_px =  image.dataValues.geolocalisation.region_px;
+      geoloc_id = image.dataValues.geolocalisation.id;
+      let region_url = "";
+      if (region_px) {
+        region_url = `_${region_px[0]}_${region_px[1]}_${region_px[2]}_${region_px[3]}`;
+      }
+      gltf_url = `/data/collections/${image.dataValues.collection.dataValues.id}/gltf/${image.dataValues.id}${region_url}.gltf`;
+      delete image.dataValues.geolocalisation;
+    }
+    
     const { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, ...partialObject } = image.toJSON();
 
     res.status(200).send({
       ...partialObject,
       views,
-      pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2 }
+      pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
     });
   });

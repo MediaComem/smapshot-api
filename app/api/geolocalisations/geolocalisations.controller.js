@@ -21,9 +21,10 @@ exports.getAttributes = route(async (req, res) => {
     "tilt",
     "roll",
     "focal",
-    [models.sequelize.literal("ST_X(location)"), "longitude"],
-    [models.sequelize.literal("ST_Y(location)"), "latitude"],
-    [models.sequelize.literal("ST_Z(location)"), "altitude"]
+    [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
+    [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
+    [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"],
+    "region_px"
   ];
 
   const results = await models.geolocalisations.findOne({
@@ -33,6 +34,10 @@ exports.getAttributes = route(async (req, res) => {
         model: models.users,
         as: 'volunteer',
         attributes: ['username']
+      },
+      {
+        model: models.images,
+        attributes: ['collection_id']
       }
     ],
     where: {
@@ -44,6 +49,14 @@ exports.getAttributes = route(async (req, res) => {
     throw notFoundError(req);
   }
 
+  // Build gltf_url
+  let region_url = "";
+  if (results.dataValues.region_px) {
+    region_url = `_${results.dataValues.region_px[0]}_${results.dataValues.region_px[1]}_${results.dataValues.region_px[2]}_${results.dataValues.region_px[3]}`;
+  }
+  const gltf_url = `/data/collections/${results.dataValues.image.dataValues.collection_id}/gltf/${results.dataValues.image_id}${region_url}.gltf`;
+  delete results.dataValues.image;
+
   // Group POSE attributs
   const {
     altitude,
@@ -53,12 +66,13 @@ exports.getAttributes = route(async (req, res) => {
     tilt,
     roll,
     focal,
+    region_px,
     ...partialObject
   } = results.toJSON();
 
   res.status(200).send({
     ...partialObject,
-    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal } 
+    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, regionByPx: region_px, gltf_url } 
   });
 });
 
@@ -98,7 +112,7 @@ exports.save = route(async (req, res) => {
   const user_id = req.user ? req.user.id : 14;
   const gcps = data.gcps;
   const nGCP = Object.keys(gcps).length;
-
+  const regionByPx = data.regionByPx;
   // Parameters for improvement
   const validation_mode = parseBooleanQueryParam(data.validation_mode, false);
   const validator_id = data.validator_id;
@@ -208,7 +222,8 @@ exports.save = route(async (req, res) => {
       user_id: georeferencer_id,
       state: "waiting_validation",
       date_checked: models.sequelize.literal("now()"),
-      date_georef: models.sequelize.literal("now()")
+      date_georef: models.sequelize.literal("now()"),
+      region_px: regionByPx
     },
     {
       where: { id: geoloc_id }

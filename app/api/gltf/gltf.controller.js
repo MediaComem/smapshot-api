@@ -26,8 +26,10 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
   const image = await getDbImage(image_id);
   if (image.state !== "initial" && image.state !== 'waiting_alignment') {
     let results;
+    let regionByPx;
     if (image.iiif_data && image.iiif_data.regionByPx) {
-      results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.iiif_data.regionByPx[2], image.iiif_data.regionByPx[3], image.focal);
+      regionByPx = image.iiif_data.regionByPx;
+      results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, regionByPx[2], regionByPx[3], image.focal);
     } else {
       results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.width, image.height, image.focal);
     }
@@ -36,7 +38,7 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
     } else {
       const { imageCoordinates } = results;
       try {
-        await createGltfFromImageCoordinates(imageCoordinates, image_id, image.collection_id)
+        await createGltfFromImageCoordinates(imageCoordinates, image_id, image.collection_id, regionByPx)
         res.status(201).send({
           message: "Gltf has been successfully created."
         });
@@ -91,7 +93,11 @@ async function getDbImage(image_id) {
   return result;
 }
 
-async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id) {
+async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {
+  let region_url = "";
+  if (regionByPx) {
+    region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
+  }
 
   const urCorner = [imageCoordinates.ur[0], imageCoordinates.ur[1], imageCoordinates.ur[2]];
   const ulCorner = [imageCoordinates.ul[0], imageCoordinates.ul[1], imageCoordinates.ul[2]];//imageCoordinates.ul;
@@ -134,13 +140,13 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
   const picPath = imageSquaredFromDB.media.image_url;
   newXml = newXml.replace("#PATH2IMAGE#", picPath); // dds png
   // Save in the temp folder
-  const path2tempDae = `${path2collections}${collection_id}/temp_collada/${image_id}.dae`;
+  const path2tempDae = `${path2collections}${collection_id}/temp_collada/${image_id}${region_url}.dae`;
   await fs.outputFile(path2tempDae, newXml); // outputFile is used instead of writeFile - it create the parent directory if it doesn't exist
 
   await collada2gltfPromise(path2tempDae, { path: path2collada2gltf });
   // Change uri of the texture
   const path2gltf = `${path2collections}${
-    collection_id}/temp_collada/output/${image_id}.gltf`;
+    collection_id}/temp_collada/output/${image_id}${region_url}.gltf`;
 
   // Edit Gltf to replace the texture
   const file = await fs.readFile(path2gltf, "utf8");
@@ -150,9 +156,9 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
 
   // Delete automatically created texture
   const path2jpg = `${path2collections}${
-    collection_id}/temp_collada/output/${image_id}.jpg`;
+    collection_id}/temp_collada/output/${image_id}${region_url}.jpg`;
   await fs.remove(path2jpg);
-  await copyGltf(image_id, collection_id);
+  await copyGltf(image_id, collection_id, region_url);
 }
 
 async function collada2gltfPromise(path2tempDae, options) {
@@ -167,15 +173,15 @@ async function collada2gltfPromise(path2tempDae, options) {
   });
 }
 
-async function copyGltf(image_id, collection_id) {
+async function copyGltf(image_id, collection_id, region_url) {
   // Generate the path of the files to be copied
   const rootTemp = `/data/collections/${
     collection_id}/temp_collada/output/`;
   const rootGltf = `/data/collections/${
     collection_id}/gltf/`;
   // gltf
-  const gltfTemp = `${rootTemp + image_id}.gltf`;
-  const gltfPath = `${rootGltf + image_id}.gltf`;
+  const gltfTemp = `${rootTemp + image_id}${region_url}.gltf`;
+  const gltfPath = `${rootGltf + image_id}${region_url}.gltf`;
   await fs.copy(gltfTemp, gltfPath);
 }
 

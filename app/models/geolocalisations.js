@@ -138,6 +138,10 @@ module.exports = (sequelize, DataTypes) => {
       state: {
         type: DataTypes.TEXT,
         allowNull: true
+      },
+      region_px: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull: true
       }
     },
     {
