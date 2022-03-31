@@ -151,6 +151,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const tilt = parseFloat(req.body.tilt);
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
+   let regionByPx = req.body.regionByPx;
 
    // Get image collection id and region
    const sql = `
@@ -162,7 +163,9 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      type: models.sequelize.QueryTypes.SELECT
    });
    const collection_id = queryCollectionIdPromise[0].collection_id;
-   const regionByPx = queryCollectionIdPromise[0].regionbypx;
+   if (!regionByPx) {
+     regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
+   }
 
    // Compute Pose
    // ------------
