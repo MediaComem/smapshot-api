@@ -73,7 +73,8 @@ async function getDbImage(image_id) {
           WHEN iiif_data IS NOT NULL
           THEN case
             WHEN iiif_data->>'regionByPx' IS NOT NULL
-              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/1024,1024/0/default.jpg'))
+              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/1024,1024/0/default.jpg'),
+              'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
               ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'))
             end
           ELSE
@@ -94,9 +95,18 @@ async function getDbImage(image_id) {
 }
 
 async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {
+  const imageSquaredFromDB = await getDbImage(image_id);
+
   let region_url = "";
+  let picPath;
   if (regionByPx) {
+    //name of the gltf file
     region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
+    //path to the iiif image in the gltf file
+    const iiif_base_url = imageSquaredFromDB.media.tiles.url.replace('info.json','');
+    picPath = `${iiif_base_url}${regionByPx[0]},${regionByPx[1]},${regionByPx[2]},${regionByPx[3]}/max/0/default.jpg`;
+  } else {
+    picPath = imageSquaredFromDB.media.image_url;
   }
 
   const urCorner = [imageCoordinates.ur[0], imageCoordinates.ur[1], imageCoordinates.ur[2]];
@@ -136,8 +146,6 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
   const xml = await fs.readFile(path2template, "utf8");
   // const xml = data;
   let newXml = xml.replace("#IMAGECOORDINATES#", coordString);
-  const imageSquaredFromDB = await getDbImage(image_id);
-  const picPath = imageSquaredFromDB.media.image_url;
   newXml = newXml.replace("#PATH2IMAGE#", picPath); // dds png
   // Save in the temp folder
   const path2tempDae = `${path2collections}${collection_id}/temp_collada/${image_id}${region_url}.dae`;
