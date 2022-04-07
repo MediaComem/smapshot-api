@@ -2,7 +2,7 @@ const turfHelpers = require("@turf/helpers");
 const turf = require("@turf/turf");
 const { spawn } = require("child_process");
 const path = require('path');
-const { root } = require('../../../config');
+const config = require('../../../config');
 
 const models = require("../../models");
 const gltf = require("../gltf/gltf.controller");
@@ -46,7 +46,7 @@ async function getDbImage(image_id){
 
 function computeCameraPose (lng, lat, alt, azimuth, tilt, roll, gcps, width, height, locked) {
   return new Promise((resolve, reject) => {
-    const path2py = path.join(root, 'app/georeferencer/georeferencer.py')
+    const path2py = path.join(config.root, 'app/georeferencer/georeferencer.py')
     const pythonProcess = spawn('python3',[path2py, lng, lat, alt, azimuth, tilt, roll, gcps, width, height, locked]);
     pythonProcess.stdout.on('data', (data) => {
       const results = JSON.parse(data.toString())
@@ -203,8 +203,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
       if (regionByPx) {
         region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
       }
-     filteredResults.gltf_url = `/data/collections/${collection_id}/gltf/${id}${region_url}.gltf`;
-
+     filteredResults.gltf_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${id}${region_url}.gltf`;
      try {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
        res.status(201).send(filteredResults);

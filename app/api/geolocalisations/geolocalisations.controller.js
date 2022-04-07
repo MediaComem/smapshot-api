@@ -7,6 +7,7 @@ const { notFoundError, requestBodyValidationError, authorizationError } = requir
 const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
+const { apiUrl } = require('../../../config');
 
 exports.getAttributes = route(async (req, res) => {
   const geoloc_id = req.params.id;
@@ -54,7 +55,7 @@ exports.getAttributes = route(async (req, res) => {
   if (results.dataValues.region_px) {
     region_url = `_${results.dataValues.region_px[0]}_${results.dataValues.region_px[1]}_${results.dataValues.region_px[2]}_${results.dataValues.region_px[3]}`;
   }
-  const gltf_url = `/data/collections/${results.dataValues.image.dataValues.collection_id}/gltf/${results.dataValues.image_id}${region_url}.gltf`;
+  const gltf_url = `${apiUrl}/data/collections/${results.dataValues.image.dataValues.collection_id}/gltf/${results.dataValues.image_id}${region_url}.gltf`;
   delete results.dataValues.image;
 
   // Group POSE attributs
@@ -164,6 +165,7 @@ exports.save = route(async (req, res) => {
   // Compute the ratio of the surface
   surfaceRatio = Math.round((areaBbox / areaImage) * 100);
 
+  //for composite_image, the multiple geolocalisations are saved one after the other in the front-end. The last one will be the one also saved in the table images.
   await models.images.update(
     {
       location: models.sequelize.fn(
