@@ -114,6 +114,7 @@ exports.save = route(async (req, res) => {
   const gcps = data.gcps;
   const nGCP = Object.keys(gcps).length;
   const regionByPx = data.regionByPx;
+  const framing_mode = data.framing_mode;
   // Parameters for improvement
   const validation_mode = parseBooleanQueryParam(data.validation_mode, false);
   const validator_id = data.validator_id;
@@ -182,7 +183,8 @@ exports.save = route(async (req, res) => {
       user_id: georeferencer_id,
       date_georef: models.sequelize.literal("now()"),
       geolocalisation_id: geoloc_id,
-      state: "waiting_validation"
+      state: "waiting_validation",
+      framing_mode: framing_mode
     },
     {
       where: { id: image_id }
