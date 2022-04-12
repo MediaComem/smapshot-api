@@ -289,6 +289,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       iiif_data: {
         type: DataTypes
+      },
+      framing_mode: {
+        // type of framing_mode (single_image, composite_image)
+        type: DataTypes.TEXT,
+        allowNull: false
       }
     },
     {

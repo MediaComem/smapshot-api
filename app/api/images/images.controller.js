@@ -589,6 +589,7 @@ exports.submitImage = utils.route(async (req, res) => {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
     },
+    framing_mode: req.body.framing_mode ? req.body.framing_mode : 'single_image',
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,

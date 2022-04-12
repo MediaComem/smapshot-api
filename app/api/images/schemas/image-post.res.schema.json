@@ -60,6 +60,13 @@
         "image_service3_url"
       ]
     },
+    "framing_mode": {
+      "type": "string",
+      "enum": [
+        "single_image",
+        "composite_image"
+      ]
+    },
     "is_published": {
       "type": "boolean"
     },
@@ -220,6 +227,7 @@
     "photographers",
     "exact_date",
     "iiif_data", 
+    "framing_mode",
     "is_published", 
     "original_id", 
     "title", 
