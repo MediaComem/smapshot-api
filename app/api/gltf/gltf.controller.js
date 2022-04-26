@@ -24,6 +24,12 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
     });
   }
   const image = await getDbImage(image_id);
+
+  //Do not allow regenerating the gltfs for composite_images for now
+  if (image.framing_mode === 'composite_image') {
+    throw new Error("Image id: " + image_id + " is a composite image, gltf can't be regenerated.");
+  }
+  
   if (image.state !== "initial" && image.state !== 'waiting_alignment') {
     let results;
     let regionByPx;
@@ -67,6 +73,7 @@ async function getDbImage(image_id) {
       "state",
       "collection_id",
       "iiif_data",
+      "framing_mode",
       [
         models.sequelize.literal(
         `(CASE

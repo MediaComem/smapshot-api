@@ -26,7 +26,8 @@ async function getDbImage(image_id){
       "view_type",
       "collection_id",
       "geolocalisation_id",
-      "iiif_data"
+      "iiif_data",
+      "framing_mode"
     ],
     include: [
       {
@@ -219,6 +220,11 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
   const image_id = parseInt(req.query.image_id);
   const image = await getDbImage(image_id);
 
+  //Do not allow regenerating the gltfs for composite_images for now
+  if (image.framing_mode === 'composite_image') {
+    return res.json({ success: false, message: "Image id: " + image_id + " is a composite image, gltf can't be regenerated." });
+  }
+  
   if (image.state !== "initial" && image.state !== 'waiting_alignment' && image.view_type !== 'terrestrial') {
     // Compute Pose
     // ------------
