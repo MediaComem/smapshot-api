@@ -32,6 +32,13 @@
         "image_service3_url"
       ]
     },
+    "framing_mode": {
+      "type": "string",
+      "enum": [
+        "single_image",
+        "composite_image"
+      ]
+    },
     "is_published": {
       "type": "boolean"
     },

@@ -659,19 +659,20 @@ exports.submitImage = utils.route(async (req, res) => {
 // ==========================
 
 exports.updateAttributes = utils.route(async (req, res) => {
-  //If image is already georeferenced: does not allow to update width, height ,apriori_locations or iiif_data.image_service3_url.
+  //If image is already georeferenced: does not allow to update width, height, apriori_locations, iiif_data.image_service3_url or framing_mode.
   const isGeoreferenced = req.image.state === 'waiting_validation' || req.image.state === 'validated';
   const IsDimensionsUpdated = Boolean(req.body.width || req.body.height);
   const IsAprioriLocationUpdated = Boolean(req.body.apriori_location);
   const imageOriginalUrl = req.image.iiif_data ? req.image.iiif_data.image_service3_url : null;
   const isIIIFImageUrlUpdated = Boolean(req.body.iiif_data && !(req.body.iiif_data.image_service3_url === imageOriginalUrl));
+  const isFramingModeUpdated = Boolean(req.body.framing_mode);
 
-  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated) ) {
+  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated || isFramingModeUpdated) ) {
     throw requestBodyValidationError(req, [
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.'),
+        message: req.__('Image already georeferenced, iiif image url, framing_mode, apriori_locations or dimensions can\'t be updated.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
@@ -776,6 +777,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
+    framing_mode: req.body.framing_mode,
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,
@@ -798,7 +800,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
 
   //RECOMPUTE POSE
   //if image is already geolocalised and new iiif_data, recompute pose
-  if (isGeoreferenced && req.body.iiif_data) {
+  //if single_image, use region from iiif_data.
+  //if composite_image, do not regenerate the gltfs.
+  if (isGeoreferenced && req.body.iiif_data && (req.image.framing_mode === 'single_image' || !req.image.framing_mode) ) {
     //fetch original gcps calculated on full image (no offset due to cropping) stored in database
     const oldGCPs = req.image.geolocalisation.gcp_json;
     let newGCPsOffset;
