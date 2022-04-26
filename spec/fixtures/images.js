@@ -30,6 +30,7 @@ const { createAPrioriLocation } = require('./apriori_locations')
  */
 exports.createImage = async (options = {}) => {
   const view_types = [ null, 'terrestrial', 'lowOblique', 'highOblique', 'nadir' ];
+  const framing_modes = ['single_image', 'composite_image'];
 
   let { owner, user, longitude, latitude, altitude, apriori_longitude, apriori_latitude, apriori_azimuth, apriori_exact, photographers } = options;
   // ensure owner is consistent if given
@@ -116,7 +117,8 @@ exports.createImage = async (options = {}) => {
     state: get(options, 'state', 'initial'),
     country_iso_a2: get(options, 'country_iso_a2', null),
     iiif_data: iiif_data,
-    last_login: null
+    last_login: null,
+    framing_mode: get(options, 'framing_mode', chance.pickone(framing_modes))
   };
 
   const result = await sequelize.query(
@@ -132,7 +134,7 @@ exports.createImage = async (options = {}) => {
         downloaded, download_timestamp, footprint, viewshed_simple, viewshed_precise,
         viewshed_created, viewshed_timestamp, geotag_created, geotag_timestamp,
         geotags_json, date_validated, last_start, last_start_user_id, shop_link,
-        geolocalisation_id, state, original_state, country_iso_a2, iiif_data
+        geolocalisation_id, state, original_state, country_iso_a2, iiif_data, framing_mode
       )
       VALUES (
         :collection_id, :owner_id, :name, :date_inserted, :date_shot, :date_georef,
@@ -144,7 +146,7 @@ exports.createImage = async (options = {}) => {
         :downloaded, :download_timestamp, :footprint, :viewshed_simple, :viewshed_precise,
         :viewshed_created, :viewshed_timestamp, :geotag_created, :geotag_timestamp,
         :geotags_json, :date_validated, :last_start, :last_start_user_id, :shop_link,
-        :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}
+        :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}, :framing_mode
       )
       RETURNING id
     `,

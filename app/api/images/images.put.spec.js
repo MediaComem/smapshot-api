@@ -173,7 +173,7 @@ describe('PUT /images/:id/attributes', () => {
         {
           location: 'body', 
           path:"",
-          message: 'Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.',
+          message: 'Image already georeferenced, iiif image url, framing_mode, apriori_locations or dimensions can\'t be updated.',
           validation: 'DimensionsAndIIIFUnmodifiables'
         }
       ])
@@ -297,7 +297,10 @@ describe('PUT /images/:id/attributes', () => {
       .to.have.status(200)
       .and.to.have.jsonBody(
         getExpectedRequestedImageAttributes(req, 
-          { id: imageToUpdate.id, original_id: imageToUpdate.original_id, owner: imageToUpdate.owner, collection: collection1, photographers: [photographer1, photographer2], ...attributesToUpdate })
+          { 
+            id: imageToUpdate.id, original_id: imageToUpdate.original_id, owner: imageToUpdate.owner, framing_mode: imageToUpdate.framing_mode,
+            collection: collection1, photographers: [photographer1, photographer2], ...attributesToUpdate 
+          })
       )
       .and.to.matchResponseDocumentation();
   });

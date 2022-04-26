@@ -121,6 +121,7 @@ describe('POST /images', () => {
           title: "TEST title",
           collection_id: collection1.id,
           view_type: "terrestrial",
+          framing_mode: "single_image",
           license: "Zentralbibliothek Zürich",
           observation_enabled: true,
           correction_enabled: false,

@@ -38,6 +38,13 @@
         }
       ]
     },
+    "framing_mode": {
+      "type": "string",
+      "enum": [
+        "single_image",
+        "composite_image"
+      ]
+    },
     "is_published": {
       "type": "boolean"
     },
@@ -86,6 +93,9 @@
           "type": "string"
         },
         "link": {
+          "type": "string"
+        },
+        "date_publi": {
           "type": "string"
         }
       },
@@ -261,6 +271,28 @@
           "type": [ "null", "string" ],
           "minLength": 2,
           "maxLength": 2
+        },
+        "geolocalisation_id": {
+          "type": [ "null", "number" ]
+        },
+        "regionByPx": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 4,
+              "maxItems": 4
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gltf_url": {
+          "type": ["string", "null"]
         }
       },
       "additionalProperties": false,
@@ -272,6 +304,19 @@
         "focal",
         "roll",
         "tilt"
+      ]
+    },
+    "poses": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "locked": {

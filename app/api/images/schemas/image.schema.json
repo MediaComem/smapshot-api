@@ -24,6 +24,18 @@
     "collection_id": {
       "type": "integer"
     },
+    "collection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "date_publi": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "height": {
       "type": ["integer", "null"]
     },
