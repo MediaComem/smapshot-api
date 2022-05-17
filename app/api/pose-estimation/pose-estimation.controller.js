@@ -8,6 +8,7 @@ const models = require("../../models");
 const gltf = require("../gltf/gltf.controller");
 const { poseEstimationError } = require('../../utils/errors');
 const { route } = require("../../utils/express");
+const mediaUtils = require('../../utils/media');
 
 async function getDbImage(image_id){
   const query = models.images.findOne({
@@ -200,11 +201,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      filteredResults.regionByPx = regionByPx;
 
      //Build gltf_url
-     let region_url = "";
-      if (regionByPx) {
-        region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
-      }
-     filteredResults.gltf_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${id}${region_url}.gltf`;
+     filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx);
      try {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
        res.status(201).send(filteredResults);

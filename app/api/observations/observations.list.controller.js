@@ -2,9 +2,8 @@ const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const utils = require("../../utils/express");
-const config = require('../../../config');
 const { inUniqueOrList, cleanProp, iLikeFormatter, getFieldI18n } = require("../../utils/params");
-const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const mediaUtils = require('../../utils/media');
 
 const Op = Sequelize.Op;
 
@@ -109,27 +108,6 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
     }
   }
 
-  const media = [
-    models.sequelize.literal(
-      `(case
-      when iiif_data IS NOT NULL
-      THEN case
-        WHEN iiif_data->>'size_info' IS NOT NULL
-          THEN json_build_object('image_url', NULL,
-                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-          WHEN iiif_data->>'regionByPx' IS NOT NULL
-          THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/500,/0/default.jpg'),
-                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-          else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'),
-                                 'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-        end
-      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',observations.image_id,'.jpg'),
-                             'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/', observations.image_id,'.dzi')))
-      end)`
-    ),
-    "media"
-  ];
-
   const observations = await models.observations.findAll({
     attributes,
     where: cleanedWhereObs,
@@ -139,7 +117,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
       ...(!req.query.image_id ?
       [{
         model: models.images,
-        attributes: ["id", "original_id", "title", "is_published", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "is_published", "iiif_data", "collection_id"],
         where: cleanedWhereImages,
         include: [
           {
@@ -156,7 +134,7 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
       }]: [
         {
           model: models.images,
-          attributes: ["id", "original_id", "title", "is_published", "iiif_data", media],
+          attributes: ["id", "original_id", "title", "is_published", "iiif_data", "collection_id"],
           where: cleanedWhereImages
         }
       ]),
@@ -170,20 +148,22 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
     ]
   });
 
-
-  const iiifLevel0Promise = [];
-  observations.forEach(observation => {
-    const image = observation.dataValues.image.dataValues;
-    if (image.media && image.media.image_url === null &&
-      iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
+  // Build media
+  const build_media = async (observations) => {
+    for await (const observation of observations) {
+      const image = observation.dataValues.image.dataValues;
+      const media = {};
+      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection_id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
+      media.tiles = mediaUtils.generateImageTiles(image.id, image.collection_id, image.iiif_data);
+      observation.dataValues.image.dataValues.media = media;
     }
-  })
-
-  await Promise.all(iiifLevel0Promise);
+  } 
+  await build_media(observations);
 
   observations.forEach(observation => {
     delete observation.dataValues.image.dataValues.iiif_data;
+    delete observation.dataValues.image.dataValues.collection_id;
   });
 
   return observations;

@@ -3,9 +3,8 @@ const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const utils = require("../../utils/express");
-const config = require('../../../config');
 const { cleanProp, getFieldI18n } = require("../../utils/params");
-const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const mediaUtils = require('../../utils/media');
 
 const Op = Sequelize.Op;
 
@@ -116,22 +115,6 @@ exports.getGeolocalisations = async (req, res) => {
     where: cleanedWhereGeo
   });
 
-  const media = [
-    models.sequelize.literal(
-      `(case
-      when iiif_data IS NOT NULL
-      THEN case 
-      WHEN iiif_data->>'size_info' IS NOT NULL
-        THEN json_build_object('image_url', NULL)
-      WHEN iiif_data->>'regionByPx' IS NOT NULL
-        THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/500,/0/default.jpg'))
-        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
-      end
-      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',geolocalisations.image_id,'.jpg'))
-      end)`
-    ),
-    "media"
-  ];
   const queryPromise = models.geolocalisations.findAll({
     attributes: ['id', 'state', 'date_georef', 'remark', 'errors_list'],
     where: cleanedWhereGeo,
@@ -141,7 +124,7 @@ exports.getGeolocalisations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "original_id", "title", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "iiif_data"],
         include: [
           {
             model: models.owners,
@@ -160,16 +143,18 @@ exports.getGeolocalisations = async (req, res) => {
     status: 500,
     message: "Geolocalisations cannot be retrieved. There has been an error with the server."
   })
-  const iiifLevel0Promise = [];
-  results.forEach((result) => {
-    const image = result.dataValues.image.dataValues;
-    if (image.media && image.media.image_url === null &&
-        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
-    }
-  });
 
-  await Promise.all(iiifLevel0Promise);
+  // Build media
+  const build_media = async (results) => {
+    for await (const result of results) {
+      const image = result.dataValues.image.dataValues;
+      const media = {};
+      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
+      result.dataValues.image.dataValues.media = media;
+    }
+  } 
+  await build_media(results);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -197,22 +182,6 @@ exports.getObservations = async (req, res) => {
     where: cleanedWhereObs
   });
 
-  const media = [
-    models.sequelize.literal(
-      `(case
-      when iiif_data IS NOT NULL
-      THEN case 
-      WHEN iiif_data->>'size_info' IS NOT NULL
-        THEN json_build_object('image_url', NULL)
-      WHEN iiif_data->>'regionByPx' IS NOT NULL
-        THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/500,/0/default.jpg'))
-        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
-        end
-      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',observations.image_id,'.jpg'))
-      end)`
-    ),
-    "media"
-  ];
   const queryPromise = models.observations.findAll({
     attributes: ['id', 'state', 'date_created', 'remark', 'observation'],
     where: cleanedWhereObs,
@@ -222,7 +191,7 @@ exports.getObservations = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "original_id", "title", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "iiif_data"],
         include: [
           {
             model: models.owners,
@@ -237,16 +206,18 @@ exports.getObservations = async (req, res) => {
     ]
   });
   const results = await utils.handlePromise(queryPromise, {status: 500, message: "Observations cannot be retrieved. There has been an error with the server."})
-  const iiifLevel0Promise = [];
-  results.forEach((result) => {
-    const image = result.dataValues.image.dataValues;
-    if (image.media && image.media.image_url === null &&
-        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
-    }
-  });
 
-  await Promise.all(iiifLevel0Promise);
+  // Build media
+  const build_media = async (results) => {
+    for await (const result of results) {
+      const image = result.dataValues.image.dataValues;
+      const media = {};
+      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
+      result.dataValues.image.dataValues.media = media;
+    }
+  } 
+  await build_media(results);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -289,22 +260,6 @@ exports.getCorrections = async (req, res) => {
     ]
   });
 
-  const media = [
-    models.sequelize.literal(
-      `(case
-      when iiif_data IS NOT NULL
-      THEN case 
-      WHEN iiif_data->>'size_info' IS NOT NULL
-        THEN json_build_object('image_url', NULL)
-      WHEN iiif_data->>'regionByPx' IS NOT NULL
-        THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/500,/0/default.jpg'))
-        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/500,/0/default.jpg'))
-      end
-      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/500/',corrections.image_id,'.jpg'))
-      end)`
-    ),
-    "media"
-  ];
   const queryPromise = models.corrections.findAll({
     attributes: ['id', 'state', 'date_created', 'remark', 'type', 'correction'],
     where: cleanedwhereCorr,
@@ -314,7 +269,7 @@ exports.getCorrections = async (req, res) => {
     include: [
       {
         model: models.images,
-        attributes: ["id", "original_id", "title", "caption", "orig_title", "orig_caption", "iiif_data", media],
+        attributes: ["id", "original_id", "title", "caption", "orig_title", "orig_caption", "iiif_data"],
         include: [
           {
             model: models.owners,
@@ -345,16 +300,18 @@ exports.getCorrections = async (req, res) => {
     status: 500,
     message: "Corrections cannot be retrieved. There has been an error with the server."
   })
-  const iiifLevel0Promise = [];
-  results.forEach((result) => {
-    const image = result.dataValues.image.dataValues;
-    if (image.media && image.media.image_url === null &&
-        iiifLevel0Utils.isIIIFLevel0(image.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(image.media, image.iiif_data.size_info, 500));
-    }
-  });
 
-  await Promise.all(iiifLevel0Promise);
+  // Build media
+  const build_media = async (results) => {
+    for await (const result of results) {
+      const image = result.dataValues.image.dataValues;
+      const media = {};
+      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
+      result.dataValues.image.dataValues.media = media;
+    }
+  } 
+  await build_media(results);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;

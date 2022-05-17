@@ -7,7 +7,7 @@ const { authorizationError, notFoundError } = require("../../utils/errors");
 const { route } = require("../../utils/express");
 const { inUniqueOrList, cleanProp, getFieldI18n, parseBooleanQueryParam } = require("../../utils/params");
 const config = require('../../../config');
-const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const mediaUtils = require('../../utils/media');
 
 const Op = Sequelize.Op;
 
@@ -129,20 +129,20 @@ const getCollections = async (req, res) => {
     ]
   });
 
-  const iiifLevel0Promise = [];
+  const mediaPromise = [];
 
   // Check if banner URL exist (if not check if iiif level 0 server)
   collections.forEach((collection) => {
     const media = collection.dataValues.media;
     const banner = collection.dataValues.banner ? collection.dataValues.banner.dataValues : null;
     if (media && media.banner_url === null &&
-      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
+      mediaUtils.isIIIFLevel0(banner.iiif_data)) {
+      mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
     }
 
   });
 
-  await Promise.all(iiifLevel0Promise);
+  await Promise.all(mediaPromise);
 
   // Clean extra data
   collections.forEach((collection) => {
@@ -331,18 +331,18 @@ exports.getList = route(async (req, res) => {
     };
   });
 
-  const iiifLevel0Promise = [];
+  const mediaPromise = [];
 
   collections.forEach((collection) => {
     const media = collection.media;
     const banner = collection.banner ? collection.banner.dataValues : null;
     if (media && media.banner_url === null &&
-      iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
-      iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
+      mediaUtils.isIIIFLevel0(banner.iiif_data)) {
+      mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
     }
   });
 
-  await Promise.all(iiifLevel0Promise);
+  await Promise.all(mediaPromise);
 
   collections.forEach((collection) => {
     delete collection.banner;
@@ -410,7 +410,7 @@ exports.getById = route(async (req, res) => {
     where
   });
 
-  const mediaPromise = models.collections.findOne({
+  const bannerPromise = models.collections.findOne({
     attributes: [
       [
         models.sequelize.literal(
@@ -437,21 +437,21 @@ exports.getById = route(async (req, res) => {
     where
   });
 
-  const [ collection, georef, media ] = await Promise.all([ collectionPromise, georefPromise, mediaPromise ]);
+  const [ collection, georef, media ] = await Promise.all([ collectionPromise, georefPromise, bannerPromise ]);
   if (!collection) {
     throw notFoundError(req);
   }
 
-  const iiifLevel0Promise = [];
+  const mediaPromise = [];
 
   const mediaInfo = media.dataValues.media;
   const banner = media.dataValues.banner ? media.dataValues.banner.dataValues : null;
   if (mediaInfo && mediaInfo.banner_url === null &&
-    iiifLevel0Utils.isIIIFLevel0(banner.iiif_data)) {
-    iiifLevel0Promise.push(iiifLevel0Utils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
+    mediaUtils.isIIIFLevel0(banner.iiif_data)) {
+    mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
   }
 
-  await Promise.all(iiifLevel0Promise);
+  await Promise.all(mediaPromise);
 
   delete media.dataValues.banner;
 

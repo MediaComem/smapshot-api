@@ -7,7 +7,7 @@ const { notFoundError, requestBodyValidationError, authorizationError } = requir
 const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
-const { apiUrl } = require('../../../config');
+const mediaUtils = require('../../utils/media');
 
 exports.getAttributes = route(async (req, res) => {
   const geoloc_id = req.params.id;
@@ -51,11 +51,11 @@ exports.getAttributes = route(async (req, res) => {
   }
 
   // Build gltf_url
-  let region_url = "";
-  if (results.dataValues.region_px) {
-    region_url = `_${results.dataValues.region_px[0]}_${results.dataValues.region_px[1]}_${results.dataValues.region_px[2]}_${results.dataValues.region_px[3]}`;
-  }
-  const gltf_url = `${apiUrl}/data/collections/${results.dataValues.image.dataValues.collection_id}/gltf/${results.dataValues.image_id}${region_url}.gltf`;
+  const image_id = results.dataValues.image_id;
+  const collection_id = results.dataValues.image.dataValues.collection_id;
+  const region = results.dataValues.region_px;
+  const gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region);
+
   delete results.dataValues.image;
 
   // Group POSE attributs

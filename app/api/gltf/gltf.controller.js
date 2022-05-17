@@ -6,6 +6,7 @@ const { spawn } = require("child_process");
 const config = require('../../../config');
 const models = require("../../models");
 const utils = require("../../utils/express");
+const mediaUtils = require('../../utils/media');
 
 exports.generateFromDbPose = utils.route(async (req, res) => {
   const image_id = req.query.image_id;
@@ -23,7 +24,7 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
       })
     });
   }
-  const image = await getDbImage(image_id);
+  const image = await getSquareImageFromDB(image_id);
 
   //Do not allow regenerating the gltfs for composite_images for now
   if (image.framing_mode === 'composite_image') {
@@ -57,7 +58,7 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
   }
 });
 
-async function getDbImage(image_id) {
+async function getSquareImageFromDB(image_id, regionByPx) {
   const query = models.images.findOne({
     raw: true,
     attributes: [
@@ -73,50 +74,37 @@ async function getDbImage(image_id) {
       "state",
       "collection_id",
       "iiif_data",
-      "framing_mode",
-      [
-        models.sequelize.literal(
-        `(CASE
-          WHEN iiif_data IS NOT NULL
-          THEN case
-            WHEN iiif_data->>'regionByPx' IS NOT NULL
-              THEN json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/1024,1024/0/default.jpg'),
-                                      'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-              ELSE json_build_object('image_url', CONCAT((images.iiif_data->>'image_service3_url'), '/full/1024,1024/0/default.jpg'),
-                                      'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-            end
-          ELSE
-              json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/1024/',images.id,'.jpg'),
-                                'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-          end)`
-        ),
-        "media"
-      ]
+      "framing_mode"
     ],
     where: {
       id: parseInt(image_id, 10)
     }
   });
 
-  const result = await query
+  const result = await query;
+
+  //if regionByPx is given, update image_url to have the region.
+  //else, use the one from db iiif_data if exists.
+  let region;
+  if (regionByPx) {
+    region = regionByPx;
+  } else if (result.iiif_data) {
+    region = result.iiif_data.regionByPx;
+  }
+
+  //Build media
+  const media = {};
+  await Promise.all([mediaUtils.generateImageUrl(media, image_id, result.collection_id, result.iiif_data, region, /* image_width */ 1024, /* image_height */ 1024, /* iiifLevel0_width */ null)]);
+  media.tiles = mediaUtils.generateImageTiles(image_id, result.collection_id, result.iiif_data);
+  result.media = media;
 
   return result;
 }
 
 async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {
-  const imageSquaredFromDB = await getDbImage(image_id);
-
-  let region_url = "";
-  let picPath;
-  if (regionByPx) {
-    //name of the gltf file
-    region_url = `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}`;
-    //path to the iiif image in the gltf file
-    const iiif_base_url = imageSquaredFromDB.media.tiles.url.replace('info.json','');
-    picPath = `${iiif_base_url}${regionByPx[0]},${regionByPx[1]},${regionByPx[2]},${regionByPx[3]}/max/0/default.jpg`;
-  } else {
-    picPath = imageSquaredFromDB.media.image_url;
-  }
+  const imageSquaredFromDB = await getSquareImageFromDB(image_id, regionByPx);
+  const picPath = imageSquaredFromDB.media.image_url;
+  const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
 
   const urCorner = [imageCoordinates.ur[0], imageCoordinates.ur[1], imageCoordinates.ur[2]];
   const ulCorner = [imageCoordinates.ul[0], imageCoordinates.ul[1], imageCoordinates.ul[2]];//imageCoordinates.ul;

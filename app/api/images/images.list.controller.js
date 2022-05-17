@@ -1,7 +1,6 @@
 const Sequelize = require("sequelize");
 const { intersection } = require('lodash');
 
-const config = require('../../../config');
 const models = require("../../models");
 const { userHasRole } = require('../../utils/authorization');
 const { authorizationError } = require('../../utils/errors');
@@ -16,7 +15,7 @@ const {
   toUniqueArray
 } = require("../../utils/params");
 const { getOwnerScope } = require('./images.utils');
-const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const mediaUtils = require('../../utils/media');
 
 const Op = Sequelize.Op;
 
@@ -45,30 +44,13 @@ const parseAttributes = (query) => {
     ),
     "date_shot_max"
   ];
-  const media = [
-    models.sequelize.literal(
-      `(case
-      when iiif_data IS NOT NULL
-      THEN case
-        WHEN iiif_data->>'size_info' IS NOT NULL
-        THEN json_build_object('image_url', NULL)
-        WHEN iiif_data->>'regionByPx' IS NOT NULL
-        THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/200,/0/default.jpg'))
-        else json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/200,/0/default.jpg'))
-        end
-      else json_build_object('image_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/thumbnails/',images.id,'.jpg'))
-      end)`
-    ),
-    "media"
-  ];
 
   const default_attributes = [
     ...basic_attributes,
     date_shot_min,
     date_shot_max,
     longitude,
-    latitude,
-    media
+    latitude
   ];
 
   if (!query.attributes) {
@@ -87,9 +69,6 @@ const parseAttributes = (query) => {
   }
   if (query.attributes.includes('date_shot_max')) {
     attributes.push(date_shot_max);
-  }
-  if (query.attributes.includes('media')) {
-    attributes.push(media);
   }
   return attributes;
 }
@@ -381,17 +360,21 @@ const getImages = async (req, orderkey, count = true) => {
 exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
 
-  if(images.rows) {
-    // Update IIIF link if needed
-    const iiifLevel0Promise = [];
-    images.rows.forEach((image) => {
-      const media = image.dataValues.media;
-      if (media && media.image_url === null &&
-          iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
-        iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
-      }
-    })
-    await Promise.all(iiifLevel0Promise);
+  if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
+    if(images.rows) {
+      //BUILD MEDIA
+      const build_media = async (images) => {
+        for await (const imageData of images.rows) {
+          const image = imageData.dataValues;
+          const image_width = !image.iiif_data ? 'thumbnails' : 200;
+          const media = {};
+          const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+          await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, image_width, /* image_height */ null, /* iiifLevel0_width */ 200)]);
+          imageData.dataValues.media = media;
+        }
+      } 
+      await build_media(images);
+  } 
 
     images.rows.forEach((image) => {
       delete image.dataValues.iiif_data;
@@ -404,23 +387,6 @@ exports.getList = utils.route(async (req, res) => {
 exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
-
-  if(images.rows) {
-    // Update IIIF link if needed
-    const iiifLevel0Promise = [];
-    images.rows.forEach((image) => {
-      const media = image.dataValues.media;
-      if (media && media.image_url === null &&
-          iiifLevel0Utils.isIIIFLevel0(image.dataValues.iiif_data)) {
-        iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, image.dataValues.iiif_data.size_info, 200));
-      }
-    })
-    await Promise.all(iiifLevel0Promise);
-
-    images.rows.forEach((image) => {
-      delete image.dataValues.iiif_data;
-    });
-  }
 
   // Send flattened objects
   res.status(200).send(images.map(obj => obj.id));
