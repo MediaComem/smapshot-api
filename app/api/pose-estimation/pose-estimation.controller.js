@@ -2,12 +2,13 @@ const turfHelpers = require("@turf/helpers");
 const turf = require("@turf/turf");
 const { spawn } = require("child_process");
 const path = require('path');
-const { root } = require('../../../config');
+const config = require('../../../config');
 
 const models = require("../../models");
 const gltf = require("../gltf/gltf.controller");
 const { poseEstimationError } = require('../../utils/errors');
 const { route } = require("../../utils/express");
+const mediaUtils = require('../../utils/media');
 
 async function getDbImage(image_id){
   const query = models.images.findOne({
@@ -26,7 +27,8 @@ async function getDbImage(image_id){
       "view_type",
       "collection_id",
       "geolocalisation_id",
-      "iiif_data"
+      "iiif_data",
+      "framing_mode"
     ],
     include: [
       {
@@ -46,7 +48,7 @@ async function getDbImage(image_id){
 
 function computeCameraPose (lng, lat, alt, azimuth, tilt, roll, gcps, width, height, locked) {
   return new Promise((resolve, reject) => {
-    const path2py = path.join(root, 'app/georeferencer/georeferencer.py')
+    const path2py = path.join(config.root, 'app/georeferencer/georeferencer.py')
     const pythonProcess = spawn('python3',[path2py, lng, lat, alt, azimuth, tilt, roll, gcps, width, height, locked]);
     pythonProcess.stdout.on('data', (data) => {
       const results = JSON.parse(data.toString())
@@ -108,6 +110,8 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
     );
 
     // Update values stored in geolocalisation (except the gcps)
+    const image_region = image.iiif_data ? image.iiif_data.regionByPx : null; //For composite_images, the gltfs are not regenerated, so the regions will always come from iiif_data.
+
     await models.geolocalisations.update(
       {
         location: models.sequelize.fn(
@@ -119,7 +123,8 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
         tilt: tilt,
         azimuth: azimuth,
         focal: focal,
-        surface_ratio: ratio
+        surface_ratio: ratio,
+        region_px: image_region
       },
       {
         where: { id: image.geolocalisation_id }
@@ -127,7 +132,7 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
     );
 
     try {
-      await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
+      await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
     } catch {
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
@@ -148,10 +153,11 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const tilt = parseFloat(req.body.tilt);
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
+   let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
-   // Get image collection id
+   // Get image collection id and region
    const sql = `
-       SELECT collection_id
+       SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
        FROM images
        WHERE id = ${id}
    `;
@@ -159,6 +165,9 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      type: models.sequelize.QueryTypes.SELECT
    });
    const collection_id = queryCollectionIdPromise[0].collection_id;
+   if (!regionByPx) {
+     regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
+   }
 
    // Compute Pose
    // ------------
@@ -185,10 +194,16 @@ exports.computePoseCreateGltf = route(async (req, res) => {
 
      // Compute surface covered with gcps
      const ratio = computeGCPRatio(GCPs, width, height);
-     filteredResults.gcpPercentSurface = ratio
+     filteredResults.gcpPercentSurface = ratio;
 
+     //Add region and url_gltf in results
+     filteredResults.image_id = id;
+     filteredResults.regionByPx = regionByPx;
+
+     //Build gltf_url
+     filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx);
      try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id)
+       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
        res.status(201).send(filteredResults);
      } catch {
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
@@ -202,6 +217,11 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
   const image_id = parseInt(req.query.image_id);
   const image = await getDbImage(image_id);
 
+  //Do not allow regenerating the gltfs for composite_images for now
+  if (image.framing_mode === 'composite_image') {
+    return res.json({ success: false, message: "Image id: " + image_id + " is a composite image, gltf can't be regenerated." });
+  }
+  
   if (image.state !== "initial" && image.state !== 'waiting_alignment' && image.view_type !== 'terrestrial') {
     // Compute Pose
     // ------------
@@ -262,6 +282,8 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
      );
 
      // Update values stored in geolocalisation
+     const image_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+
      await models.geolocalisations.update(
        {
          location: models.sequelize.fn(
@@ -273,14 +295,15 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
          tilt: tilt,
          azimuth: azimuth,
          focal: focal,
-         surface_ratio: ratio
+         surface_ratio: ratio,
+         region_px: image_region
        },
        {
          where: { id: image.geolocalisation_id }
        }
      );
      try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id)
+       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
      } catch {
        throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
      }

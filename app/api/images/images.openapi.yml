@@ -258,7 +258,7 @@
 
       **Required role:** `owner_admin` or `superadmin`.
 
-      If the image has already been georeferenced, iiif image url, apriori_locations, height or width can't be updated.
+      If the image has already been georeferenced, iiif image url, framing_mode, apriori_locations, height or width can't be updated.
     parameters:
       - name: id
         in: path

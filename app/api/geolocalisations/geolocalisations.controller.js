@@ -7,6 +7,7 @@ const { notFoundError, requestBodyValidationError, authorizationError } = requir
 const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
+const mediaUtils = require('../../utils/media');
 
 exports.getAttributes = route(async (req, res) => {
   const geoloc_id = req.params.id;
@@ -21,9 +22,10 @@ exports.getAttributes = route(async (req, res) => {
     "tilt",
     "roll",
     "focal",
-    [models.sequelize.literal("ST_X(location)"), "longitude"],
-    [models.sequelize.literal("ST_Y(location)"), "latitude"],
-    [models.sequelize.literal("ST_Z(location)"), "altitude"]
+    [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
+    [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
+    [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"],
+    "region_px"
   ];
 
   const results = await models.geolocalisations.findOne({
@@ -33,6 +35,10 @@ exports.getAttributes = route(async (req, res) => {
         model: models.users,
         as: 'volunteer',
         attributes: ['username']
+      },
+      {
+        model: models.images,
+        attributes: ['collection_id']
       }
     ],
     where: {
@@ -44,6 +50,14 @@ exports.getAttributes = route(async (req, res) => {
     throw notFoundError(req);
   }
 
+  // Build gltf_url
+  const image_id = results.dataValues.image_id;
+  const collection_id = results.dataValues.image.dataValues.collection_id;
+  const region = results.dataValues.region_px;
+  const gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region);
+
+  delete results.dataValues.image;
+
   // Group POSE attributs
   const {
     altitude,
@@ -53,12 +67,13 @@ exports.getAttributes = route(async (req, res) => {
     tilt,
     roll,
     focal,
+    region_px,
     ...partialObject
   } = results.toJSON();
 
   res.status(200).send({
     ...partialObject,
-    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal } 
+    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, regionByPx: region_px, gltf_url } 
   });
 });
 
@@ -98,7 +113,8 @@ exports.save = route(async (req, res) => {
   const user_id = req.user ? req.user.id : 14;
   const gcps = data.gcps;
   const nGCP = Object.keys(gcps).length;
-
+  const regionByPx = data.regionByPx;
+  const framing_mode = data.framing_mode;
   // Parameters for improvement
   const validation_mode = parseBooleanQueryParam(data.validation_mode, false);
   const validator_id = data.validator_id;
@@ -150,6 +166,7 @@ exports.save = route(async (req, res) => {
   // Compute the ratio of the surface
   surfaceRatio = Math.round((areaBbox / areaImage) * 100);
 
+  //for composite_image, the multiple geolocalisations are saved one after the other in the front-end. The last one will be the one also saved in the table images.
   await models.images.update(
     {
       location: models.sequelize.fn(
@@ -166,7 +183,8 @@ exports.save = route(async (req, res) => {
       user_id: georeferencer_id,
       date_georef: models.sequelize.literal("now()"),
       geolocalisation_id: geoloc_id,
-      state: "waiting_validation"
+      state: "waiting_validation",
+      framing_mode: framing_mode
     },
     {
       where: { id: image_id }
@@ -208,7 +226,8 @@ exports.save = route(async (req, res) => {
       user_id: georeferencer_id,
       state: "waiting_validation",
       date_checked: models.sequelize.literal("now()"),
-      date_georef: models.sequelize.literal("now()")
+      date_georef: models.sequelize.literal("now()"),
+      region_px: regionByPx
     },
     {
       where: { id: geoloc_id }

@@ -8,7 +8,7 @@ const utils = require("../../utils/express");
 const { getFieldI18n } = require("../../utils/params");
 const { notFoundError, requestBodyValidationError, poseEstimationError } = require('../../utils/errors');
 const { getOwnerScope } = require('./images.utils');
-const iiifLevel0Utils = require('../../utils/IIIFLevel0');
+const mediaUtils = require('../../utils/media');
 const pose = require("../pose-estimation/pose-estimation.controller");
 
 const Op = Sequelize.Op;
@@ -178,6 +178,7 @@ exports.checkLock = utils.route(async (req, res) => {
 exports.getAttributes = utils.route(async (req, res) => {
   const lang = req.getLocale();
   const image_width = req.query.image_width ? parseInt(req.query.image_width) : 200;
+  const image_id = req.params.id;
 
   const today = new Date();
   today.setHours(23);
@@ -206,9 +207,10 @@ exports.getAttributes = utils.route(async (req, res) => {
     'height',
     'iiif_data',
     'country_iso_a2',
-    [models.sequelize.literal("ST_X(location)"), "longitude"],
-    [models.sequelize.literal("ST_Y(location)"), "latitude"],
-    [models.sequelize.literal("ST_Z(location)"), "altitude"],
+    'framing_mode',
+    [models.sequelize.literal("ST_X(images.location)"), "longitude"],
+    [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
+    [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
     [
       models.sequelize.literal(
         `(case
@@ -245,55 +247,11 @@ exports.getAttributes = utils.route(async (req, res) => {
       "locked"
     ],
     ["last_start_user_id", "locked_user_id"],
-    [ models.sequelize.fn("COUNT", models.sequelize.col("observations.*")), "nObs"],
-    [
-      models.sequelize.literal(
-      `(CASE
-        WHEN iiif_data IS NOT NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN case
-              WHEN iiif_data->>'size_info' IS NOT NULL
-                THEN json_build_object('image_url', NULL,
-                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
-                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
-                WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'),
-                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
-                                   'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
-                                   'regionByPx', iiif_data->'regionByPx')
-                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'),
-                                   'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
-                                   'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
-                END
-        WHEN iiif_data IS NULL AND (images.state = 'validated' OR images.state = 'waiting_validation')
-            THEN json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',images.id,'.jpg'),
-                                   'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
-                                   'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
-        WHEN iiif_data IS NOT NULL
-            THEN case
-              WHEN iiif_data->>'size_info' IS NOT NULL
-                THEN json_build_object('image_url', NULL,
-                                  'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')))
-                WHEN iiif_data->>'regionByPx' IS NOT NULL
-                THEN json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/', regexp_replace(iiif_data->>'regionByPx','[\\[\\]]', '', 'g'),'/${image_width},/0/default.jpg'),
-                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
-                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'),
-                                    'regionByPx', iiif_data->'regionByPx')
-                ELSE json_build_object('image_url', CONCAT((iiif_data->>'image_service3_url'), '/full/${image_width},/0/default.jpg'),
-                                    'tiles', json_build_object('type', 'iiif', 'url', CONCAT(iiif_data->>'image_service3_url', '/info.json')),
-                                    'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
-                END
-        ELSE
-            json_build_object('image_url',CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/${image_width === 200 ? 'thumbnails' : image_width}/',images.id,'.jpg'),
-                              'tiles', json_build_object('type', 'dzi', 'url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/images/tiles/',images.id,'.dzi')),
-                              'model_3d_url', CONCAT('${config.apiUrl}/data/collections/', collection_id,'/gltf/',images.id,'.gltf'))
-        end)`
-      ),
-      "media"
-    ]
+    [ models.sequelize.fn("COUNT", models.sequelize.col("observations.*")), "nObs"]
   ];
 
   const where = {
-    id: req.params.id
+    id: image_id
   };
 
   // Unpublished images can only be accessed by super administrators and owner administrators.
@@ -367,36 +325,114 @@ exports.getAttributes = utils.route(async (req, res) => {
           "link"
         ],
         required: false
+      },
+      {
+        model: models.geolocalisations, //used to build media.model_3d_url. If composite_image, the model_3d_url corresponds to the geolocalisation registered in the images table.
+        attributes: ["id","region_px"],
+        required: false
       }
     ],
     group: ["images.id", "apriori_locations.id", "georeferencer.id", "owner.id", "collection.id",
-            "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id"],
+            "photographer.id", "photographer->images_photographers.image_id", "photographer->images_photographers.photographer_id",
+            "geolocalisation.user_id", "geolocalisation.id", "geolocalisation.image_id"],
     where
   });
 
   if (results === null) {
     throw notFoundError(req);
   }
-    
+  
+  //clean results for photographers
   results.dataValues.photographer.forEach((photographer) => {
     delete photographer.dataValues.images_photographers;
   });
   results.dataValues.photographers = results.dataValues.photographer;
   delete results.dataValues.photographer;
 
-  const iiifLevel0Promise = [];
+  //collection_id
+  const collection_id = results.dataValues.collection.dataValues.id;
 
-  const media = results.dataValues.media;
-  if (media && media.image_url === null &&
-    iiifLevel0Utils.isIIIFLevel0(results.dataValues.iiif_data)) {
-    iiifLevel0Promise.push(iiifLevel0Utils.getImageMediaUrl(media, results.dataValues.iiif_data.size_info, 1024));
+  //GROUP POSES attributes.
+  //If composite_image, get all validated and waiting_validation poses from geolocalisations table.
+  if (results.dataValues.framing_mode === 'composite_image') {
+    const res_geolocs = await models.geolocalisations.findAll({
+      attributes: [
+        "id", "image_id", "state", "region_px", "azimuth", "tilt", "roll", "focal",
+        [models.sequelize.literal("ST_X(location)"), "longitude"],
+        [models.sequelize.literal("ST_Y(location)"), "latitude"],
+        [models.sequelize.literal("ST_Z(location)"), "altitude"]
+      ],
+      where: {
+        image_id: req.params.id,
+        state: {
+          [Op.or]: ['validated','waiting_validation']
+        }
+      }
+    });
+  
+    let poses = [];
+    for (const geoloc of res_geolocs) {
+      const region = geoloc.dataValues.region_px ? geoloc.dataValues.region_px : null;
+      const pose = {
+        geolocalisation_id: geoloc.dataValues.id,
+        image_id: image_id,
+        state: geoloc.dataValues.state,
+        regionByPx: geoloc.dataValues.region_px,
+        gltf_url: mediaUtils.generateGltfUrl(image_id, collection_id, region),
+        altitude: geoloc.dataValues.altitude,
+        latitude: geoloc.dataValues.latitude,
+        longitude: geoloc.dataValues.longitude,
+        azimuth: parseFloat(geoloc.dataValues.azimuth),
+        tilt: parseFloat(geoloc.dataValues.tilt),
+        roll: parseFloat(geoloc.dataValues.roll),
+        focal: parseFloat(geoloc.dataValues.focal)
+      };
+      poses.push(pose);
+    }
+    results.dataValues.poses = poses;
   }
 
-  await Promise.all(iiifLevel0Promise);
+  //GROUP POSE attributes. 
+  //Geolocalisation registered in the images table.
+  //If composite_image, corresponds to the last geolocalisation having been saved (geolocalisations/{id}/save).
+
+  // Build gltf_url for pose
+  let gltf_url = null;
+  let region_px = null;
+  let geoloc_id = null;
+  if (results.dataValues.geolocalisation) {
+    region_px =  results.dataValues.geolocalisation.region_px;
+    geoloc_id = results.dataValues.geolocalisation.id;
+    gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region_px);
+  }
+  delete results.dataValues.geolocalisation;
+
+
+  //BUILD MEDIA
+  const image = results.dataValues;
+  image.collection_id = collection_id;
+  image.media = {};
+
+  const geoloc_region = image.geolocalisation ? image.geolocalisation.dataValues.region_px : null;
+
+  //set image_url on media and generate tiles
+  await mediaUtils.setImageUrl(image, image_width, /* image_height */ null);
+  image.media.tiles = mediaUtils.generateImageTiles(image_id, collection_id, image.iiif_data);
+
+  //if image georeferenced, generate model_3d_url
+  if (image.state === 'validated' || image.state ==='waiting_validation') {
+    image.media.model_3d_url = mediaUtils.generateGltfUrl(image_id, collection_id, geoloc_region);
+  }
+
+  //iiif_data region
+  if (image.iiif_data && image.iiif_data.regionByPx) {
+    image.media.regionByPx = image.iiif_data.regionByPx;
+  }
 
   delete results.dataValues.iiif_data;
+  delete results.dataValues.collection_id;
 
-  // Group POSE attributes.
+
   const {
     caption,
     altitude,
@@ -413,7 +449,7 @@ exports.getAttributes = utils.route(async (req, res) => {
   res.status(200).send({
     ...partialObject,
     caption,
-    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2 }
+    pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
   });
 });
 
@@ -511,6 +547,7 @@ exports.submitImage = utils.route(async (req, res) => {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
     },
+    framing_mode: req.body.framing_mode ? req.body.framing_mode : 'single_image',
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,
@@ -580,19 +617,20 @@ exports.submitImage = utils.route(async (req, res) => {
 // ==========================
 
 exports.updateAttributes = utils.route(async (req, res) => {
-  //If image is already georeferenced: does not allow to update width, height ,apriori_locations or iiif_data.image_service3_url.
+  //If image is already georeferenced: does not allow to update width, height, apriori_locations, iiif_data.image_service3_url or framing_mode.
   const isGeoreferenced = req.image.state === 'waiting_validation' || req.image.state === 'validated';
   const IsDimensionsUpdated = Boolean(req.body.width || req.body.height);
   const IsAprioriLocationUpdated = Boolean(req.body.apriori_location);
   const imageOriginalUrl = req.image.iiif_data ? req.image.iiif_data.image_service3_url : null;
   const isIIIFImageUrlUpdated = Boolean(req.body.iiif_data && !(req.body.iiif_data.image_service3_url === imageOriginalUrl));
+  const isFramingModeUpdated = Boolean(req.body.framing_mode);
 
-  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated) ) {
+  if ( isGeoreferenced && (IsDimensionsUpdated || IsAprioriLocationUpdated || isIIIFImageUrlUpdated || isFramingModeUpdated) ) {
     throw requestBodyValidationError(req, [
       {
         location: 'body',
         path: '',
-        message: req.__('Image already georeferenced, iiif image url, apriori_locations or dimensions can\'t be updated.'),
+        message: req.__('Image already georeferenced, iiif image url, framing_mode, apriori_locations or dimensions can\'t be updated.'),
         validation: 'DimensionsAndIIIFUnmodifiables'
       }
     ])
@@ -697,6 +735,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
       image_service3_url: req.body.iiif_data.image_service3_url,
       regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
+    framing_mode: req.body.framing_mode,
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,
@@ -719,7 +758,9 @@ exports.updateAttributes = utils.route(async (req, res) => {
 
   //RECOMPUTE POSE
   //if image is already geolocalised and new iiif_data, recompute pose
-  if (isGeoreferenced && req.body.iiif_data) {
+  //if single_image, use region from iiif_data.
+  //if composite_image, do not regenerate the gltfs.
+  if (isGeoreferenced && req.body.iiif_data && (req.image.framing_mode === 'single_image' || !req.image.framing_mode) ) {
     //fetch original gcps calculated on full image (no offset due to cropping) stored in database
     const oldGCPs = req.image.geolocalisation.gcp_json;
     let newGCPsOffset;

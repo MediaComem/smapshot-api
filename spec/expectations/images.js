@@ -11,7 +11,7 @@ const { compactObject } = require('../utils/fixtures');
  */
 exports.getExpectedImage = (image, options = {}) => {
   const { id, owner_id, collection_id, width, height, latitude, longitude,
-    date_shot, date_georef, date_shot_min, date_shot_max, is_published } = image;
+    date_shot, date_georef, date_shot_min, date_shot_max, is_published, collection } = image;
   const {
     media: expectedMedia,
     ...extraProperties
@@ -41,6 +41,12 @@ exports.getExpectedImage = (image, options = {}) => {
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
   }
+
+  expected.collection = {
+    id: collection.id,
+    date_publi: collection.date_publi === null ? null : collection.date_publi.toISOString(), 
+  };
+
   return compactObject(expected);
 };
 
@@ -87,7 +93,8 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
           date_shot, date_shot_min, date_shot_max, width, height,
           owner, collection, photographers, user,
           latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal,
-          observation_enabled
+          observation_enabled,
+          framing_mode, geolocalisation_id
         } = image;
   const {
     media: expectedMedia,
@@ -111,11 +118,15 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
     date_shot_min: date_shot ? date_shot.toISOString().slice(0,10) : date_shot_min.toISOString().slice(0,10),
     date_shot_max: date_shot ? date_shot.toISOString().slice(0,10) : date_shot_max.toISOString().slice(0,10),
     observation_enabled,
-    nObs: 0
+    nObs: 0,
+    framing_mode
   };
 
   expected.pose = {
-    latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal
+    latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal, 
+    geolocalisation_id, 
+    gltf_url: null, 
+    regionByPx: null
   },
 
   expected.owner = {
@@ -128,8 +139,13 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
   expected.collection = {
     id: collection.id,
     name: collection.name[expectedLocale],
-    link: collection.link
+    link: collection.link,
+    date_publi: collection.date_publi === null ? null : collection.date_publi.toISOString()
   };
+
+  if (framing_mode === 'composite_image') {
+    expected.poses = [];
+  }
 
   photographers.forEach(function expectedPhotographer(photographer) {
     const first_name = photographer.first_name?`${photographer.first_name} ` :'';
@@ -154,9 +170,12 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
       tiles: {
         type: 'dzi',
         url: `http://localhost:1337/data/collections/${collection.id}/images/tiles/${id}.dzi`
-      },
-      model_3d_url: `http://localhost:1337/data/collections/${collection.id}/gltf/${id}.gltf`
+      }
     };
+    if (expected.state === 'waiting_validation' || expected.state === 'validated') {
+      expected.media.model_3d_url = `http://localhost:1337/data/collections/${expected.collection.id}/gltf/${expected.id}.gltf`;
+    }
+
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
   }
@@ -197,7 +216,10 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
     locked_user_id: null, 
     delta_last_start: null,
     georeferencer: null,
-    pose: {altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null }
+    pose: {
+      altitude: null, latitude: null, longitude: null, azimuth: null, tilt: null, roll: null, country_iso_a2: null, focal: null, 
+      geolocalisation_id: null, gltf_url: null, regionByPx: null
+    }
   };
 
   const expected = {
@@ -205,6 +227,10 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
     ...unrequiredAttributes,
     ...options
   };
+
+  if (expected.framing_mode === 'composite_image') {
+    expected.poses = [];
+  }
 
   //photographers
   options.photographers.forEach(function expectedPhotographer(photographer) {
@@ -232,7 +258,8 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
   expected.collection = {
     id: options.collection.id,
     name: options.collection.name[expectedLocale],
-    link: options.collection.link
+    link: options.collection.link,
+    date_publi: options.collection.date_publi === null ? null : options.collection.date_publi.toISOString()
   };
   delete expected.collection_id;
 
@@ -257,8 +284,10 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
     expected.media = { 
       image_url: expected.iiif_data.image_service3_url + "/" + region + "/200,/0/default.jpg",
       tiles: { type: 'iiif', url: expected.iiif_data.image_service3_url + "/info.json"},
-      model_3d_url: `http://localhost:1337/data/collections/${expected.collection.id}/gltf/${expected.id}.gltf`,
     };
+    if (expected.state === 'waiting_validation' || expected.state === 'validated') {
+      expected.media.model_3d_url = `http://localhost:1337/data/collections/${expected.collection.id}/gltf/${expected.id}.gltf`;
+    }
     if (requestBody.iiif_data.regionByPx) {
       //return regionByPx only if not null 
       expected.media.regionByPx = requestBody.iiif_data.regionByPx;
