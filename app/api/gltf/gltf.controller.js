@@ -87,8 +87,10 @@ async function getSquareImageFromDB(image_id, regionByPx) {
 
   //Build media
   image.media = {}
-  image.region = regionByPx;
-
+  //Update iiif_data.regionByPx if region is given to put correct region in picpath.
+  if (regionByPx) {
+    image.iiif_data.regionByPx = regionByPx;
+  }
   //set image_url on media and generate tiles
   await mediaUtils.setImageUrl(image, /* image_width */ 1024, /* image_height */ 1024);
   image.media.tiles = mediaUtils.generateImageTiles(image_id, image.collection_id, image.iiif_data);
@@ -97,6 +99,9 @@ async function getSquareImageFromDB(image_id, regionByPx) {
 }
 
 async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {
+  //regionByPx = iiif_data.regionByPx, 
+  //excepted for composite_images when computing pose during geolocalisation process (= pose-estimation.controller.js "/pose/compute").
+
   const imageSquaredFromDB = await getSquareImageFromDB(image_id, regionByPx);
   const picPath = imageSquaredFromDB.media.image_url;
   const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";

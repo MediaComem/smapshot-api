@@ -110,7 +110,7 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
     );
 
     // Update values stored in geolocalisation (except the gcps)
-    const image_region = image.iiif_data ? image.iiif_data.regionByPx : null;
+    const image_region = image.iiif_data ? image.iiif_data.regionByPx : null; //For composite_images, the gltfs are not regenerated, so the regions will always come from iiif_data.
 
     await models.geolocalisations.update(
       {
@@ -153,7 +153,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const tilt = parseFloat(req.body.tilt);
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
-   let regionByPx = req.body.regionByPx;
+   let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
    // Get image collection id and region
    const sql = `
