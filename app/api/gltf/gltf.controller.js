@@ -62,6 +62,7 @@ async function getSquareImageFromDB(image_id, regionByPx) {
   const query = models.images.findOne({
     raw: true,
     attributes: [
+      "id",
       [models.sequelize.literal("azimuth%360"), "azimuth"],
       "tilt",
       "roll",
@@ -81,24 +82,18 @@ async function getSquareImageFromDB(image_id, regionByPx) {
     }
   });
 
-  const result = await query;
+  const image = await query;
 
-  //if regionByPx is given, update image_url to have the region.
-  //else, use the one from db iiif_data if exists.
-  let region;
-  if (regionByPx) {
-    region = regionByPx;
-  } else if (result.iiif_data) {
-    region = result.iiif_data.regionByPx;
-  }
 
   //Build media
-  const media = {};
-  await Promise.all([mediaUtils.generateImageUrl(media, image_id, result.collection_id, result.iiif_data, region, /* image_width */ 1024, /* image_height */ 1024, /* iiifLevel0_width */ null)]);
-  media.tiles = mediaUtils.generateImageTiles(image_id, result.collection_id, result.iiif_data);
-  result.media = media;
+  image.media = {}
+  image.region = regionByPx;
 
-  return result;
+  //set image_url on media and generate tiles
+  await mediaUtils.setImageUrl(image, /* image_width */ 1024, /* image_height */ 1024);
+  image.media.tiles = mediaUtils.generateImageTiles(image_id, image.collection_id, image.iiif_data);
+
+  return image;
 }
 
 async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {

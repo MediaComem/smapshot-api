@@ -409,29 +409,28 @@ exports.getAttributes = utils.route(async (req, res) => {
 
 
   //BUILD MEDIA
-  const media = {};
-  const iiif_data = results.dataValues.iiif_data;
-  const iiif_data_region = iiif_data ? results.dataValues.iiif_data.regionByPx : null;
-  const geoloc_region = results.dataValues.geolocalisation ? results.dataValues.geolocalisation.dataValues.region_px : null;
-  const state = results.dataValues.state;
+  const image = results.dataValues;
+  image.collection_id = collection_id;
+  image.media = {};
 
-  //image_url and tiles
-  const image_width_imageUrl = !iiif_data && image_width === 200 ? 'thumbnails' : image_width;
-  await Promise.all([mediaUtils.generateImageUrl(media, image_id, collection_id, iiif_data, iiif_data_region, /* image_width */ image_width_imageUrl, /* image_height */ null, /* iiifLevel0_width */ 1024)]);
-  media.tiles = mediaUtils.generateImageTiles(image_id, collection_id, iiif_data);
+  const geoloc_region = image.geolocalisation ? image.geolocalisation.dataValues.region_px : null;
+
+  //set image_url on media and generate tiles
+  await mediaUtils.setImageUrl(image, image_width, /* image_height */ null);
+  image.media.tiles = mediaUtils.generateImageTiles(image_id, collection_id, image.iiif_data);
 
   //if image georeferenced, generate model_3d_url
-  if (state === 'validated' || state ==='waiting_validation') {
-    media.model_3d_url = mediaUtils.generateGltfUrl(image_id, collection_id, geoloc_region);
+  if (image.state === 'validated' || image.state ==='waiting_validation') {
+    image.media.model_3d_url = mediaUtils.generateGltfUrl(image_id, collection_id, geoloc_region);
   }
 
   //iiif_data region
-  if (iiif_data_region) {
-    media.regionByPx = iiif_data_region;
+  if (image.iiif_data && image.iiif_data.regionByPx) {
+    image.media.regionByPx = image.iiif_data.regionByPx;
   }
 
-  results.dataValues.media = media;
   delete results.dataValues.iiif_data;
+  delete results.dataValues.collection_id;
 
 
   const {

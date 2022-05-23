@@ -137,7 +137,7 @@ const getCollections = async (req, res) => {
     const banner = collection.dataValues.banner ? collection.dataValues.banner.dataValues : null;
     if (media && media.banner_url === null &&
       mediaUtils.isIIIFLevel0(banner.iiif_data)) {
-      mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
+      mediaPromise.push(mediaUtils.setIIIFLevel0BannerUrl(collection.dataValues.media, banner.iiif_data.size_info, image_width));
     }
 
   });
@@ -338,7 +338,7 @@ exports.getList = route(async (req, res) => {
     const banner = collection.banner ? collection.banner.dataValues : null;
     if (media && media.banner_url === null &&
       mediaUtils.isIIIFLevel0(banner.iiif_data)) {
-      mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(media, banner.iiif_data.size_info, image_width));
+      mediaPromise.push(mediaUtils.setIIIFLevel0BannerUrl(media, banner.iiif_data.size_info, image_width));
     }
   });
 
@@ -448,7 +448,7 @@ exports.getById = route(async (req, res) => {
   const banner = media.dataValues.banner ? media.dataValues.banner.dataValues : null;
   if (mediaInfo && mediaInfo.banner_url === null &&
     mediaUtils.isIIIFLevel0(banner.iiif_data)) {
-    mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
+    mediaPromise.push(mediaUtils.setIIIFLevel0BannerUrl(mediaInfo, banner.iiif_data.size_info, image_width));
   }
 
   await Promise.all(mediaPromise);

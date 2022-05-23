@@ -101,16 +101,7 @@ exports.getList = utils.route(async (req, res) => {
   });
 
   //BUILD MEDIA
-  const build_media = async (corrections) => {
-    for await (const correction of corrections) {
-      const image = correction.dataValues.image.dataValues;
-      const media = {};
-      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
-      correction.dataValues.image.dataValues.media = media;
-    }
-  } 
-  await build_media(corrections);
+  await mediaUtils.setListImageUrl(/* images */ corrections, /* image_width */ 500, /* image_height */ null);
 
   corrections.forEach(correction => {
     delete correction.dataValues.image.dataValues.iiif_data;

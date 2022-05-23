@@ -135,7 +135,7 @@ exports.getList = utils.route(async (req, res) => {
   owners.forEach((owner) => {
     if (owner.media && owner.media.banner_url == null &&
         mediaUtils.isIIIFLevel0(owner.banner.dataValues.iiif_data)) {
-      mediaPromise.push(mediaUtils.retrieveMediaBannerUrl(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width));
+      mediaPromise.push(mediaUtils.setIIIFLevel0BannerUrl(owner.media, owner.banner.dataValues.iiif_data.size_info, image_width));
     }
   });
 

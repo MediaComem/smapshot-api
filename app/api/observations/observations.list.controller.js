@@ -149,19 +149,13 @@ const getObservations = async (req, isSuperUser, onlyOwner, onlyUser) => {
   });
 
   // Build media
-  const build_media = async (observations) => {
-    for await (const observation of observations) {
-      const image = observation.dataValues.image.dataValues;
-      const media = {};
-      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection_id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
-      media.tiles = mediaUtils.generateImageTiles(image.id, image.collection_id, image.iiif_data);
-      observation.dataValues.image.dataValues.media = media;
-    }
-  } 
-  await build_media(observations);
+  await mediaUtils.setListImageUrl(observations, /* image_width */ 500, /* image_height */ null);
 
   observations.forEach(observation => {
+    //add tiles in media
+    const image = observation.dataValues.image.dataValues;
+    image.media.tiles = mediaUtils.generateImageTiles(image.id, image.collection_id, image.iiif_data);
+
     delete observation.dataValues.image.dataValues.iiif_data;
     delete observation.dataValues.image.dataValues.collection_id;
   });

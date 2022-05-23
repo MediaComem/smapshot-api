@@ -268,30 +268,28 @@ exports.getAttributes = utils.route(async (req, res) => {
 
     
     //BUILD MEDIA
-    const media = {};
-    const iiif_data = image.dataValues.iiif_data;
-    const iiif_data_region = iiif_data ? image.dataValues.iiif_data.regionByPx : null;
-    const geoloc_region = image.dataValues.geolocalisation ? image.dataValues.geolocalisation.dataValues.region_px : null;
-    const state = image.dataValues.state;
+    const imageMedia = image.dataValues;
+    imageMedia.collection_id = collection_id;
+    imageMedia.media = {};
 
-    //image_url and tiles
-    const image_width = !image.iiif_data ? 'thumbnails' : 200;
-    await Promise.all([mediaUtils.generateImageUrl(media, image_id, collection_id, iiif_data, iiif_data_region, /* image_width */ image_width, /* image_height */ null, /* iiifLevel0_width */ 1024)]);
-    media.tiles = mediaUtils.generateImageTiles(image_id, collection_id, iiif_data);
+    const geoloc_region = imageMedia.geolocalisation ? imageMedia.geolocalisation.dataValues.region_px : null;
+
+    //set image_url on media and generate tiles
+    await mediaUtils.setImageUrl(imageMedia, 200, /* image_height */ null);
+    imageMedia.media.tiles = mediaUtils.generateImageTiles(image_id, collection_id, imageMedia.iiif_data);
 
     //if image georeferenced, generate model_3d_url
-    if (state === 'validated' || state ==='waiting_validation') {
-      media.model_3d_url = mediaUtils.generateGltfUrl(image_id, collection_id, geoloc_region);
+    if (imageMedia.state === 'validated' || imageMedia.state ==='waiting_validation') {
+      imageMedia.media.model_3d_url = mediaUtils.generateGltfUrl(image_id, collection_id, geoloc_region);
     }
 
     //iiif_data region
-    if (iiif_data_region) {
-      media.regionByPx = iiif_data_region;
+    if (imageMedia.iiif_data && imageMedia.iiif_data.regionByPx) {
+      imageMedia.media.regionByPx = imageMedia.iiif_data.regionByPx;
     }
 
-    image.dataValues.media = media;
     delete image.dataValues.iiif_data;
-
+    delete image.dataValues.collection_id;
 
     const { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, ...partialObject } = image.toJSON();
 

@@ -28,23 +28,76 @@ const isIIIFLevel0 = (iiif_data) => {
   return iiif_data && iiif_data.size_info;
 }
 
-exports.generateImageUrl = async (media, image_id, collection_id, iiif_data, region, image_width, image_height, iiifLevel0_width ) => {
+const setImageUrl = async (media, image_id, collection_id, iiif_data, region, image_width, image_height ) => {
+    if (!image_id || !collection_id || !image_width) {
+        throw new Error(`Image_id ${image_id}, collection_id ${collection_id} or image_width ${image_width} missing.`);
+    }
     if (!image_height) {
         image_height = '';
     }
     //iiif image
-    if (isIIIFLevel0(iiif_data) && iiifLevel0_width) {
-        await Promise.all([getImageMediaUrlFromIIIFSize_info(media, iiif_data.size_info, iiifLevel0_width)]);
+    if (isIIIFLevel0(iiif_data)) {
+        await getImageMediaUrlFromIIIFSize_info(media, iiif_data.size_info, image_width);
     } else if (iiif_data && region) {
         media.image_url = `${iiif_data.image_service3_url}/${region[0]},${region[1]},${region[2]},${region[3]}/${image_width},${image_height}/0/default.jpg`;
     } else if (iiif_data) {
         media.image_url = `${iiif_data.image_service3_url}/full/${image_width},${image_height}/0/default.jpg`;
     //not iiif image
     } else {
-        media.image_url = `${config.apiUrl}/data/collections/${collection_id}/images/${image_width}/${image_id}.jpg`;
+        const image_width_imageUrl = image_width === 200 ? 'thumbnails' : image_width;
+        media.image_url = `${config.apiUrl}/data/collections/${collection_id}/images/${image_width_imageUrl}/${image_id}.jpg`;
     }
 
-    return media.image_url
+}
+
+//shortcut method
+exports.setImageUrl = async (image, image_width, image_height) => {
+    let region;
+    //Use specicfic region if given in the image attributes. Else use from db iiif_data if exists.
+    if (image.region) {
+        region = image.region;
+    } else if (image.iiif_data && image.iiif_data.regionByPx) {
+        region = image.iiif_data.regionByPx;
+    } else {
+        region = null;
+    }
+
+    return setImageUrl(image.media, image.id, image.collection_id, image.iiif_data, region, image_width, image_height)
+}
+
+//shortcut method for setting image_url on a list of images
+exports.setListImageUrl = async (elements, image_width, image_height) => {
+    const mediaRetrieval = [];
+    for (const element of elements) {
+        let image;
+        if (element.image) {
+            image = element.image.dataValues;
+        } else if (element.dataValues.image) {
+            image = element.dataValues.image.dataValues;
+        } else {
+            image = element.dataValues;
+        }
+
+        const collection_id = image.collection ? image.collection.id : image.collection_id;
+
+        if (!image || !image.id || !collection_id ) {
+            throw new Error(`Image_id or collection_id is missing. Image: ${image}`);
+        }
+
+        image.media = {};
+
+        let region;
+        //Use specicfic region if given in the image attributes. Else use from db iiif_data if exists.
+        if (image.region) {
+            region = image.region;
+        } else if (image.iiif_data && image.iiif_data.regionByPx) {
+            region = image.iiif_data.regionByPx;
+        } else {
+            region = null;
+        }
+        mediaRetrieval.push(setImageUrl(image.media, image.id, collection_id, image.iiif_data, region, image_width, image_height));
+    }
+    await Promise.all(mediaRetrieval)
 }
 
 exports.generateImageTiles = (image_id, collection_id, iiif_data) => {
@@ -71,7 +124,7 @@ exports.generateGltfUrl = (image_id, collection_id, region) => {
     return model_3d_url
 }
 
-exports.retrieveMediaBannerUrl = async (media, size_info_url, width) => {
+exports.setIIIFLevel0BannerUrl = async (media, size_info_url, width) => {
     media.banner_url = await generateUrlFromIIIFSize_info(size_info_url, width)
     return;
 }

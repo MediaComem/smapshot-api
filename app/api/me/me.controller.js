@@ -145,16 +145,7 @@ exports.getGeolocalisations = async (req, res) => {
   })
 
   // Build media
-  const build_media = async (results) => {
-    for await (const result of results) {
-      const image = result.dataValues.image.dataValues;
-      const media = {};
-      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
-      result.dataValues.image.dataValues.media = media;
-    }
-  } 
-  await build_media(results);
+  await mediaUtils.setListImageUrl(results, /* image_width */ 500, /* image_height */ null);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -208,16 +199,7 @@ exports.getObservations = async (req, res) => {
   const results = await utils.handlePromise(queryPromise, {status: 500, message: "Observations cannot be retrieved. There has been an error with the server."})
 
   // Build media
-  const build_media = async (results) => {
-    for await (const result of results) {
-      const image = result.dataValues.image.dataValues;
-      const media = {};
-      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
-      result.dataValues.image.dataValues.media = media;
-    }
-  } 
-  await build_media(results);
+  await mediaUtils.setListImageUrl(results, /* image_width */ 500, /* image_height */ null);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;
@@ -302,16 +284,7 @@ exports.getCorrections = async (req, res) => {
   })
 
   // Build media
-  const build_media = async (results) => {
-    for await (const result of results) {
-      const image = result.dataValues.image.dataValues;
-      const media = {};
-      const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-      await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, /* image_width */ 500, /* image_height */ null, /* iiifLevel0_width */ 500)]);
-      result.dataValues.image.dataValues.media = media;
-    }
-  } 
-  await build_media(results);
+  await mediaUtils.setListImageUrl(results, /* image_width */ 500, /* image_height */ null);
 
   results.forEach(result => {
     delete result.dataValues.image.dataValues.iiif_data;

@@ -359,21 +359,10 @@ const getImages = async (req, orderkey, count = true) => {
 
 exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
-
+  //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
     if(images.rows) {
-      //BUILD MEDIA
-      const build_media = async (images) => {
-        for await (const imageData of images.rows) {
-          const image = imageData.dataValues;
-          const image_width = !image.iiif_data ? 'thumbnails' : 200;
-          const media = {};
-          const iiif_data_region = image.iiif_data ? image.iiif_data.regionByPx : null;
-          await Promise.all([mediaUtils.generateImageUrl(media, image.id, image.collection.id, image.iiif_data, iiif_data_region, image_width, /* image_height */ null, /* iiifLevel0_width */ 200)]);
-          imageData.dataValues.media = media;
-        }
-      } 
-      await build_media(images);
+      mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
   } 
 
     images.rows.forEach((image) => {
