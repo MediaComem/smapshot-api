@@ -42,7 +42,9 @@ tasks:
           END) AS date_shot_max
       FROM images
       LEFT JOIN apriori_locations ON images.id = apriori_locations.image_id
-      WHERE (state='waiting_alignment' OR state='initial') AND is_published=true AND apriori_locations.id IS NOT NULL
+      LEFT JOIN collections ON images.collection_id = collections.id
+      WHERE (state='waiting_alignment' OR state='initial') AND is_published=true AND apriori_locations.id IS NOT NULL AND
+      collections.date_publi <= current_date
     "
     sqlColumNameRef: "images.id"
     vtParams:
