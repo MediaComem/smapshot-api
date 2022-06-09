@@ -264,7 +264,6 @@ exports.getAttributes = utils.route(async (req, res) => {
       geoloc_id = image.dataValues.geolocalisation.id;
       gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region_px);
     }
-    delete image.dataValues.geolocalisation;
 
     
     //BUILD MEDIA
@@ -290,6 +289,7 @@ exports.getAttributes = utils.route(async (req, res) => {
 
     delete image.dataValues.iiif_data;
     delete image.dataValues.collection_id;
+    delete image.dataValues.geolocalisation;
 
     const { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, ...partialObject } = image.toJSON();
 

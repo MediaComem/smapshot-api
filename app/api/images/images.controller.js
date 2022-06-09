@@ -405,7 +405,6 @@ exports.getAttributes = utils.route(async (req, res) => {
     geoloc_id = results.dataValues.geolocalisation.id;
     gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region_px);
   }
-  delete results.dataValues.geolocalisation;
 
 
   //BUILD MEDIA
@@ -431,6 +430,7 @@ exports.getAttributes = utils.route(async (req, res) => {
 
   delete results.dataValues.iiif_data;
   delete results.dataValues.collection_id;
+  delete results.dataValues.geolocalisation;
 
 
   const {
