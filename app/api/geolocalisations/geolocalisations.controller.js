@@ -1,5 +1,6 @@
 const turfHelpers = require("@turf/helpers");
 const turf = require("@turf/turf");
+const Sequelize = require("sequelize");
 
 const models = require("../../models");
 const { route, getLogger } = require("../../utils/express");
@@ -8,6 +9,8 @@ const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
 const mediaUtils = require('../../utils/media');
+
+const Op = Sequelize.Op;
 
 exports.getAttributes = route(async (req, res) => {
   const geoloc_id = req.params.id;
@@ -130,7 +133,7 @@ exports.save = route(async (req, res) => {
   }
 
   // Check owner scope for improvments only
-  if(validation_mode) {
+  if (validation_mode) {
     const { include } = getOwnerScope(req);
     const geolocalisation = await models.geolocalisations.findOne({
       include,
@@ -190,18 +193,6 @@ exports.save = route(async (req, res) => {
       where: { id: image_id }
     }
   );
-  // Owner scope already checked for validation_mode
-  if (validation_mode) {
-    await models.images.update(
-      {
-        date_validated: models.sequelize.literal("now()"),
-        state: "validated"
-      },
-      {
-        where: { id: image_id }
-      }
-    );
-  }
 
   // store the geolocalisation parameters
   await models.geolocalisations.update(
@@ -233,46 +224,23 @@ exports.save = route(async (req, res) => {
       where: { id: geoloc_id }
     }
   );
-
-  // if it is an improvement, the geolocalisation is directly validated
   // Owner scope already checked for validation_mode
+  // if it is an improvement:
   if (validation_mode) {
-    // update previous geolocalisation
+    // the geolocalisation is directly validated
     await models.geolocalisations.update(
       {
         state: "validated",
         validator_id: validator_id,
-        previous_geolocalisation_id: previous_geoloc_id
+        previous_geolocalisation_id: previous_geoloc_id,
+        region_px: regionByPx
       },
       {
         where: { id: geoloc_id }
       }
     );
-
-    // The geolocalisation is recorded in the image
-    const query = `
-    UPDATE images SET
-    location = g.location,
-    roll = g.roll,
-    tilt = g.tilt,
-    azimuth = g.azimuth,
-    focal = g.focal,
-    px = g.px,
-    py = g.py,
-    footprint = ST_Multi(g.footprint)
-    FROM geolocalisations g
-    WHERE images.geolocalisation_id = g.id
-    AND images.id = ${image_id}
-    `;
-    await models.sequelize.query(query, {
-      type: models.sequelize.QueryTypes.SELECT
-    });
-  }
-  // if it is an improvement: the previous geolocalisation is marked as "improved",
-  // the reason of the improvement are recorded
-  // Owner scope already checked for validation_mode
-  if (validation_mode) {
-    // update previous geolocalisation
+    // the previous geolocalisation is marked as "improved",
+    // the reason of the improvement are recorded
     await models.geolocalisations.update(
       {
         state: "improved",
@@ -283,6 +251,18 @@ exports.save = route(async (req, res) => {
         where: { id: previous_geoloc_id }
       }
     );
+
+    // the image is validated
+    await models.images.update(
+      {
+        state: "validated",
+        validator_id: validator_id,
+        date_validated: models.sequelize.literal("now()"),
+      },
+      {
+        where: { id: image_id }
+      }
+    );
   }
   // return result
   return res.json({ success: true, message: "Orientation is updated" });
@@ -290,38 +270,10 @@ exports.save = route(async (req, res) => {
 
 let validate = async (req, res) => {
   const geoloc_id = req.geolocalisation.id;
+  const image_id =  req.geolocalisation.image_id;
   const validator_id = req.user.id;
 
-  await models.images.update(
-    {
-      state: "validated",
-      validator_id: validator_id,
-      date_validated: models.sequelize.literal("now()")
-    },
-    {
-      where: { geolocalisation_id: geoloc_id }
-    }
-  );
-
-  // The geolocalisation is recorded in the image
-  const query = `
-  UPDATE images SET
-  location = g.location,
-  roll = g.roll,
-  tilt = g.tilt,
-  azimuth = g.azimuth,
-  focal = g.focal,
-  px = g.px,
-  py = g.py,
-  footprint = ST_Multi(g.footprint)
-  FROM geolocalisations g
-  WHERE images.geolocalisation_id = g.id
-  AND g.id = ${geoloc_id}
-  `;
-  await models.sequelize.query(query, {
-    type: models.sequelize.QueryTypes.SELECT
-  });
-
+  //validate geoloc in table geolocalisations
   await models.geolocalisations.update(
     {
       validator_id: validator_id,
@@ -331,6 +283,29 @@ let validate = async (req, res) => {
     },
     {
       where: { id: geoloc_id }
+    }
+  );
+
+  //FIND all validated footprints in table geolocalisations and merge them into one.
+  const merged_footprint = await mergeFootprint(image_id);
+  
+  //update table images with the validated geolocalisation and the merged footprints.
+  await models.images.update(
+    {
+      state: "validated",
+      validator_id: validator_id,
+      date_validated: models.sequelize.literal("now()"),
+      location: req.geolocalisation.location,
+      roll: req.geolocalisation.roll,
+      tilt: req.geolocalisation.tilt,
+      azimuth: req.geolocalisation.azimuth,
+      focal: req.geolocalisation.focal,
+      px: req.geolocalisation.px,
+      py: req.geolocalisation.py,
+      footprint: merged_footprint
+    },
+    {
+      where: { id: image_id }
     }
   );
   return res.json("Geolocalisation is validated");
@@ -406,47 +381,59 @@ exports.saveFootprint = route(async (req, res) => {
     throw requestBodyValidationError(req);
   }
   // The footprint computed by cesium is cliped by a radius of 60km around the image location
-  await models.geolocalisations.update(
-    {
-      footprint: models.sequelize.fn(
-        "ST_Multi",
-        models.sequelize.cast(
+  const cliped_footprint = models.sequelize.fn(
+    "ST_Multi",
+    models.sequelize.cast(
+      models.sequelize.fn(
+        "ST_Intersection",
+        // GeometryA
+        models.sequelize.fn(
+          "ST_Simplify",
           models.sequelize.fn(
-            "ST_Intersection",
-            // GeometryA
+            "ST_MakePolygon",
             models.sequelize.fn(
-              "ST_Simplify",
-              models.sequelize.fn(
-                "ST_MakePolygon",
-                models.sequelize.fn(
-                  "ST_Force2D",
-                  models.sequelize.fn("ST_GeomFromGeoJSON", footprint_geojson)
-                )
-              ),
-              0.0001
-            ),
-            // GeometryB
-            models.sequelize.fn(
-              "ST_buffer",
-              models.sequelize.fn(
-                "ST_SetSRID",
-                models.sequelize.cast(
-                  models.sequelize.fn("ST_MakePoint", longitude, latitude),
-                  "geography"
-                ),
-                "4326"
-              ),
-              60000
+              "ST_Force2D",
+              models.sequelize.fn("ST_GeomFromGeoJSON", footprint_geojson)
             )
           ),
-          "geometry"
+          0.0001
+        ),
+        // GeometryB
+        models.sequelize.fn(
+          "ST_buffer",
+          models.sequelize.fn(
+            "ST_SetSRID",
+            models.sequelize.cast(
+              models.sequelize.fn("ST_MakePoint", longitude, latitude),
+              "geography"
+            ),
+            "4326"
+          ),
+          60000
         )
-      )
+      ),
+      "geometry"
+    )
+  );
+
+  await models.geolocalisations.update(
+    {
+      footprint: cliped_footprint
     },
     {
       where: { id: geoloc_id }
     }
   );
+
+  await models.images.update(
+    {
+      footprint: cliped_footprint
+    },
+    {
+      where: { geolocalisation_id: geoloc_id }
+    }
+  );
+
   return res.json({ message: "Footprint is saved" });
 });
 
@@ -470,3 +457,29 @@ exports.findGeolocalisation = route(async (req, res, next) => {
   req.geolocalisation = geolocalisation;
   next();
 });
+
+
+//FIND all validated footprints for the same image_id in table geolocalisations and merge them into one.
+//if single_image, will only find one footprint
+async function mergeFootprint(image_id) {
+  const geolocalisation = await models.geolocalisations.findOne({
+    attributes: [
+      [models.sequelize.fn('ST_UNION', models.sequelize.col('footprint')), 'merged_footprint']
+    ],
+    where: {
+      image_id,
+      state: ['validated'],
+      footprint: {
+        [Op.ne]: null
+      }
+    },
+    group: ['image_id']
+  });
+
+  const merged_footprint = {
+    type: 'MultiPolygon',
+    coordinates: [geolocalisation.dataValues.merged_footprint.coordinates]
+  };
+
+  return merged_footprint
+}
