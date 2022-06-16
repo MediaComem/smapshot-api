@@ -3,7 +3,7 @@ tasks:
   visit:
     channelName: "update_vt_visit"
     sql: "
-      SELECT id, owner_id, collection_id, ST_Force2D(ST_SnapToGrid(location, 0.0001)) AS geom,
+      SELECT images.id, owner_id, collection_id, ST_Force2D(ST_SnapToGrid(geolocalisations.location, 0.0001)) AS geom,
       (CASE
           WHEN date_shot IS NOT NULL
           THEN to_char(date(date_shot),'yyyymmdd')::int
@@ -15,7 +15,8 @@ tasks:
           ELSE to_char(date(date_shot_max),'yyyymmdd')::int
           END) AS date_shot_max
       FROM images
-      WHERE state='validated' AND is_published=true AND location IS NOT NULL
+      LEFT JOIN geolocalisations ON images.id = geolocalisations.image_id
+      WHERE is_published=true AND geolocalisations.state='validated' AND geolocalisations.location IS NOT NULL
     "
     sqlColumNameRef: "images.id"
     vtParams:
