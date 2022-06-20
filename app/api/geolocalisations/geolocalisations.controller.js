@@ -165,7 +165,7 @@ exports.save = route(async (req, res) => {
   const bbox = turf.bbox(turfHelpers.featureCollection(listPoints));
   const areaBbox = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]);
   // Compute the image surface
-  const areaImage = image.width * image.height;
+  const areaImage = regionByPx ? regionByPx[2] * regionByPx[3] : image.width * image.height;
   // Compute the ratio of the surface
   surfaceRatio = Math.round((areaBbox / areaImage) * 100);
 
