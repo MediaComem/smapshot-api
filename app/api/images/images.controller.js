@@ -392,7 +392,7 @@ exports.getAttributes = utils.route(async (req, res) => {
     results.dataValues.poses = poses;
   }
 
-  //GROUP POSE attributes. 
+  //GROUP POSE attributes.
   //Geolocalisation registered in the images table.
   //If composite_image, corresponds to the last geolocalisation having been saved (geolocalisations/{id}/save).
 
@@ -403,6 +403,9 @@ exports.getAttributes = utils.route(async (req, res) => {
   if (results.dataValues.geolocalisation) {
     region_px =  results.dataValues.geolocalisation.region_px;
     geoloc_id = results.dataValues.geolocalisation.id;
+    gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region_px);
+  } else if (collection_id === 12) {
+    // swisstopo pre-georeferenced images
     gltf_url = mediaUtils.generateGltfUrl(image_id, collection_id, region_px);
   }
 
