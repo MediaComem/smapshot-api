@@ -4,12 +4,12 @@ module.exports = {
   up: async (queryInterface) => {
     await queryInterface.sequelize.query(`
       ALTER TABLE public.geometadata
-      DROP COLUMN viewshed_precise;
+      DROP COLUMN IF EXISTS viewshed_precise;
     `);
 
     await queryInterface.sequelize.query(`
       ALTER TABLE public.images
-      DROP COLUMN viewshed_precise;
+      DROP COLUMN IF EXISTS viewshed_precise;
     `);
   },
   
