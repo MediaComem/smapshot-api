@@ -3,13 +3,13 @@
 module.exports = {
   up: async (queryInterface) => {
     await queryInterface.sequelize.query(`
-        ALTER TABLE public.geometadata
-        DELETE COLUMN viewshed_precise;
+      ALTER TABLE public.geometadata
+      DROP COLUMN viewshed_precise;
     `);
 
     await queryInterface.sequelize.query(`
-        ALTER TABLE public.images
-        DELETE COLUMN viewshed_precise;
+      ALTER TABLE public.images
+      DROP COLUMN viewshed_precise;
     `);
   },
   
