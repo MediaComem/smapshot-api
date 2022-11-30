@@ -257,10 +257,6 @@ module.exports = (sequelize, DataTypes) => {
         type: "geometry(Multipolygon,4326,2)", // Z
         allowNull: true
       },
-      viewshed_precise: {
-        type: "geometry(Multipolygon,4326,2)", // Z
-        allowNull: true
-      },
       viewshed_created: {
         // if the caption is checked
         type: DataTypes.BOOLEAN,

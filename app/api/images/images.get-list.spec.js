@@ -19,6 +19,9 @@ describe('GET /images', () => {
   let app;
   let baseRequest;
 
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
   beforeEach(async () => {
     await resetDatabase();
     ({ app } = createApplicationWithMocks());
@@ -103,15 +106,12 @@ describe('GET /images', () => {
     let image1, image2, image3, image4, image5, image6;
     let initialState;
     beforeEach(async () => {
-      const threeMonthsAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
       // Generate 5 collections belonging to 3 owners.
       owner1 = await createOwner({ is_published: true });
       owner2 = await createOwner({ is_published: true });
       [ col1, col2 ] = await Promise.all([
         createCollection({ date_publi: yesterday, owner: owner1 }),
-        createCollection({ date_publi: threeMonthsAgo, owner: owner2 })
+        createCollection({ date_publi: threeDaysAgo, owner: owner2 })
       ]);
 
       // Generate images for the collections.
@@ -289,7 +289,8 @@ describe('GET /images', () => {
             {
               id: image2.id,
               longitude: null,
-              latitude: null
+              latitude: null,
+              collection: { id: 1, date_publi: yesterday.toJSON() }
             },
             {
               id: image5.id,
@@ -297,7 +298,8 @@ describe('GET /images', () => {
               // may not be exactly equal to the original values from the
               // fixtures.
               longitude: actual => expect(actual).to.be.closeToWithPrecision(6.59),
-              latitude: actual => expect(actual).to.be.closeToWithPrecision(46.52)
+              latitude: actual => expect(actual).to.be.closeToWithPrecision(46.52),
+              collection: { id: 2, date_publi: threeDaysAgo.toJSON() }
             }
           ]})
         .and.to.matchResponseDocumentation();
