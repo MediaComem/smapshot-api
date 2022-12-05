@@ -19,9 +19,6 @@ describe('GET /images', () => {
   let app;
   let baseRequest;
 
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
   beforeEach(async () => {
     await resetDatabase();
     ({ app } = createApplicationWithMocks());
@@ -105,6 +102,10 @@ describe('GET /images', () => {
     let col1, col2;
     let image1, image2, image3, image4, image5, image6;
     let initialState;
+
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     beforeEach(async () => {
       // Generate 5 collections belonging to 3 owners.
       owner1 = await createOwner({ is_published: true });
@@ -289,8 +290,7 @@ describe('GET /images', () => {
             {
               id: image2.id,
               longitude: null,
-              latitude: null,
-              collection: { id: 1, date_publi: yesterday.toJSON() }
+              latitude: null
             },
             {
               id: image5.id,
@@ -298,8 +298,7 @@ describe('GET /images', () => {
               // may not be exactly equal to the original values from the
               // fixtures.
               longitude: actual => expect(actual).to.be.closeToWithPrecision(6.59),
-              latitude: actual => expect(actual).to.be.closeToWithPrecision(46.52),
-              collection: { id: 2, date_publi: threeDaysAgo.toJSON() }
+              latitude: actual => expect(actual).to.be.closeToWithPrecision(46.52)
             }
           ]})
         .and.to.matchResponseDocumentation();

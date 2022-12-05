@@ -11,7 +11,7 @@ const { compactObject } = require('../utils/fixtures');
  */
 exports.getExpectedImage = (image, options = {}) => {
   const { id, owner_id, collection_id, width, height, latitude, longitude,
-    date_shot, date_georef, date_shot_min, date_shot_max, is_published, collection } = image;
+    date_shot, date_georef, date_shot_min, date_shot_max, is_published } = image;
   const {
     media: expectedMedia,
     ...extraProperties
@@ -41,11 +41,6 @@ exports.getExpectedImage = (image, options = {}) => {
   } else if (expectedMedia !== false) {
     expected.media = expectedMedia;
   }
-
-  expected.collection = {
-    id: collection.id,
-    date_publi: collection.date_publi === null ? null : collection.date_publi.toISOString(), 
-  };
 
   return compactObject(expected);
 };

@@ -261,12 +261,12 @@ const getImages = async (req, orderkey, count = true) => {
   }
 
   const today = new Date();
-    today.setHours(23);
-    today.setMinutes(59);
+  today.setHours(23);
+  today.setMinutes(59);
 
   const includeCollectionFilter = {
     model: models.collections,
-    attributes: ["id", "date_publi"],
+    attributes: [],
     where: {
       date_publi: {
         [Op.not]: null,
