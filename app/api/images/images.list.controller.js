@@ -362,8 +362,8 @@ exports.getList = utils.route(async (req, res) => {
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
     if(images.rows) {
-      mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
-  } 
+      await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
+    }
 
     images.rows.forEach((image) => {
       delete image.dataValues.iiif_data;
