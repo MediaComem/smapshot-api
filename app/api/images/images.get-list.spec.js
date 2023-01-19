@@ -102,16 +102,17 @@ describe('GET /images', () => {
     let col1, col2;
     let image1, image2, image3, image4, image5, image6;
     let initialState;
-    beforeEach(async () => {
-      const threeMonthsAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    beforeEach(async () => {
       // Generate 5 collections belonging to 3 owners.
       owner1 = await createOwner({ is_published: true });
       owner2 = await createOwner({ is_published: true });
       [ col1, col2 ] = await Promise.all([
         createCollection({ date_publi: yesterday, owner: owner1 }),
-        createCollection({ date_publi: threeMonthsAgo, owner: owner2 })
+        createCollection({ date_publi: threeDaysAgo, owner: owner2 })
       ]);
 
       // Generate images for the collections.

@@ -102,7 +102,6 @@ exports.createImage = async (options = {}) => {
     download_timestamp: get(options, 'download_timestamp', null),
     footprint: get(options, 'footprint', null),
     viewshed_simple: get(options, 'viewshed_simple', null),
-    viewshed_precise: get(options, 'viewshed_precise', null),
     viewshed_created: get(options, 'viewshed_created', false),
     viewshed_timestamp: get(options, 'viewshed_timestamp', null),
     geotag_created: get(options, 'geotag_created', false),
@@ -131,7 +130,7 @@ exports.createImage = async (options = {}) => {
         validator_id, is_published, exact_date, date_shot_min, date_shot_max, original_id,
         link_id, title, caption, height, width, orig_title, orig_caption,
         correction_enabled, observation_enabled, download_link, date_orig,
-        downloaded, download_timestamp, footprint, viewshed_simple, viewshed_precise,
+        downloaded, download_timestamp, footprint, viewshed_simple,
         viewshed_created, viewshed_timestamp, geotag_created, geotag_timestamp,
         geotags_json, date_validated, last_start, last_start_user_id, shop_link,
         geolocalisation_id, state, original_state, country_iso_a2, iiif_data, framing_mode
@@ -143,7 +142,7 @@ exports.createImage = async (options = {}) => {
         :validator_id, :is_published, :exact_date, :date_shot_min, :date_shot_max, :original_id,
         :link_id, :title, :caption, :height, :width, :orig_title, :orig_caption,
         :correction_enabled, :observation_enabled, :download_link, :date_orig,
-        :downloaded, :download_timestamp, :footprint, :viewshed_simple, :viewshed_precise,
+        :downloaded, :download_timestamp, :footprint, :viewshed_simple,
         :viewshed_created, :viewshed_timestamp, :geotag_created, :geotag_timestamp,
         :geotags_json, :date_validated, :last_start, :last_start_user_id, :shop_link,
         :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}, :framing_mode
