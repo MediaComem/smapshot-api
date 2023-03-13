@@ -24,7 +24,7 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
       })
     });
   }
-  const image = await getSquareImageFromDB(image_id);
+  let image = await getSquareImageFromDB(image_id);
 
   //Do not allow regenerating the gltfs for composite_images for now
   if (image.framing_mode === 'composite_image') {
@@ -47,6 +47,8 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
     let regionByPx;
     if (image.iiif_data && image.iiif_data.regionByPx) {
       regionByPx = image.iiif_data.regionByPx;
+      // recompute image with region
+      image = await getSquareImageFromDB(image_id, regionByPx);
       results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, regionByPx[2], regionByPx[3], image.focal);
     } else {
       results = await computeImageCoordinates(image.azimuth, image.tilt, image.roll, image.width, image.height, image.focal);
