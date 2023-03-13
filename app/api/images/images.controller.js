@@ -695,7 +695,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
     const longitude = req_apriori_location.longitude;
     const latitude = req_apriori_location.latitude;
     const altitude = req_apriori_location.altitude ? req_apriori_location.altitude : 1000;
-    
+
     const apriori_location_json = models.sequelize.fn(
       "ST_SetSRID",
       models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude ),
@@ -763,8 +763,22 @@ exports.updateAttributes = utils.route(async (req, res) => {
   //if image is already geolocalised and new iiif_data, recompute pose
   //if single_image, use region from iiif_data.
   //if composite_image, do not regenerate the gltfs.
-  if (isGeoreferenced && req.body.iiif_data && (req.image.framing_mode === 'single_image' || !req.image.framing_mode) ) {
-    //fetch original gcps calculated on full image (no offset due to cropping) stored in database
+  if (isGeoreferenced && req.body.iiif_data) {
+    // check if composite image (more than one geolocalisations)
+    const res_geolocs = await models.geolocalisations.findAll({
+      attributes: ["id"],
+      where: {
+        image_id: req.image.id,
+        state: 'validated'
+      }
+    });
+    if (res_geolocs.length > 1) {
+      // do not regenerate the gltfs
+      return  res.status(200).send({
+        message: "Image attributes have been updated."
+      });
+    }
+    // fetch original gcps calculated on full image (no offset due to cropping) stored in database
     const oldGCPs = req.image.geolocalisation.gcp_json;
     let newGCPsOffset;
     let imageDimensions;

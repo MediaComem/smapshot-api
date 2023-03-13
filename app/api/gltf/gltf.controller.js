@@ -28,9 +28,20 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
 
   //Do not allow regenerating the gltfs for composite_images for now
   if (image.framing_mode === 'composite_image') {
-    throw new Error("Image id: " + image_id + " is a composite image, gltf can't be regenerated.");
+    // if composite image was georeferenced as single image, ok to regenerate image
+    const res_geolocs = await models.geolocalisations.findAll({
+      attributes: ["id"],
+      where: {
+        image_id: image_id,
+        state: 'validated'
+      }
+    });
+    if (res_geolocs.length > 1) {
+      // do not regenerate the gltfs
+      throw new Error("Image id: " + image_id + " is a composite image, gltf can't be regenerated.");
+    }
   }
-  
+
   if (image.state !== "initial" && image.state !== 'waiting_alignment') {
     let results;
     let regionByPx;
