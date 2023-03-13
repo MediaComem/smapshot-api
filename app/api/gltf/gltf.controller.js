@@ -97,7 +97,8 @@ async function getSquareImageFromDB(image_id, regionByPx) {
       "state",
       "collection_id",
       "iiif_data",
-      "framing_mode"
+      "framing_mode",
+      "geolocalisation_id"
     ],
     where: {
       id: parseInt(image_id, 10)
