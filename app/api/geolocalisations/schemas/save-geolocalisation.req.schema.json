@@ -127,7 +127,7 @@
     "altitude": {
       "type": "number",
       "minimum": -418,
-      "maximum": 8848
+      "maximum": 12000
     },
     "cx": {
       "type": [ "number", "null" ]
