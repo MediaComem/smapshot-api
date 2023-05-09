@@ -67,6 +67,13 @@ module.exports = () => {
     controller.getAttributes
   );
 
+  // Get the GeoPose pf an image.
+    router.get("/images/:id/geopose",
+    authenticate({ required: false }),
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/geopose'),
+    controller.getGeoPose
+  );
+
   // Get the footprint of an image.
   router.get("/images/:id/footprint",
     validateDocumentedRequestParametersFor('GET', '/images/{id}/footprint'),
