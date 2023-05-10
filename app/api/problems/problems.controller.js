@@ -74,6 +74,23 @@ exports.submit = route(async (req, res) => {
 
   try {
     await models.problems.create(queryOptions);
+    // 2 : Image is inverted on the horizontal axe
+    // 4 : Image is inverted on the vertical axe.
+    // 5 : Image is a photomontage.
+    // 10 : Image cannot be geolocalised
+    const unpublishedImageProblemTypeIds = [2, 4, 5, 10];
+    if (unpublishedImageProblemTypeIds.includes(problemTypeId)) {
+      await models.images.update(
+        {
+          is_published: false
+        },
+        {
+          where: {
+            id: imageId
+          }
+        }
+      );
+    }
   } catch (err) {
     handleForeignKeyConstraintErrors(req, err, foreignKeyConstraintErrors);
     throw err;
