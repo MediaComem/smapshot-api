@@ -479,12 +479,39 @@ exports.getGeoPose = utils.route(async (req, res) => {
     where: {
       id: req.params.id,
       state: {
-        [Op.or]: ['validated','waiting_validation']
-      }
+        [Op.or]: [
+          'validated',
+          'waiting_validation',
+        ]
+      },
+      azimuth: {
+        [Op.not]: null
+      },
+      tilt: {
+        [Op.not]: null
+      },
+      roll: {
+        [Op.not]: null
+      },
+      location: {
+        [Op.not]: null
+      },
     }
   });
   const query = await queryPromise;
-  const result = query.toJSON();
+  // Image doesn't exist or has no validated/waiting_validation state
+  let result;
+  if (query === null) {
+    throw utils.createApiError(
+      req.__('general.resourceNotFound'),
+      {
+        status: 404
+      }
+    );
+  } else {
+    result = query.toJSON();
+    result.yaw = mod(360 - result.azimuth, 360);
+  }
   const geopose = {
     "position": {
       "lon": result.lon,
@@ -492,7 +519,7 @@ exports.getGeoPose = utils.route(async (req, res) => {
       "h": result.h,
     },
     "angles": {
-      "yaw": mod(360 - result.azimuth, 360),
+      "yaw": result.yaw,
       "pitch": result.tilt,
       "roll": result.roll,
     },
