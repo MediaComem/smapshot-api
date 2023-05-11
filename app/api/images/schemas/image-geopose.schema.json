@@ -1,0 +1,41 @@
+{
+    "$id": "ImageGeoPose",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+      "position": {
+        "type": "object",
+        "properties": {
+          "lon": {
+            "type": "number"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "h": {
+            "type": "number"
+          }
+        }
+      },
+      "angles": {
+        "type": "object",
+        "properties": {
+          "yaw": {
+            "type": [ "null", "number" ]
+          },
+          "pitch": {
+            "type": [ "null", "number" ]
+          },
+          "roll": {
+            "type": [ "null", "number" ]
+          }
+        }
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "position",
+      "angles"
+    ]
+  }
+  

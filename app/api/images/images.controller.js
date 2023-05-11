@@ -213,11 +213,11 @@ exports.getAttributes = utils.route(async (req, res) => {
     [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
     [
       models.sequelize.literal(
-        `(case
-          when date_shot IS NOT NULL
+        `(CASE
+          WHEN date_shot IS NOT NULL
           THEN date(date_shot)::TEXT
-          else date(date_shot_min)::TEXT
-          end)
+          ELSE date(date_shot_min)::TEXT
+          END)
           `
       ),
       "date_shot_min"
@@ -454,6 +454,77 @@ exports.getAttributes = utils.route(async (req, res) => {
     caption,
     pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
   });
+});
+
+// GET /images/:id/geopose
+// =========================
+
+// Convenience function for computing the GeoPose of an image
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+
+exports.getGeoPose = utils.route(async (req, res) => {
+  const queryPromise = models.images.findOne({
+    attributes: [
+      "id",
+      "state",
+      "azimuth",
+      "tilt",
+      "roll",
+      [models.sequelize.literal("ST_X(location)"), "lon"],
+      [models.sequelize.literal("ST_Y(location)"), "lat"],
+      [models.sequelize.literal("ST_Z(location)"), "h"],
+    ],
+    where: {
+      id: req.params.id,
+      state: {
+        [Op.or]: [
+          'validated',
+          'waiting_validation',
+        ]
+      },
+      azimuth: {
+        [Op.not]: null
+      },
+      tilt: {
+        [Op.not]: null
+      },
+      roll: {
+        [Op.not]: null
+      },
+      location: {
+        [Op.not]: null
+      },
+    }
+  });
+  const query = await queryPromise;
+  // Image doesn't exist or has no validated/waiting_validation state
+  let result;
+  if (query === null) {
+    throw utils.createApiError(
+      req.__('general.resourceNotFound'),
+      {
+        status: 404
+      }
+    );
+  } else {
+    result = query.toJSON();
+    result.yaw = mod(360 - result.azimuth, 360);
+  }
+  const geopose = {
+    "position": {
+      "lon": result.lon,
+      "lat": result.lat,
+      "h": result.h,
+    },
+    "angles": {
+      "yaw": result.yaw,
+      "pitch": result.tilt,
+      "roll": result.roll,
+    },
+  }
+  res.status(200).send(geopose);
 });
 
 // GET /images/:id/footprint

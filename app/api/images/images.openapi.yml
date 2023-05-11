@@ -377,6 +377,30 @@
       "404":
         $ref: "#/components/responses/NotFoundError"
 
+/images/{id}/geopose:
+  get:
+    summary: Get the GeoPose of an image.
+    operationId: getGeoPose
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageGeoPose"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
 /images/{id}/footprint:
   get:
     summary: Get the footprint of an image.
