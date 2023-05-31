@@ -873,7 +873,8 @@ exports.updateAttributes = utils.route(async (req, res) => {
     }
     try {
       await pose.computePoseNewCrop(req, req.image.id, newGCPsOffset, imageDimensions);
-    } catch {
+    } catch (error){
+      utils.getLogger().err(error);
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
   }

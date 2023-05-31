@@ -7,7 +7,7 @@ const config = require('../../../config');
 const models = require("../../models");
 const gltf = require("../gltf/gltf.controller");
 const { poseEstimationError } = require('../../utils/errors');
-const { route } = require("../../utils/express");
+const { route, getLogger } = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
 async function getDbImage(image_id){
@@ -80,6 +80,7 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
   try {
     results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, imageDimensions[2], imageDimensions[3], 0);
   } catch(error) {
+    getLogger().err(error);
     throw poseEstimationError(req);
   }
 
@@ -133,7 +134,8 @@ async function computePoseNewCrop(req, id, gcps, imageDimensions) {
 
     try {
       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
-    } catch {
+    } catch (error) {
+      getLogger().err(error);
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
   }
@@ -183,6 +185,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
     try {
       results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
     } catch(error) {
+      getLogger().err(error);
       throw poseEstimationError(req);
     }
 
@@ -205,7 +208,8 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      try {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
        res.status(201).send(filteredResults);
-     } catch {
+     } catch (error) {
+      getLogger().err(error);
       throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
     }
   }
@@ -251,6 +255,7 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
     try {
       results = await computeCameraPose(image.longitude, image.latitude, image.altitude, image.azimuth, image.tilt, image.roll, gcpArrayString, image_width, image_height, 0)
     } catch(error) {
+      getLogger().err(error);
       throw poseEstimationError(req);
     }
 
@@ -304,7 +309,8 @@ exports.computePoseCreateGltfFromDb = route(async (req, res) => {
      );
      try {
        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, image_id, image.collection_id, image_region)
-     } catch {
+     } catch (error) {
+      getLogger().err(error);
        throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
      }
      return res.json({ success: true, message: "Gltf and orientation are updated" });
