@@ -318,7 +318,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'id' ? orderById : orderByApriori,
+      order: orderBy === 'id' ? orderById : orderBy === 'random' ? Sequelize.literal('random()') : orderByApriori,
       include: includeOption
     };
     if (count) {
@@ -344,7 +344,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'distance' ? orderByNearest: orderById,
+      order: orderBy === 'distance' ? orderByNearest : orderBy === 'random' ? Sequelize.literal('random()') : orderById,
       include: [includeCollectionFilter]
     };
     if (count) {
