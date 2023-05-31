@@ -193,6 +193,7 @@ async function collada2gltfPromise(path2tempDae, options) {
   return new Promise((resolve, reject) => {
     collada2gltf(path2tempDae, options, err => {
       if (err) {
+        utils.getLogger().err(err);
         reject(err);
       } else {
         resolve();
