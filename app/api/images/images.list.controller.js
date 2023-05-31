@@ -275,6 +275,8 @@ const getImages = async (req, orderkey, count = true) => {
     }
   };
 
+  const randomOrder = models.sequelize.literal("random()");
+
   if (!isGeoref) {
     let whereClauseApriori = {}
     let includeOption = null;
@@ -318,7 +320,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'id' ? orderById : orderBy === 'random' ? Sequelize.literal('random()') : orderByApriori,
+      order: orderBy === 'id' ? orderById : (orderBy === 'random' ? randomOrder : orderByApriori),
       include: includeOption
     };
     if (count) {
@@ -344,7 +346,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'distance' ? orderByNearest : orderBy === 'random' ? Sequelize.literal('random()') : orderById,
+      order: orderBy === 'distance' ? orderByNearest : (orderBy === 'random' ? randomOrder : orderById),
       include: [includeCollectionFilter]
     };
     if (count) {
@@ -364,7 +366,6 @@ exports.getList = utils.route(async (req, res) => {
     if(images.rows) {
       await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
     }
-
     images.rows.forEach((image) => {
       delete image.dataValues.iiif_data;
     });
