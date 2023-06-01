@@ -74,14 +74,10 @@ const parseAttributes = (query) => {
 }
 
 const getImages = async (req, orderkey, count = true) => {
-  utils.getLogger().info(JSON.stringify(req.query));
-  utils.getLogger().info(JSON.stringify(req.params));
-  utils.getLogger().info(JSON.stringify(req.body));
   const query = req.query;
   // TODO add image width for media url
   const attributes = parseAttributes(query);
   const orderBy = orderkey ? orderkey: query.sortKey;
-  utils.getLogger().info(orderBy);
   let whereClauses = [];
 
   const states = query.state ? query.state : ['waiting_validation', 'validated'];
@@ -136,7 +132,6 @@ const getImages = async (req, orderkey, count = true) => {
     whereClauses.push({ original_id: inUniqueOrList(query.original_id) });
   }
 
-  utils.getLogger().info(query.owner_id);
   if (query.owner_id) {
     whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
   }
@@ -362,6 +357,12 @@ const getImages = async (req, orderkey, count = true) => {
 };
 
 exports.getList = utils.route(async (req, res) => {
+
+  Object.keys(req).forEach((key) => {
+    if (key != 'socket' && key != 'client' && key != 'res' && key != 'sessionStore')
+      utils.getLogger().info(`${key} : ${JSON.stringify(req[key])}`);
+  })
+  
   const images = await getImages(req);
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
