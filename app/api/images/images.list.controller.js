@@ -279,8 +279,6 @@ const getImages = async (req, orderkey, count = true) => {
     }
   };
 
-  const randomOrder = models.sequelize.literal("random()");
-
   if (!isGeoref) {
     let whereClauseApriori = {}
     let includeOption = null;
@@ -324,7 +322,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'id' ? orderById : (orderBy === 'random' ? randomOrder : orderByApriori),
+      order: orderBy === 'id' ? orderById : orderByApriori,
       include: includeOption
     };
     if (count) {
@@ -350,7 +348,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'distance' ? orderByNearest : (orderBy === 'random' ? randomOrder : orderById),
+      order: orderBy === 'distance' ? orderByNearest : orderById,
       include: [includeCollectionFilter]
     };
     if (count) {
