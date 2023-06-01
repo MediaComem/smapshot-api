@@ -74,14 +74,10 @@ const parseAttributes = (query) => {
 }
 
 const getImages = async (req, orderkey, count = true) => {
-  utils.getLogger().info(JSON.stringify(req.query));
-  utils.getLogger().info(JSON.stringify(req.params));
-  utils.getLogger().info(JSON.stringify(req.body));
   const query = req.query;
   // TODO add image width for media url
   const attributes = parseAttributes(query);
   const orderBy = orderkey ? orderkey: query.sortKey;
-  utils.getLogger().info(orderBy);
   let whereClauses = [];
 
   const states = query.state ? query.state : ['waiting_validation', 'validated'];
@@ -136,7 +132,6 @@ const getImages = async (req, orderkey, count = true) => {
     whereClauses.push({ original_id: inUniqueOrList(query.original_id) });
   }
 
-  utils.getLogger().info(query.owner_id);
   if (query.owner_id) {
     whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
   }
@@ -279,6 +274,8 @@ const getImages = async (req, orderkey, count = true) => {
     }
   };
 
+  const randomOrder = models.sequelize.literal("random()");
+
   if (!isGeoref) {
     let whereClauseApriori = {}
     let includeOption = null;
@@ -322,7 +319,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'id' ? orderById : orderByApriori,
+      order: orderBy === 'id' ? orderById : (orderBy === 'random' ? randomOrder : orderByApriori),
       include: includeOption
     };
     if (count) {
@@ -348,7 +345,7 @@ const getImages = async (req, orderkey, count = true) => {
       limit: query.limit || 30,
       offset: query.offset || 0,
       where: { [Op.and]: whereClauses },
-      order: orderBy === 'distance' ? orderByNearest : orderById,
+      order: orderBy === 'distance' ? orderByNearest : (orderBy === 'random' ? randomOrder : orderById),
       include: [includeCollectionFilter]
     };
     if (count) {
@@ -361,7 +358,7 @@ const getImages = async (req, orderkey, count = true) => {
   }
 };
 
-exports.getList = utils.route(async (req, res) => {
+exports.getList = utils.route(async (req, res) => {  
   const images = await getImages(req);
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
