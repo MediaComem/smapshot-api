@@ -74,8 +74,10 @@ const parseAttributes = (query) => {
 }
 
 const getImages = async (req, orderkey, count = true) => {
+  utils.getLogger().info(JSON.stringify(req.query));
+  utils.getLogger().info(JSON.stringify(req.params));
+  utils.getLogger().info(JSON.stringify(req.body));
   const query = req.query;
-  utils.getLogger().info(JSON.stringify(query));
   // TODO add image width for media url
   const attributes = parseAttributes(query);
   const orderBy = orderkey ? orderkey: query.sortKey;
