@@ -105,7 +105,7 @@
           type: string
 - name: sortKey
   in: query
-  description: Sort images by Distance, id or random (default id).
+  description: Sort images by Distance, title or date shot.
   schema:
     errorMessage: should be a string
     type: string
