@@ -75,7 +75,7 @@ const parseAttributes = (query) => {
 
 const getImages = async (req, orderkey, count = true) => {
   const query = req.query;
-  utils.getLogger().info(query);
+  utils.getLogger().info(JSON.stringify(query));
   // TODO add image width for media url
   const attributes = parseAttributes(query);
   const orderBy = orderkey ? orderkey: query.sortKey;
@@ -362,7 +362,7 @@ const getImages = async (req, orderkey, count = true) => {
 };
 
 exports.getList = utils.route(async (req, res) => {
-  utils.getLogger().info(req);
+  utils.getLogger().info(JSON.stringify(req));
   const images = await getImages(req);
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
