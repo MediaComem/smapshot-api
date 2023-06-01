@@ -362,7 +362,6 @@ const getImages = async (req, orderkey, count = true) => {
 };
 
 exports.getList = utils.route(async (req, res) => {
-  utils.getLogger().info(JSON.stringify(req));
   const images = await getImages(req);
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
