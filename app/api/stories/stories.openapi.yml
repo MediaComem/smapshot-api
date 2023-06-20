@@ -1,0 +1,70 @@
+/stories:
+  get:
+    summary: Get all stories
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+    responses:
+      '200':
+        description: OK
+  post:
+    summary: Add a new story
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Stories'
+    responses:
+      '200':
+        description: OK
+/stories/{id}:
+  get:
+    summary: Get a story by ID
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+    responses:
+      '200':
+        description: OK
+
+  put:
+    summary: update a story.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    operationId: updateCStory
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Stories"
+    responses:
+      '200':
+        description: OK
+      '404':
+        description: no Story found
+
+  delete:
+    summary: delete a Story by id
+    operationId: deleteStory
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
