@@ -22,6 +22,7 @@ const getStoryById = async (req, res) => {
     ST_X(images.location) as longitude, ST_Y(images.location) as latitude
     FROM stories_chapters, images 
     WHERE stories_chapters.picture_id = images.id
+    AND stories_chapters.story = :storyId
     ORDER BY stories_chapters.indexinstory`,
     {    
       replacements: { storyId: id },
