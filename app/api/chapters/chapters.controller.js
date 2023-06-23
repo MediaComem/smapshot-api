@@ -25,7 +25,7 @@ const getChapterById = async (req, res) => {
   try {
     const chapter = await Stories_chapters.findByPk(id);
     if (chapter) {
-      res.json(chapter);
+      res.json(JSON.stringify({ "chapters": chapter }));
     } else {
       res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
     }

@@ -11,6 +11,11 @@
     responses:
       '200':
         description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoriesList"
+
   post:
     summary: Add a new story
     requestBody:
@@ -22,6 +27,11 @@
     responses:
       '200':
         description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Stories'
+
 /stories/{id}:
   get:
     summary: Get a story by ID
@@ -34,7 +44,12 @@
     responses:
       '200':
         description: OK
-
+        content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Stories"
+      '404':
+        $ref: "#/components/responses/NotFoundError"
   put:
     summary: update a story.
     parameters:
@@ -53,8 +68,12 @@
     responses:
       '200':
         description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Stories"
       '404':
-        description: no Story found
+        $ref: "#/components/responses/NotFoundError"
 
   delete:
     summary: delete a Story by id
