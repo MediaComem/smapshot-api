@@ -1,0 +1,96 @@
+/chapters:
+  get:
+    summary: Retrieve all chapters
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChaptersList"
+
+  post:
+    summary: Add a chapter to the db.
+    operationId: addChapter
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Chapters"
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Chapters"
+
+      '404':
+        $ref: "#/components/responses/NotFoundError"
+
+
+/chapters/{id}:
+  get:
+    summary: Retrieve a chapter by ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Chapters"
+      '404':
+        $ref: "#/components/responses/NotFoundError"
+
+  put:
+    summary: update a chapter.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    operationId: updateChapter
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Chapters"
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Chapters"
+
+      '404':
+        $ref: "#/components/responses/NotFoundError"
+
+  delete:
+    summary: Delete a chapter by ID
+    operationId: deleteChapter
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK

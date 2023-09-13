@@ -940,6 +940,35 @@ COMMENT ON COLUMN public.users.has_one_validated IS 'Means that it is not a firs
 
 
 --
+-- Name: Stories; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE Stories (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  logo_link VARCHAR(255) NOT NULL
+);
+
+--
+-- Name: Stories_chapters; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE Stories_chapters (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  type VARCHAR(255) CHECK (type IN ('IMAGE', 'VIDEO', 'VIDEO-YOUTUBE', 'AUDIO')) NOT NULL,
+  picture_id INTEGER NOT NULL
+  CONSTRAINT fk_picture_id REFERENCES images(id),
+  url_media TEXT NOT NULL,
+  description TEXT NOT NULL,
+  zoom INTEGER CHECK (zoom >= 0 AND zoom <= 22) NOT NULL,
+  story INTEGER NOT NULL
+  CONSTRAINT fk_story REFERENCES Stories(id),
+  indexInStory INTEGER NOT NULL
+);
+
+
+--
 -- Name: volunteers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
