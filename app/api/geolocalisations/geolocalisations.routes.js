@@ -44,6 +44,12 @@ router.put("/geolocalisations/:id/save",
   controller.save
 );
 
+router.post("/geolocalisations/:id/toponym",
+  authenticate({required:false}),
+  validateDocumentedRequestParametersFor('POST', '/geolocalisations/{id}/toponym'),
+  controller.generateToponym
+);
+
 // Validate or reject the geolocalisation.
 router.put("/geolocalisations/:id/state",
   authenticate(),
