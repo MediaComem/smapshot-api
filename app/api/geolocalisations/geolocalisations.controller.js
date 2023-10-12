@@ -10,6 +10,7 @@ const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
 const mediaUtils = require('../../utils/media');
+const config = require('../../../config');
 
 const Op = Sequelize.Op;
 
@@ -340,7 +341,7 @@ let validate = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'http://localhost:5000/generate',
+      url: config.smapcomputeUrl,
       data: imageToToponym
     }).then((response) => {
       const data = response.data;
@@ -444,7 +445,7 @@ exports.generateToponym = route(async (req, res) => {
 
   const { data } = await axios({
     method: 'post',
-    url: 'http://localhost:5000/generate',
+    url: config.smapcomputeUrl,
     data: imageToToponym
   });
 
