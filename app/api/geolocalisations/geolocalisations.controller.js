@@ -442,7 +442,7 @@ exports.generateToponym = route(async (req, res) => {
     where: { id: image_id }
   });
 
-  const data = await axios({
+  const { data } = await axios({
     method: 'post',
     url: 'http://localhost:5000/generate',
     data: imageToToponym
