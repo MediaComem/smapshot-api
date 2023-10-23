@@ -216,7 +216,7 @@
         schema:
           $ref: "#/components/schemas/ApiId"
     responses:
-      "200":
+      "201":
         description: Successful request.
         content:
           application/json:

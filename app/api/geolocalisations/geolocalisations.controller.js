@@ -482,7 +482,7 @@ exports.generateToponym = route(async (req, res) => {
     geometadata.fk_image_id = image_id;
     await models.geometadata.create(geometadata);
   }
-  return res.json("Toponym has been generated");
+  return res.status(201).json("Toponym has been generated");
 });
 
 exports.validateOrReject = async (req, res) => {
