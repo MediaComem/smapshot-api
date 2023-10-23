@@ -194,6 +194,41 @@
       "403":
         $ref: "#/components/responses/ForbiddenError"
 
+/geolocalisations/{id}/toponym:
+  post:
+    summary: Generate toponym
+    operationId: generateToponym
+    description: |-
+      The toponym cannot be done during the validation and need to be generate.
+
+      ## Authorization required for improvements i.e. validation mode
+
+      **Required role for validation:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can generate the toponym.
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the image to generate toponym.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveGeolocalisationResponse"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+
 /geolocalisations/{id}/state:
   put:
     summary: Validate or reject a geolocalisation.

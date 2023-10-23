@@ -80,3 +80,5 @@ exports.smtp = {
 exports.proxyGeoreferencerMode = parseEnvBoolean('PROXY_GEOREFERENCER_MODE', { required: false });
 
 exports.timezone = parseEnv('TZ', { required: false });
+
+exports.smapcomputeUrl = parseEnv('SMAPCOMPUTE_URL');

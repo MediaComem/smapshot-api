@@ -1,6 +1,7 @@
 const turfHelpers = require("@turf/helpers");
 const turf = require("@turf/turf");
 const Sequelize = require("sequelize");
+const axios = require('axios');
 
 const models = require("../../models");
 const { route, getLogger } = require("../../utils/express");
@@ -9,6 +10,7 @@ const { getOwnerScope } = require('./geolocalisations.utils');
 const { userHasRole  } = require("../../utils/authorization");
 const { parseBooleanQueryParam } = require("../../utils/params");
 const mediaUtils = require('../../utils/media');
+const config = require('../../../config');
 
 const Op = Sequelize.Op;
 
@@ -308,6 +310,72 @@ let validate = async (req, res) => {
       where: { id: image_id }
     }
   );
+
+  // Get requiered information on image table and run toponyms computation
+    const imageToToponym = await models.images.findOne({
+      raw: true,
+      attributes: [
+        "id",
+        "location",
+        [models.sequelize.literal("azimuth%360"), "azimuth"],
+        "tilt",
+        "roll",
+        "width",
+        "height",
+        "focal",
+        "footprint",
+        "name",
+        "date_shot",
+        "date_shot_min"
+      ],
+      where: { id: image_id }
+    });
+
+    const currentGeometry = await models.geometadata.findOne({
+      raw: true,
+      attributes: [
+        "id",
+      ],
+      where: { fk_image_id: image_id }
+    });
+
+    axios({
+      method: 'post',
+      url: config.smapcomputeUrl,
+      data: imageToToponym
+    }).then((response) => {
+      const data = response.data;
+
+      const geometadata = {
+        footprint: data.footprint,
+        viewshed_simple: data.viewshed,
+        footprint_status: data.toponyms_status,
+        toponyms_array: data.toponyms_array,
+        toponyms_json: data.toponyms_json,
+        viewshed_simple_status: data.viewshed_simple_status,
+        viewshed_simple_timestamp: data.viewshed_simple_timestamp,
+        toponyms_timestamp: data.toponyms_timestamp,
+        toponyms_status: data.toponyms_status,
+        toponyms_count: data.toponyms_count,
+        toponyms_iterations: data.toponyms_iterations,
+        toponyms_factors: data.toponyms_factors
+      }
+
+      if (currentGeometry) {
+        return models.geometadata.update(geometadata,
+          {
+            where: { id: currentGeometry.id },
+          },
+        );
+      } else {
+        geometadata.fk_image_id = image_id;
+        return models.geometadata.create(geometadata);
+      }
+    })
+    .catch((error) => {
+      getLogger(req).error(error);
+    });
+    
   return res.json("Geolocalisation is validated");
 };
 
@@ -353,6 +421,69 @@ let reject = async (req, res) => {
 
   return res.json("Geolocalisation is rejected");
 };
+
+exports.generateToponym = route(async (req, res) => {
+  const image_id = req.params.id;
+  const imageToToponym = await models.images.findOne({
+    raw: true,
+    attributes: [
+      "id",
+      "location",
+      [models.sequelize.literal("azimuth%360"), "azimuth"],
+      "tilt",
+      "roll",
+      "width",
+      "height",
+      "focal",
+      "footprint",
+      "name",
+      "date_shot",
+      "date_shot_min"
+    ],
+    where: { id: image_id }
+  });
+
+  const { data } = await axios({
+    method: 'post',
+    url: config.smapcomputeUrl,
+    data: imageToToponym
+  });
+
+  const currentGeometry = await models.geometadata.findOne({
+    raw: true,
+    attributes: [
+      "id",
+    ],
+    where: { fk_image_id: image_id }
+  });
+
+  const geometadata = {
+    footprint: data.footprint,
+    viewshed_simple: data.viewshed,
+    footprint_status: data.toponyms_status,
+    toponyms_array: data.toponyms_array,
+    toponyms_json: data.toponyms_json,
+    viewshed_simple_status: data.viewshed_simple_status,
+    viewshed_simple_timestamp: data.viewshed_simple_timestamp,
+    toponyms_timestamp: data.toponyms_timestamp,
+    toponyms_status: data.toponyms_status,
+    toponyms_count: data.toponyms_count,
+    toponyms_iterations: data.toponyms_iterations,
+    toponyms_factors: data.toponyms_factors
+  }
+
+  if (currentGeometry) {
+    await models.geometadata.update(geometadata,
+      {
+        where: { id: currentGeometry.id },
+      },
+    );
+  } else {
+    geometadata.fk_image_id = image_id;
+    await models.geometadata.create(geometadata);
+  }
+  return res.status(201).json("Toponym has been generated");
+});
 
 exports.validateOrReject = async (req, res) => {
   const state = req.body.state;
