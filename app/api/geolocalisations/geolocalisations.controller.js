@@ -342,7 +342,8 @@ let validate = async (req, res) => {
     axios({
       method: 'post',
       url: config.smapcomputeUrl,
-      data: imageToToponym
+      data: imageToToponym,
+      timeout: 1000 * 60 * 10
     }).then((response) => {
       const data = response.data;
 
@@ -446,7 +447,8 @@ exports.generateToponym = route(async (req, res) => {
   const { data } = await axios({
     method: 'post',
     url: config.smapcomputeUrl,
-    data: imageToToponym
+    data: imageToToponym,
+    timeout: 1000 * 60 * 10
   });
 
   const currentGeometry = await models.geometadata.findOne({
