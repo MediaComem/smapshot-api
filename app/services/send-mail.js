@@ -1,6 +1,14 @@
 const nodemailer = require('nodemailer');
+const aws = require("@aws-sdk/client-ses");
+const { defaultProvider } = require("@aws-sdk/credential-provider-node");
 
 const SEND_MAIL = Symbol('SEND_MAIL');
+
+const ses = new aws.SES({
+  apiVersion: "2010-12-01",
+  region: "eu-west-3",
+  defaultProvider,
+});
 
 /**
  * Creates a function to send emails with https://nodemailer.com.
@@ -21,8 +29,9 @@ const SEND_MAIL = Symbol('SEND_MAIL');
  * @returns {Function} A function that sends emails using the configured SMTP
  * server.
  */
-exports.createSendMail = smtpConfig => {
+exports.createSendMail = _smtpConfig => {
 
+  /*
   const smtpTransport = nodemailer.createTransport({
     host: smtpConfig.host,
     port: smtpConfig.port,
@@ -35,8 +44,12 @@ exports.createSendMail = smtpConfig => {
       rejectUnauthorized: !smtpConfig.allowInvalidCertificate
     }
   });
+  */
+  const sesTransport = nodemailer.createTransport({
+    SES: { ses, aws },
+  });
 
-  return options => smtpTransport.sendMail(options);
+  return options => sesTransport.sendMail(options);
 };
 
 /**
