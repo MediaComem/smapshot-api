@@ -414,7 +414,9 @@ exports.getListMetadata = utils.route(async (req, res) => {
 
   const cleanedWhere = cleanProp(whereImages);
 
-  const includeGeoloc = [{
+  // Include geolocation information and toponyms if geolocalisation is true
+  const includeGeoloc = [
+  {
     model: models.geolocalisations,
     attributes: [
       [models.sequelize.literal("st_X(geolocalisation.location)"), "longitude"],
@@ -429,26 +431,36 @@ exports.getListMetadata = utils.route(async (req, res) => {
     ],
     where: { state: 'validated' },
     required: false
+  },
+  {
+    model: models.geometadata,
+    attributes: [],
+    required: false
   }];
 
   const countTotal = await models.images.count({
     where: cleanedWhere
   });
 
+  const attributes = [
+    "id",
+    "original_id",
+    "collection_id",
+    "owner_id",
+    "state",
+    "title",
+    "caption",
+    "link",
+    [models.sequelize.literal("ST_X(images.location)"), "longitude"],
+    [models.sequelize.literal("ST_Y(images.location)"), "latitude"]
+  ];
+
+  if (req.query.geolocalisation) {
+    attributes.push([Sequelize.col('geometadatum.toponyms_array'), 'geotags_array'])
+  }
+
   const images = await models.images.findAll({
-    attributes: [
-      "id",
-      "original_id",
-      "collection_id",
-      "owner_id",
-      "state",
-      "title",
-      "caption",
-      "link",
-      "geotags_array",
-      [models.sequelize.literal("ST_X(images.location)"), "longitude"],
-      [models.sequelize.literal("ST_Y(images.location)"), "latitude"]
-    ],
+    attributes: attributes,
     limit: req.query.limit || 30,
     offset: req.query.offset || 0,
     where: cleanedWhere,
