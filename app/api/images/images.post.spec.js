@@ -349,6 +349,7 @@ describe('POST /images', () => {
         orig_title: "TEST title",
         apriori_location: {
           geom: {
+            crs: { type: 'name', properties: { name: 'EPSG:4326' } },
             type: "Point",
             coordinates: [
               8.30999999,
@@ -447,6 +448,7 @@ describe('POST /images', () => {
         apriori_altitude: 300.0,
         apriori_location: {
           geom: {
+            crs: { type: 'name', properties: { name: 'EPSG:4326' } },
             type: "Point",
             coordinates: [
               8.30999999,
