@@ -82,7 +82,8 @@ exports.getList = route(async (req, res) => {
         attributes: ["username"],
         required: false
       }
-    ]
+    ],
+    limit: req.query.limit || 100
   });
 
   res.status(200).send(problems);

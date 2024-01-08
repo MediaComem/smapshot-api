@@ -27,6 +27,7 @@
     operationId: getProblems
     parameters:
       - $ref: "#/components/parameters/LanguageParameter"
+      - $ref: "#/components/parameters/LimitParameter"
       - name: id
         in: query
         description: Select only problems with the specified ID(s).

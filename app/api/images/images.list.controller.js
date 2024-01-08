@@ -451,6 +451,7 @@ exports.getListMetadata = utils.route(async (req, res) => {
     "title",
     "caption",
     "link",
+    "geotags_json",
     [models.sequelize.literal("ST_X(images.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(images.location)"), "latitude"]
   ];
