@@ -1,4 +1,4 @@
-FROM node:12.18.3-buster
+FROM node:18-buster
 
 LABEL maintainer="smapshot@heig-vd.ch"
 
