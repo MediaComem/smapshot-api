@@ -46,7 +46,7 @@ exports.getList = route(async (req, res) => {
   const problems = await models.problems.findAll({
     attributes: ["id", "date_created", "title", "description", "problem_type_id", "state"],
     where: cleanedWhereProblems,
-    order: [["id"]],
+    order: [["date_created", 'DESC']],
     include: [
       {
         model: models.problems_type,
