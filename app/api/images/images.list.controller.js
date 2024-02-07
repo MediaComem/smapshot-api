@@ -451,13 +451,13 @@ exports.getListMetadata = utils.route(async (req, res) => {
     "title",
     "caption",
     "link",
-    "geotags_json",
     [models.sequelize.literal("ST_X(images.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(images.location)"), "latitude"]
   ];
 
   if (req.query.geolocalisation) {
     attributes.push([Sequelize.col('geometadatum.toponyms_array'), 'geotags_array'])
+    attributes.push([Sequelize.col('geometadatum.toponyms_json'), 'geotags_json'])
   }
 
   const images = await models.images.findAll({
