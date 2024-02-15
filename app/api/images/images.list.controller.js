@@ -442,7 +442,6 @@ exports.getListMetadata = utils.route(async (req, res) => {
         }
       ]
     },
-    order: [["id", 'DESC']],
     required: false
   },
   {
