@@ -430,9 +430,16 @@ exports.getListMetadata = utils.route(async (req, res) => {
       [models.sequelize.literal("st_AsText(geolocalisation.footprint)"), "footprint"],
     ],
     where: {
-      [Op.or]: [
-        { state: 'validated' },
-        { state: 'improved' }
+      [Op.and]: [
+        {
+          [Op.or]: [
+            {state: 'validated'},
+            {state: 'improved'}
+          ]
+        },
+        {
+          id: {[Op.col]: 'images.geolocalisation_id'}
+        }
       ]
     },
     order: [["id", 'DESC']],
