@@ -470,6 +470,7 @@ exports.getListMetadata = utils.route(async (req, res) => {
   if (req.query.geolocalisation) {
     attributes.push([Sequelize.col('geometadatum.toponyms_array'), 'geotags_array'])
     attributes.push([Sequelize.col('geometadatum.toponyms_json'), 'geotags_json'])
+    attributes.push([models.sequelize.literal("st_AsText(geometadatum.footprint)"), 'footprint'])
   }
 
   const images = await models.images.findAll({
