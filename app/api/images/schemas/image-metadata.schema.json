@@ -90,10 +90,81 @@
         }
       ]
     },
+    "viewshed_simple": {
+      "type": "string"
+    },
+    "footprint": {
+      "type": "string"
+    },
     "geotags_array": {
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "geotags_json": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "geometry": {
+                "type": "object",
+                "properties": {
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              },
+              "id": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "dist": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "objectart": {
+                    "type": "string"
+                  },
+                  "sprachcode": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "typegeom": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
