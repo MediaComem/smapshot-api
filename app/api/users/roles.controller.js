@@ -124,26 +124,21 @@ exports.demotion = route(async (req, res) => {
 exports.findUser = route(async (req, res, next) => {
   const isSuperUser = req.user.isSuperAdmin();
   const { include } = getOwnerScope(req);
-  let whereUser = {};
-
-  if (!isSuperUser) {
-    whereUser = {
-      id: req.params.id,
-      owner_id: include.owner_id,
-    }
-  } else {
-    whereUser = {
-      id: req.params.id,
-    }
-  }
 
   const queryUser = await models.users.findOne({
-    where: whereUser
+    where: {
+      id: req.params.id,
+    }
   });
 
   if (!queryUser) {
     throw notFoundError(req);
   }
+
+  if (!isSuperUser && queryUser.owner_id && queryUser.owner_id != include.owner_id) {
+    throw authorizationError("Not allowed to change the owner_id of this user");
+  }
+
   req.queryUser = queryUser;
   next();
 });
