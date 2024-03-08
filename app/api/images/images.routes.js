@@ -80,6 +80,12 @@ module.exports = () => {
     controller.getFootprint
   );
 
+  // Get images where frootprint covers a geo point
+  router.get("/images/boundingbox",
+    validateDocumentedRequestParametersFor('GET', '/images/boundingbox'),
+    listController.getImagesBound
+  );
+
   // Update the state of an image.
   router.put("/images/:id/state",
     authenticate(),

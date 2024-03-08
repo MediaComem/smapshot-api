@@ -490,3 +490,42 @@
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "404":
         $ref: "#/components/responses/NotFoundError"
+
+/images/boundingbox:
+  get:
+    summary: Get images where frootprint covers a geo point.
+    operationId: getImagesBound
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: latitude
+        in: query
+        description: Latitude of the bounding box center.
+        example: 46.841
+        required: true
+        schema:
+          type: number
+      - name: longitude
+        in: query
+        description: Longitude of the bounding box center.
+        example: 7.663
+        required: true
+        schema:
+          type: number
+      - name: distance
+        in: query
+        description: Distance from the center to the bounding box edges (in kilometers).
+        example: 2
+        required: true
+        schema:
+          type: number
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImagesBound"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
