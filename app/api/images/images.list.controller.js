@@ -592,5 +592,11 @@ exports.getImagesBound = utils.route(async (req, res) => {
   };
 
   const images = await models.images.findAll(sequelizeQuery);
+  if (images) {
+    await mediaUtils.setListImageUrl(images, /* image_width */ 200, /* image_height */ null);
+  }
+  images.forEach((image) => {
+    delete image.dataValues.iiif_data;
+  });
   res.status(200).send(images);
 });
