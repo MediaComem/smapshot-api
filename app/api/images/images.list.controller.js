@@ -551,44 +551,106 @@ exports.getStats = utils.route(async (req, res) => {
 exports.getImagesBound = utils.route(async (req, res) => {
   const query = req.query;
   const attributes = parseAttributes(query);
+  const orderBy = query.sortKey;
+  const orderByNearest = models.sequelize.literal(`images.location <-> st_setsrid(ST_makepoint(${query.longitude}, ${query.latitude}), 4326)`);
+
+  let whereClauses = [];
+
+  if (query.owner_id) {
+    whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
+  }
+
+  if (query.collection_id) {
+    whereClauses.push({ collection_id: inUniqueOrList(query.collection_id) });
+  }
+
+  if (query.keyword) {
+    whereClauses.push({
+      [Op.or]: {
+        original_id: iLikeFormatter(query.keyword),
+        title: iLikeFormatter(query.keyword),
+        caption: iLikeFormatter(query.keyword)
+      }
+    });
+  }
+
+  if (query.place_names) {
+    whereClauses.push({ geotags_array: containsUniqueOrList(query.place_names) });
+  }
+
+  if (query.date_shot_min || query.date_shot_max) {
+    whereClauses.push({
+      // Single date
+      [Op.or]: {
+        date_shot: {
+          [Op.and]: {
+            [Op.not]: null,
+            [Op.gte]: query.date_shot_min,
+            [Op.lte]: query.date_shot_max
+          },
+        },
+        // Range of dates
+        [Op.and]: {
+          date_shot_min: {
+            [Op.and]: {
+              [Op.not]: null,
+              [Op.gte]: query.date_shot_min,
+              [Op.lte]: query.date_shot_max
+            }
+          },
+          date_shot_max: {
+            [Op.and]: {
+              [Op.not]: null,
+              [Op.gte]: query.date_shot_min,
+              [Op.lte]: query.date_shot_max
+            }
+          }
+        }
+      }
+    });
+  }
+
+  whereClauses.push(
+    Sequelize.where(
+      Sequelize.fn(
+        'ST_Contains',
+        Sequelize.col('images.footprint'),
+        Sequelize.fn(
+          'ST_SetSRID',
+          Sequelize.fn('ST_MakePoint', query.longitude, query.latitude),
+          4326
+        )
+      ),
+      true
+    ),
+  );
+
+  whereClauses.push(
+    Sequelize.where(
+      Sequelize.fn(
+        'ST_Distance',
+        Sequelize.cast(
+          Sequelize.fn('ST_SetSRID', Sequelize.fn('ST_MakePoint', query.longitude, query.latitude), 4326),
+          'geography'
+        ),
+        Sequelize.cast(
+          Sequelize.col('images.location'),
+          'geography'
+        )
+      ),
+      {
+        [Op.lte]: query.distance // Distance in meters (20 km = 20000 meters)
+      }
+    ),
+  );
+
   const sequelizeQuery = {
     subQuery: false,
     attributes: attributes,
-    where: {
-      [Op.and]: [
-        { state: 'validated' },
-
-        Sequelize.where(
-          Sequelize.fn(
-            'ST_Contains',
-            Sequelize.col('images.footprint'),
-            Sequelize.fn(
-              'ST_SetSRID',
-              Sequelize.fn('ST_MakePoint', query.longitude, query.latitude),
-              4326
-            )
-          ),
-          true
-        ),
-
-        Sequelize.where(
-          Sequelize.fn(
-            'ST_Distance',
-            Sequelize.cast(
-              Sequelize.fn('ST_SetSRID', Sequelize.fn('ST_MakePoint', query.longitude, query.latitude), 4326),
-              'geography'
-            ),
-            Sequelize.cast(
-              Sequelize.col('images.location'),
-              'geography'
-            )
-          ),
-          {
-            [Op.lte]: query.distance // Distance in meters (20 km = 20000 meters)
-          }
-        ),
-      ],
-    }
+    where: { [Op.and]: whereClauses },
+    order: orderBy === 'distance' ? orderByNearest : (orderBy === 'title' ? [['title']] : [['date_shot_min']]),
+    limit: query.limit || 30,
+    offset: query.offset || 0,
   };
 
   const images = await models.images.findAll(sequelizeQuery);
