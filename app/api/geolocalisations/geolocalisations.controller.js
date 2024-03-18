@@ -339,11 +339,14 @@ let validate = async (req, res) => {
       where: { fk_image_id: image_id }
     });
 
+    // timeout = 0 => no timeout to be sure that all requests will take into account
+    // sometimes, more that 100 requests are sent in same time.
+    // There is a 10 minutes timeout on the computation API
     axios({
       method: 'post',
       url: config.smapcomputeUrl,
       data: imageToToponym,
-      timeout: 1000 * 60 * 10
+      timeout: 0
     }).then((response) => {
       const data = response.data;
 
@@ -444,11 +447,14 @@ exports.generateToponym = route(async (req, res) => {
     where: { id: image_id }
   });
 
+  // timeout = 0 => no timeout to be sure that all requests will take into account
+  // sometimes, more that 100 requests are sent in same time.
+  // There is a 10 minutes timeout on the computation API
   const { data } = await axios({
     method: 'post',
     url: config.smapcomputeUrl,
     data: imageToToponym,
-    timeout: 1000 * 60 * 10
+    timeout: 0 
   });
 
   const currentGeometry = await models.geometadata.findOne({
