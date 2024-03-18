@@ -535,10 +535,12 @@ exports.getFootprint = utils.route(async (req, res) => {
     attributes: [[models.sequelize.literal(
       `
       CASE
-        WHEN viewshed_simple IS NOT NULL
-        THEN ST_AsGeoJson(viewshed_simple, 5, 2)
-        WHEN viewshed_simple IS NULL
-        THEN ST_AsGeoJson(footprint, 5, 2)
+        WHEN geometadatum.viewshed_simple_status IS NOT NULL
+        THEN ST_AsGeoJson(geometadatum.viewshed_simple, 5, 2)
+        WHEN images.viewshed_simple IS NOT NULL
+        THEN ST_AsGeoJson(images.viewshed_simple, 5, 2)
+        WHEN images.viewshed_simple IS NULL
+        THEN ST_AsGeoJson(images.footprint, 5, 2)
         ELSE NULL
       END::json
       `
@@ -546,6 +548,11 @@ exports.getFootprint = utils.route(async (req, res) => {
     where: {
       id: req.params.id
     },
+    include: {
+      model: models.geometadata,
+      attributes: [],
+      required: false
+    }
   });
   const result = await queryPromise;
   res.status(200).send(result);
