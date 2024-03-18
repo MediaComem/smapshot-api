@@ -653,11 +653,17 @@ exports.getImagesBound = utils.route(async (req, res) => {
     offset: query.offset || 0,
   };
 
-  const images = await models.images.findAll(sequelizeQuery);
-  if (images) {
-    await mediaUtils.setListImageUrl(images, /* image_width */ 200, /* image_height */ null);
+  const images = await models.images.findAndCountAll(sequelizeQuery);
+  // Count the total number of images matching the query
+  const countPromise = await models.images.count({
+    where: { [Op.and]: whereClauses },
+    distinct: 'images.id'
+  });
+  images.count = countPromise;
+  if (images.rows) {
+    await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
   }
-  images.forEach((image) => {
+  images.rows.forEach((image) => {
     delete image.dataValues.iiif_data;
   });
   res.status(200).send(images);
