@@ -235,6 +235,10 @@ const getImages = async (req, orderkey, count = true) => {
     });
   }
 
+  if (query.view_type) {
+    whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
+  }
+
   if (isGeoref) {
     if (query.bbox) {
       whereClauses.push({
@@ -622,6 +626,10 @@ exports.getImagesBound = utils.route(async (req, res) => {
     });
   }
 
+  if (query.view_type) {
+    whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
+  }
+
   whereClauses.push(
     Sequelize.where(
       Sequelize.fn(
@@ -650,8 +658,11 @@ exports.getImagesBound = utils.route(async (req, res) => {
           'geography'
         )
       ),
-      {
-        [Op.lte]: query.distance // Distance in meters (20 km = 20000 meters)
+      { // Distance in meters (20 km = 20000 meters)
+        [Op.and]: [
+          { [Op.lte]: query.distance }, // Distance less than or equal to query.distance
+          { [Op.gt]: 4 } // To avoid unwanted images locatated on point ie looking away from point
+        ]
       }
     ),
   );

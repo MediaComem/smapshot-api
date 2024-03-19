@@ -188,3 +188,13 @@
   schema:
     type: string
     format: date-time
+- name: view_type
+  in: query
+  description: Select only image whos view_type is equal to.
+  example: ['terrestrial', 'lowOblique', 'highOblique', 'nadir']
+  schema:
+    type: array
+    minItems: 1
+    maxItems: 4
+    items:
+      type: string
