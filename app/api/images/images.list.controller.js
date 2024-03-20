@@ -631,18 +631,12 @@ exports.getImagesBound = utils.route(async (req, res) => {
   }
 
   whereClauses.push(
-    Sequelize.where(
-      Sequelize.fn(
-        'ST_Contains',
-        Sequelize.col('images.footprint'),
-        Sequelize.fn(
-          'ST_SetSRID',
-          Sequelize.fn('ST_MakePoint', query.longitude, query.latitude),
-          4326
-        )
-      ),
-      true
-    ),
+    Sequelize.literal(
+      `CASE
+        WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.longitude}, ${query.latitude}), 4326)) THEN true
+        ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.longitude}, ${query.latitude}), 4326))
+      END`
+    )
   );
 
   whereClauses.push(
@@ -668,6 +662,11 @@ exports.getImagesBound = utils.route(async (req, res) => {
   );
 
   const sequelizeQuery = {
+    include: [{
+      model: models.geometadata,
+      required: true, // Ensure that only images with geometadata are retrieved
+      attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+    }],
     subQuery: false,
     attributes: attributes,
     where: { [Op.and]: whereClauses },
@@ -680,7 +679,12 @@ exports.getImagesBound = utils.route(async (req, res) => {
   // Count the total number of images matching the query
   const countPromise = await models.images.count({
     where: { [Op.and]: whereClauses },
-    distinct: 'images.id'
+    distinct: 'images.id',
+    include: [{
+      model: models.geometadata,
+      required: true, // Ensure that only images with geometadata are retrieved
+      attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+    }],
   });
   images.count = countPromise;
   if (images.rows) {
