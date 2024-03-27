@@ -77,7 +77,7 @@ const getImages = async (req, orderkey, count = true) => {
   const query = req.query;
   // TODO add image width for media url
   const attributes = parseAttributes(query);
-  const orderBy = orderkey ? orderkey: query.sortKey;
+  const orderBy = orderkey ? orderkey : query.sortKey;
   let whereClauses = [];
 
   const states = query.state ? query.state : ['waiting_validation', 'validated'];
@@ -93,7 +93,7 @@ const getImages = async (req, orderkey, count = true) => {
       if (!userHasRole(req, 'owner_validator', 'owner_admin', 'super_admin')) {
         throw authorizationError('Unpublished images can only be accessed by respective owners or super administrators');
       }
-      const { where: scopeOwner }  = getOwnerScope(req);
+      const { where: scopeOwner } = getOwnerScope(req);
       // retrieve only unpublished images
       whereClauses.push({ is_published: false });
       // restrict to current owner
@@ -141,12 +141,13 @@ const getImages = async (req, orderkey, count = true) => {
   }
 
   if (query.keyword) {
-    whereClauses.push({ [Op.or]: {
-                          original_id: iLikeFormatter(query.keyword),
-                          title: iLikeFormatter(query.keyword),
-                          caption: iLikeFormatter(query.keyword)
-                        }
-                      });
+    whereClauses.push({
+      [Op.or]: {
+        original_id: iLikeFormatter(query.keyword),
+        title: iLikeFormatter(query.keyword),
+        caption: iLikeFormatter(query.keyword)
+      }
+    });
   }
 
   if (query.user_id) {
@@ -234,6 +235,10 @@ const getImages = async (req, orderkey, count = true) => {
     });
   }
 
+  if (query.view_type) {
+    whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
+  }
+
   if (isGeoref) {
     if (query.bbox) {
       whereClauses.push({
@@ -243,10 +248,10 @@ const getImages = async (req, orderkey, count = true) => {
     if (query.wkt_roi) {
       whereClauses.push({
         location: wktFormatter(
-                    query.wkt_roi,
-                    query.intersect_location || false,
-                    query.intersect_footprint || false
-                  )
+          query.wkt_roi,
+          query.intersect_location || false,
+          query.intersect_footprint || false
+        )
       });
     }
   }
@@ -254,7 +259,7 @@ const getImages = async (req, orderkey, count = true) => {
 
   // Filter locked images
   if (query.only_unlocked) {
-    whereClauses.push( models.sequelize.literal(
+    whereClauses.push(models.sequelize.literal(
       "last_start IS NULL OR (EXTRACT(EPOCH FROM now())-EXTRACT(EPOCH FROM last_start))/60 >= 240"
     ));
   }
@@ -275,6 +280,12 @@ const getImages = async (req, orderkey, count = true) => {
   };
 
   const randomOrder = models.sequelize.literal("random()");
+
+  // findAll returns an array where findAndCountAll returns object {rows, count}
+  const response = {
+    rows: [],
+    count: null
+  }
 
   if (!isGeoref) {
     let whereClauseApriori = {}
@@ -299,20 +310,21 @@ const getImages = async (req, orderkey, count = true) => {
     }
 
     const orderById = [["id"]];
-    includeOption = [{
-      model: models.apriori_locations,
-      attributes: [
-        [models.sequelize.literal("ST_X(geom)"), "longitude"],
-        [models.sequelize.literal("ST_Y(geom)"), "latitude"],
-        "exact"
-      ],
-      where: whereClauseApriori,
-      required: true,
-      duplicating: false,
-      order: orderBy === 'distance' ? orderByApriori : undefined
-    },
-    includeCollectionFilter
-  ];
+    includeOption = [
+      {
+        model: models.apriori_locations,
+        attributes: [
+          [models.sequelize.literal("ST_X(geom)"), "longitude"],
+          [models.sequelize.literal("ST_Y(geom)"), "latitude"],
+          "exact"
+        ],
+        where: whereClauseApriori,
+        required: true,
+        duplicating: false,
+        order: orderBy === 'distance' ? orderByApriori : undefined
+      },
+      includeCollectionFilter
+    ];
     const sequelizeQuery = {
       subQuery: false,
       attributes: attributes,
@@ -323,17 +335,17 @@ const getImages = async (req, orderkey, count = true) => {
       include: includeOption
     };
     if (count) {
-      const response = await models.images.findAndCountAll(sequelizeQuery);
-      // Count the total number of images matching the query
+      response.rows = await models.images.findAll(sequelizeQuery);
+      // Count the total number of matching images, removing duplicates when in contribute mode, i.e. apriori_locations
       const countPromise = await models.images.count({
         where: { [Op.and]: whereClauses },
         include: includeOption,
         distinct: 'images.id'
-      })
+      });
       response.count = countPromise
       return response;
     } else {
-      const response = await models.images.findAll(sequelizeQuery);
+      response.rows = await models.images.findAll(sequelizeQuery);
       return response;
     }
   } else {
@@ -349,20 +361,20 @@ const getImages = async (req, orderkey, count = true) => {
       include: [includeCollectionFilter]
     };
     if (count) {
-      const response = await models.images.findAndCountAll(sequelizeQuery);
-      return response;
+      const imagesAndCount = await models.images.findAndCountAll(sequelizeQuery);
+      return imagesAndCount;
     } else {
-      const response = await models.images.findAll(sequelizeQuery);
+      response.rows = await models.images.findAll(sequelizeQuery);
       return response;
     }
   }
 };
 
-exports.getList = utils.route(async (req, res) => {  
+exports.getList = utils.route(async (req, res) => {
   const images = await getImages(req);
   //Build media
   if (!req.query.attributes || req.query.attributes.includes('media')) { //only return media if no specific attributes requested or if media requested
-    if(images.rows) {
+    if (images.rows) {
       await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
     }
     images.rows.forEach((image) => {
@@ -376,9 +388,8 @@ exports.getList = utils.route(async (req, res) => {
 exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
-
   // Send flattened objects
-  res.status(200).send(images.map(obj => obj.id));
+  res.status(200).send(images.rows.map(obj => obj.id));
 });
 
 exports.getListMetadata = utils.route(async (req, res) => {
@@ -392,7 +403,7 @@ exports.getListMetadata = utils.route(async (req, res) => {
   } else if (user.hasRole('owner_admin') || user.hasRole('owner_validator')) {
     // An owner administrator or validator can only request image metadata for
     // their owner.
-    const accessibleOwnerIds = [ user.owner_id ];
+    const accessibleOwnerIds = [user.owner_id];
     ownerIds = requestedOwnerIds ? intersection(requestedOwnerIds, accessibleOwnerIds) : accessibleOwnerIds;
     if (requestedOwnerIds && ownerIds.length !== requestedOwnerIds.length) {
       throw authorizationError('An owner validator or administrator can only access metadata for images linked to the same owner');
@@ -416,39 +427,39 @@ exports.getListMetadata = utils.route(async (req, res) => {
 
   // Include geolocation information and toponyms if geolocalisation is true
   const includeGeoloc = [
-  {
-    model: models.geolocalisations,
-    attributes: [
-      [models.sequelize.literal("st_X(geolocalisation.location)"), "longitude"],
-      [models.sequelize.literal("st_Y(geolocalisation.location)"), "latitude"],
-      [models.sequelize.literal("st_Z(geolocalisation.location)"), "altitude"],
-      "azimuth",
-      "tilt",
-      "roll",
-      "focal",
-      [models.sequelize.literal("st_AsText(geolocalisation.location)"), "point"],
-      [models.sequelize.literal("st_AsText(geolocalisation.footprint)"), "footprint"],
-    ],
-    where: {
-      [Op.and]: [
-        {
-          [Op.or]: [
-            {state: 'validated'},
-            {state: 'improved'}
-          ]
-        },
-        {
-          id: {[Op.col]: 'images.geolocalisation_id'}
-        }
-      ]
+    {
+      model: models.geolocalisations,
+      attributes: [
+        [models.sequelize.literal("st_X(geolocalisation.location)"), "longitude"],
+        [models.sequelize.literal("st_Y(geolocalisation.location)"), "latitude"],
+        [models.sequelize.literal("st_Z(geolocalisation.location)"), "altitude"],
+        "azimuth",
+        "tilt",
+        "roll",
+        "focal",
+        [models.sequelize.literal("st_AsText(geolocalisation.location)"), "point"],
+        [models.sequelize.literal("st_AsText(geolocalisation.footprint)"), "footprint"],
+      ],
+      where: {
+        [Op.and]: [
+          {
+            [Op.or]: [
+              {state: 'validated'},
+              {state: 'improved'}
+            ]
+          },
+          {
+            id: {[Op.col]: 'images.geolocalisation_id'}
+          }
+        ]
+      },
+      required: false
     },
-    required: false
-  },
-  {
-    model: models.geometadata,
-    attributes: [],
-    required: false
-  }];
+    {
+      model: models.geometadata,
+      attributes: [],
+      required: false
+    }];
 
   const countTotal = await models.images.count({
     where: cleanedWhere
@@ -556,4 +567,126 @@ exports.getStats = utils.route(async (req, res) => {
     count: result.reduce((a, b) => a + b.get({ plain: true }).count, 0),
     rows: result
   });
+});
+
+exports.getImagesBound = utils.route(async (req, res) => {
+  const query = req.query;
+  const attributes = parseAttributes(query);
+  const orderBy = query.sortKey;
+  const orderByNearest = models.sequelize.literal(`images.location <-> st_setsrid(ST_makepoint(${query.longitude}, ${query.latitude}), 4326)`);
+
+  let whereClauses = [];
+
+  if (query.owner_id) {
+    whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
+  }
+
+  if (query.collection_id) {
+    whereClauses.push({ collection_id: inUniqueOrList(query.collection_id) });
+  }
+
+  if (query.keyword) {
+    whereClauses.push({
+      [Op.or]: {
+        original_id: iLikeFormatter(query.keyword),
+        title: iLikeFormatter(query.keyword),
+        caption: iLikeFormatter(query.keyword)
+      }
+    });
+  }
+
+  if (query.place_names) {
+    whereClauses.push({ geotags_array: containsUniqueOrList(query.place_names) });
+  }
+
+  if (query.date_shot_min || query.date_shot_max) {
+    whereClauses.push({
+      // Single date
+      [Op.or]: {
+        date_shot: {
+          [Op.and]: {
+            [Op.not]: null,
+            [Op.gte]: query.date_shot_min,
+            [Op.lte]: query.date_shot_max
+          },
+        },
+        // Range of dates
+        [Op.and]: {
+          date_shot_min: {
+            [Op.and]: {
+              [Op.not]: null,
+              [Op.gte]: query.date_shot_min,
+              [Op.lte]: query.date_shot_max
+            }
+          },
+          date_shot_max: {
+            [Op.and]: {
+              [Op.not]: null,
+              [Op.gte]: query.date_shot_min,
+              [Op.lte]: query.date_shot_max
+            }
+          }
+        }
+      }
+    });
+  }
+
+  if (query.view_type) {
+    whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
+  }
+
+  whereClauses.push(
+    Sequelize.literal(
+      `CASE
+        WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.longitude}, ${query.latitude}), 4326)) THEN true
+        ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.longitude}, ${query.latitude}), 4326))
+      END`
+    )
+  );
+
+  whereClauses.push(
+    Sequelize.where(
+      Sequelize.fn(
+        'ST_Distance',
+        Sequelize.cast(
+          Sequelize.fn('ST_SetSRID', Sequelize.fn('ST_MakePoint', query.longitude, query.latitude), 4326),
+          'geography'
+        ),
+        Sequelize.cast(
+          Sequelize.col('images.location'),
+          'geography'
+        )
+      ),
+      { // Distance in meters (20 km = 20000 meters)
+        [Op.and]: [
+          { [Op.lte]: query.distance }, // Distance less than or equal to query.distance
+          { [Op.gt]: 4 } // To avoid unwanted images locatated on point ie looking away from point
+        ]
+      }
+    ),
+  );
+
+  const sequelizeQuery = {
+    include: [{
+      model: models.geometadata,
+      required: true, // Ensure that only images with geometadata are retrieved
+      attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+    }],
+    subQuery: false,
+    attributes: attributes,
+    where: { [Op.and]: whereClauses },
+    order: orderBy === 'distance' ? orderByNearest : (orderBy === 'title' ? [['title']] : [['date_shot_min']]),
+    limit: query.limit || 30,
+    offset: query.offset || 0,
+  };
+
+  const images = await models.images.findAndCountAll(sequelizeQuery);
+
+  if (images.rows) {
+    await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
+  }
+  images.rows.forEach((image) => {
+    delete image.dataValues.iiif_data;
+  });
+  res.status(200).send(images);
 });
