@@ -281,6 +281,12 @@ const getImages = async (req, orderkey, count = true) => {
 
   const randomOrder = models.sequelize.literal("random()");
 
+  // findAll returns an array where findAndCountAll returns object {rows, count}
+  const response = {
+    rows: [],
+    count: null
+  }
+
   if (!isGeoref) {
     let whereClauseApriori = {}
     let includeOption = null;
@@ -329,8 +335,8 @@ const getImages = async (req, orderkey, count = true) => {
       include: includeOption
     };
     if (count) {
-      const response = await models.images.findAndCountAll(sequelizeQuery);
-      // Count the total number of images matching the query
+      response.rows = await models.images.findAll(sequelizeQuery);
+      // Count the total number of matching images, removing duplicates when in contribute mode, i.e. apriori_locations
       const countPromise = await models.images.count({
         where: { [Op.and]: whereClauses },
         include: includeOption,
@@ -339,7 +345,7 @@ const getImages = async (req, orderkey, count = true) => {
       response.count = countPromise
       return response;
     } else {
-      const response = await models.images.findAll(sequelizeQuery);
+      response.rows = await models.images.findAll(sequelizeQuery);
       return response;
     }
   } else {
@@ -355,10 +361,10 @@ const getImages = async (req, orderkey, count = true) => {
       include: [includeCollectionFilter]
     };
     if (count) {
-      const response = await models.images.findAndCountAll(sequelizeQuery);
-      return response;
+      const imagesAndCount = await models.images.findAndCountAll(sequelizeQuery);
+      return imagesAndCount;
     } else {
-      const response = await models.images.findAll(sequelizeQuery);
+      response.rows = await models.images.findAll(sequelizeQuery);
       return response;
     }
   }
@@ -382,9 +388,8 @@ exports.getList = utils.route(async (req, res) => {
 exports.getListId = utils.route(async (req, res) => {
   req.query = { ...req.query, attributes: ["id"] };
   const images = await getImages(req, /*orderBy*/ 'id', /*count*/ false);
-
   // Send flattened objects
-  res.status(200).send(images.map(obj => obj.id));
+  res.status(200).send(images.rows.map(obj => obj.id));
 });
 
 exports.getListMetadata = utils.route(async (req, res) => {
@@ -676,17 +681,7 @@ exports.getImagesBound = utils.route(async (req, res) => {
   };
 
   const images = await models.images.findAndCountAll(sequelizeQuery);
-  // Count the total number of images matching the query
-  const countPromise = await models.images.count({
-    where: { [Op.and]: whereClauses },
-    distinct: 'images.id',
-    include: [{
-      model: models.geometadata,
-      required: true, // Ensure that only images with geometadata are retrieved
-      attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
-    }],
-  });
-  images.count = countPromise;
+
   if (images.rows) {
     await mediaUtils.setListImageUrl(images.rows, /* image_width */ 200, /* image_height */ null);
   }

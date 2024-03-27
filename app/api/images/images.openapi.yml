@@ -586,7 +586,7 @@
         content:
           application/json:
             schema:
-                $ref: "#/components/schemas/ImagesBound"
+                $ref: "#/components/schemas/ImageList"
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "404":
