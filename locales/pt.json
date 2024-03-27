@@ -23,6 +23,7 @@
         },
         "resetPassword": {
             "success": "Sua senha foi alterada com sucesso!",
+            "failed": "A senha não pode ser atualizada. A senha antiga fornecida não está correta",
             "emailTitle": "Smapshot: Redefinir sua senha",
             "emailDescription": "<p>Você está recebendo essa mensagem por você (ou alguém) ter solicitado uma redefinição de senha da sua conta.</p><p>Por favor clique no link seguinte, ou copie o endereço ao seu navegador para completar o processo:</p><p><a href='{{ url }}'>Redefinir sua senha</a></p><p>Atenção, esse link só é válido por uma hora!<p>Se você não solicitou essa alteração, por favor ignore a mensagem e sua senha continuará a mesma.</p>"
         },
@@ -41,6 +42,14 @@
         "submitted": {
             "success": "Sua correção foi enviada. O proprietário da coleção verificará as informações.",
             "error": "Sua correção não pode ser enviada, por favor tente novamente."
+        }
+    },
+    "images": {
+      "missing": "Imagem não encontrada.",
+        "submitted": {
+            "success": "Sua imagem foi enviada com sucesso.",
+            "originalIdAlreadyExist": "Já existe na base de dados uma imagem com este original_id.",
+            "photographerDoesNotExist": "O fotógrafo com a id especificada não existe."
         }
     },
     "problems": {

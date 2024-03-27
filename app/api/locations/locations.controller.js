@@ -1,5 +1,6 @@
 const models = require("../../models");
 const utils = require("../../utils/express");
+const { notFoundError } = require("../../utils/errors");
 
 exports.getCountryCode = utils.route(async (req, res) => {
   const longitude = req.params.longitude;
@@ -18,12 +19,7 @@ exports.getCountryCode = utils.route(async (req, res) => {
 
   // No result, No country (for example point in the ocean)
   if(!result){
-    throw utils.createApiError(
-      req.__('locations.noCountry'),
-      {
-        status: 404
-      }
-    );
+    throw notFoundError(req, req.__('locations.noCountry'));
   }
 
   res.status(200).send(result.iso_a2);

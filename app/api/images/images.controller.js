@@ -108,7 +108,7 @@ exports.lock = utils.route(async (req, res) => {
   });
   lockSocket.addEventListener('message', result => {
     if (result.data === 'Not found') {
-      throw utils.createApiError("Image not found.", { status: 404 });
+      throw notFoundError(req, req.__('images.missing'));
     }
 
     res.status(200).send({
@@ -130,7 +130,7 @@ const unLockSocket = new WebSocket(websocketProtocol + '://' + config.apiUrl.rep
   });
   unLockSocket.addEventListener('message', result => {
     if (result.data === 'Not found') {
-      throw utils.createApiError("Image not found.", { status: 404 });
+      throw notFoundError(req, req.__('images.missing'));
     }
 
     res.status(200).send({
@@ -502,12 +502,7 @@ exports.getGeoPose = utils.route(async (req, res) => {
   // Image doesn't exist or has no validated/waiting_validation state
   let result;
   if (query === null) {
-    throw utils.createApiError(
-      req.__('general.resourceNotFound'),
-      {
-        status: 404
-      }
-    );
+    throw notFoundError(req, req.__('images.missing'));
   } else {
     result = query.toJSON();
     result.yaw = mod(360 - result.azimuth, 360);

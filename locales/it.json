@@ -23,6 +23,7 @@
         },
         "resetPassword": {
             "success": "La tua password è stata modificata con successo!",
+            "failed": "La password non può essere aggiornata. La vecchia password fornita non è corretta",
             "emailTitle": "Reimposta la tua password",
             "emailDescription": "<p>Ricevi questo perché tu (o qualcun altro) ha richiesto la reimpostazione della password del tuo conto.</p><p>Per favore clicca sul seguente link o incollalo nel tuo browser per completare il procedimento:</p><p><a href='{{ url }}'>Reimposta la tua password</a></p><p>Attenzione, il link è valido solo per un'ora!<p>Se non l'hai richiesto, ignora questa e-mail e la tua password rimarrà invariata.</p>"
         },
@@ -41,6 +42,14 @@
         "submitted": {
             "success": "La tua correzione è stata inviata. Il proprietario della raccolta procederà ora ad un controllo.",
             "error": "La tua correzione non può essere inviata, per favore riprova più tardi."
+        }
+    },
+    "images": {
+      "missing": "Immagine non trovata.",
+        "submitted": {
+            "success": "L'immagine è stata inviata con successo.",
+            "originalIdAlreadyExist": "Un'immagine con questo original_id esiste già nel database.",
+            "photographerDoesNotExist": "Il fotografo con l'id specificato non esiste."
         }
     },
     "problems": {
