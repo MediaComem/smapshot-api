@@ -200,14 +200,14 @@
       type: string
 - name: POI_latitude
   in: query
-  description: Longitude of the point on the map.
-  example: 46.5
+  description: Latitude of the point on the map.
+  example: 46.6384
   schema:
     type: number
 - name: POI_longitude
   in: query
   description: Longitude of the point on the map.
-  example: 46.5
+  example: 7.1073
   schema:
     type: number
 - name: POI_MaxDistance
