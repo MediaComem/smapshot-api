@@ -198,3 +198,21 @@
     maxItems: 4
     items:
       type: string
+- name: POI_latitude
+  in: query
+  description: Latitude of the point on the map.
+  example: 46.6384
+  schema:
+    type: number
+- name: POI_longitude
+  in: query
+  description: Longitude of the point on the map.
+  example: 7.1073
+  schema:
+    type: number
+- name: POI_MaxDistance
+  in: query
+  description: Max Distance to cover from point on map.
+  example: 2000
+  schema:
+    type: number
