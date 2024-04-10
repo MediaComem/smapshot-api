@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
           allowNull: false,
           minimum: 0
         },
-        indexInStory:{
+        indexinstory:{
           type: DataTypes.INTEGER,
           allowNull: false,
           minimum: 0,

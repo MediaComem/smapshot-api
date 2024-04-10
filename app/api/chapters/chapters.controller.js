@@ -37,7 +37,7 @@ const getChapterById = async (req, res) => {
 
 //Add a chapter to the db
 const addChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexInStory } = req.body;
+  const { title, type, picture_id, url_media, description, zoom, story, indexinstory } = req.body;
   try {
     const newChapter = await Stories_chapters.create({
       title,
@@ -47,7 +47,7 @@ const addChapter = async (req, res) => {
       description,
       zoom,
       story,
-      indexInStory
+      indexinstory
     });
     res.status(201).json(newChapter); // Return the ID of the newly created chapter
   } catch (error) {
@@ -58,7 +58,7 @@ const addChapter = async (req, res) => {
 
 //Update a chapter
 const updateChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexInStory  } = req.body;
+  const { title, type, picture_id, url_media, description, zoom, story, indexinstory  } = req.body;
   try {
     const updatedChapter = await Stories_chapters.update({
       title,
@@ -68,7 +68,7 @@ const updateChapter = async (req, res) => {
       description,
       zoom,
       story,
-      indexInStory
+      indexinstory
     },{
 
       where: {id: req.params.id},
