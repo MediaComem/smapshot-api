@@ -1,5 +1,7 @@
-const models = require("../../models");
+
 const logger = require('../../../config/logger');
+const { Stories, sequelize } = require("../../models");
+const models = require("../../models");
 
 //get all the stories
 const getStories = async (req, res) => {
@@ -17,11 +19,10 @@ const getStories = async (req, res) => {
 const getStoryById = async (req, res) => {
   const { id } = req.params;
   try {
-    const story = await models.stories.findByPk(id);
-
-    const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory"];
-    const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
+    const story = await Stories.findByPk(id);
+    const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory", "view_custom"];
+    const longitude = [sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [sequelize.literal("ST_Y(location)"), "latitude"];
     const includeOption = [{
       model: models.images,
       attributes: [longitude, latitude],
