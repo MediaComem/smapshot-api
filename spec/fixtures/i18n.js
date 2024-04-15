@@ -1,8 +1,8 @@
-const { get } = require('lodash');
+const { get } = require("lodash");
 
-const { chance } = require('../utils/chance');
+const { chance } = require("../utils/chance");
 
-const locales = [ 'de', 'en', 'fr', 'it', 'pt' ];
+const locales = ["de", "en", "fr", "it", "pt"];
 
 /**
  * The locales supported by the application.
@@ -19,6 +19,15 @@ exports.generateRandomLocalizedDescription = () => {
 };
 
 /**
+ * Generates a localized description preview object.
+ *
+ * @returns {LocalizedString} A localized object.
+ */
+exports.generateRandomLocalizedSentence = () => {
+  return generateRandomLocalized(() => chance.sentence());
+};
+
+/**
  * Generates a localized name object. By default, each name is composed of three
  * random words.
  *
@@ -27,8 +36,10 @@ exports.generateRandomLocalizedDescription = () => {
  * @returns {LocalizedString} A localized object.
  */
 exports.generateRandomLocalizedName = (options = {}) => {
-  const words = get(options, 'words', 3);
-  return generateRandomLocalized(() => chance.sentence({ words }).replace(/\.$/, ''));
+  const words = get(options, "words", 3);
+  return generateRandomLocalized(() =>
+    chance.sentence({ words }).replace(/\.$/, "")
+  );
 };
 
 function generateRandomLocalized(generator) {

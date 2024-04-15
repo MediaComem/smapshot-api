@@ -1,0 +1,44 @@
+{
+  "$id": "NewsPagination",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "news": {
+          "$ref": "NewsList#"
+        }
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "total_records": {
+          "type": "integer"
+        },
+        "current_page": {
+          "type": "integer"
+        },
+        "page_size": {
+          "type": "integer"
+        },
+        "total_pages": {
+          "type": "integer"
+        },
+        "links": {
+          "type": "object",
+          "properties": {
+            "prev_page": {
+              "type": ["string", "null"]
+            },
+            "next_page": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

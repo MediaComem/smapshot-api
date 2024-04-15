@@ -8,7 +8,7 @@ module.exports = {
         title JSON NOT NULL,
         description JSON NOT NULL,
         description_preview JSON NOT NULL,
-        img_path VARCHAR(255) NOT NULL,
+        img_url VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
