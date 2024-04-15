@@ -1,5 +1,5 @@
 const models = require("../../models");
-
+const logger = require('../../../config/logger');
 
 //get all the chapters
 const getChapters = async (req, res) => {
@@ -19,6 +19,7 @@ const getChapters = async (req, res) => {
     const chapters = await models.stories_chapters.findAll(sequelizeQuery);
     res.json(chapters);
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des chapitres.' });
   }
 };
@@ -35,6 +36,7 @@ const getChapterById = async (req, res) => {
       res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
     }
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: `Une erreur s'est produite lors de la récupération du chapitre avec l'ID ${id}.` });
   }
 };
@@ -56,6 +58,7 @@ const addChapter = async (req, res) => {
     });
     res.status(201).json(newChapter); // Return the ID of the newly created chapter
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de l\'ajout du chapitre.' });
   }
 };
@@ -80,6 +83,7 @@ const updateChapter = async (req, res) => {
     });
     res.status(201).json(updatedChapter); // Return the ID of the newly created chapter
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la misz à jour du chapitre.' });
   }
 };
@@ -91,6 +95,7 @@ const deleteChapter = async (req, res) =>{
     res.status(200).json(deletedChapter);
     
   }catch(error){
+    logger.error(error);
     res.status(500).json({error: "Une erreur c'est produite lors de la supression du chapitre"});
   }
 }

@@ -1,4 +1,5 @@
 const models = require("../../models");
+const logger = require('../../../config/logger');
 
 //get all the stories
 const getStories = async (req, res) => {
@@ -6,6 +7,7 @@ const getStories = async (req, res) => {
     const stories = await models.stories.findAll();
     res.json(stories);
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des stories.' });
   }
 };
@@ -39,6 +41,7 @@ const getStoryById = async (req, res) => {
       res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
     }
   } catch (error) {
+    logger.error(error);
     res.status(404).json({ error: `Une erreur s'est produite lors de la récupération de la story avec l'ID ${id}.` });
   }
 };
@@ -57,6 +60,7 @@ const addStory = async (req, res) => {
     res.status(201).json(newStory);
 
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout de la story." });
   }
 };
@@ -74,6 +78,7 @@ const updateStory = async (req, res) => {
     res.status(201).json(updatedStory);
 
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: "Une erreur s'est produite lors de la mis à jour de la story." });
   }
 };
@@ -84,6 +89,7 @@ const deleteStory = async (req, res) =>{
     res.status(200).json(deletedStory);
 
   }catch(error){
+    logger.error(error);
     res.status(500).json({error: "Une erreur c'est produite lors de la supression de la story"});
   }
 }
