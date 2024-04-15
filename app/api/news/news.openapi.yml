@@ -1,0 +1,31 @@
+/news:
+  get:
+    summary: List of collection news.
+    operationId: GetNews
+    parameters:
+      - name: offset
+        in: query
+        description: The number of the records to skip on return
+        example: 3
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - name: limit
+        in: query
+        description: The amount of records to return
+        example: 10
+        default: 10
+        schema:
+          type: integer
+          minimum: 0
+          default: 30
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsPagination"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
