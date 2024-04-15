@@ -1,17 +1,23 @@
-const { Stories_chapters } = require('../../models');
+const { Stories_chapters, sequelize } = require('../../models');
+const models = require("../../models");
 
 
 //get all the chapters
 const getChapters = async (req, res) => {
   try {
-    const chapters = await Stories_chapters.sequelize.query(`
-    SELECT stories_chapters.title, stories_chapters.type, picture_id,
-    stories_chapters.url_media, stories_chapters.description, stories_chapters.zoom, stories_chapters.story, 
-    ST_X(images.location) as longitude, ST_Y(images.location) as latitude
-    FROM stories_chapters, images 
-    WHERE stories_chapters.picture_id = images.id`,
-    {type: Stories_chapters.sequelize.QueryTypes.SELECT},
-    )
+    const basic_attributes = ["picture_id", "title", "type", "url_media", "description", "zoom", "story"];
+    const longitude = [sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [sequelize.literal("ST_Y(location)"), "latitude"];
+    const includeOption = [{
+      model: models.images,
+      attributes: [longitude, latitude],
+    }];
+    const sequelizeQuery = {
+      attributes: basic_attributes,
+      orderBy: ["indexinstory"],
+      include: includeOption
+    };
+    const chapters = await Stories_chapters.findAll(sequelizeQuery);
     res.json(chapters);
   } catch (error) {
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des chapitres.' });

@@ -1,4 +1,5 @@
-const { Stories, Stories_chapters } = require("../../models");
+const { Stories, Stories_chapters, sequelize } = require("../../models");
+const models = require("../../models");
 
 //get all the stories
 const getStories = async (req, res) => {
@@ -16,22 +17,22 @@ const getStoryById = async (req, res) => {
   const { id } = req.params;
   try {
     const story = await Stories.findByPk(id);
-    const chaptersOfStory = await Stories_chapters.sequelize.query(`
-    SELECT stories_chapters.id, stories_chapters.indexinstory, stories_chapters.title, stories_chapters.type, picture_id,
-    stories_chapters.url_media, stories_chapters.description, stories_chapters.zoom, stories_chapters.story, 
-    ST_X(images.location) as longitude, ST_Y(images.location) as latitude
-    FROM stories_chapters, images 
-    WHERE stories_chapters.picture_id = images.id
-    AND stories_chapters.story = :storyId
-    ORDER BY stories_chapters.indexinstory`,
-    {    
-      replacements: { storyId: id },
-      type: Stories_chapters.sequelize.QueryTypes.SELECT},
-    )
-    story.dataValues.chapters = chaptersOfStory;
 
-
-
+    const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory"];
+    const longitude = [sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [sequelize.literal("ST_Y(location)"), "latitude"];
+    const includeOption = [{
+      model: models.images,
+      attributes: [longitude, latitude],
+    }];
+    const sequelizeQuery = {
+      attributes: basic_attributes,
+      where: { story: id },
+      orderBy: ["indexinstory"],
+      include: includeOption
+    };
+    const chapters = await Stories_chapters.findAll(sequelizeQuery);
+    story.dataValues.chapters = chapters;
     if (story) {
       res.json(story);
 

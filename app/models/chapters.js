@@ -49,6 +49,10 @@ module.exports = (sequelize, DataTypes) => {
       }
     );
 
+    Chapters.associate = models => {
+      Chapters.hasMany(models.images, { foreignKey: "id" });
+    };
+
     return Chapters;
   };
   
