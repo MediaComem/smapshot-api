@@ -1,4 +1,3 @@
-const { Stories_chapters, sequelize } = require('../../models');
 const models = require("../../models");
 
 
@@ -6,8 +5,8 @@ const models = require("../../models");
 const getChapters = async (req, res) => {
   try {
     const basic_attributes = ["picture_id", "title", "type", "url_media", "description", "zoom", "story"];
-    const longitude = [sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [sequelize.literal("ST_Y(location)"), "latitude"];
+    const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [models.sequelize.literal("ST_Y(location)"), "latitude"];
     const includeOption = [{
       model: models.images,
       attributes: [longitude, latitude],
@@ -17,7 +16,7 @@ const getChapters = async (req, res) => {
       orderBy: ["indexinstory"],
       include: includeOption
     };
-    const chapters = await Stories_chapters.findAll(sequelizeQuery);
+    const chapters = await models.stories_chapters.findAll(sequelizeQuery);
     res.json(chapters);
   } catch (error) {
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des chapitres.' });
@@ -29,7 +28,7 @@ const getChapters = async (req, res) => {
 const getChapterById = async (req, res) => {
   const { id } = req.params;
   try {
-    const chapter = await Stories_chapters.findByPk(id);
+    const chapter = await models.stories_chapters.findByPk(id);
     if (chapter) {
       res.json(JSON.stringify({ "chapters": chapter }));
     } else {
@@ -45,7 +44,7 @@ const getChapterById = async (req, res) => {
 const addChapter = async (req, res) => {
   const { title, type, picture_id, url_media, description, zoom, story, indexinstory } = req.body;
   try {
-    const newChapter = await Stories_chapters.create({
+    const newChapter = await models.stories_chapters.create({
       title,
       type,
       picture_id,
@@ -66,7 +65,7 @@ const addChapter = async (req, res) => {
 const updateChapter = async (req, res) => {
   const { title, type, picture_id, url_media, description, zoom, story, indexinstory  } = req.body;
   try {
-    const updatedChapter = await Stories_chapters.update({
+    const updatedChapter = await models.stories_chapters.update({
       title,
       type,
       picture_id,
@@ -88,7 +87,7 @@ const updateChapter = async (req, res) => {
 const deleteChapter = async (req, res) =>{
 
   try{
-    const deletedChapter = await Stories_chapters.destroy({where: {id:req.params.id}});
+    const deletedChapter = await models.stories_chapters.destroy({where: {id:req.params.id}});
     res.status(200).json(deletedChapter);
     
   }catch(error){

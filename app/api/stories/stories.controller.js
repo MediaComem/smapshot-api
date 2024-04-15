@@ -1,10 +1,9 @@
-const { Stories, Stories_chapters, sequelize } = require("../../models");
 const models = require("../../models");
 
 //get all the stories
 const getStories = async (req, res) => {
   try {
-    const stories = await Stories.findAll();
+    const stories = await models.stories.findAll();
     res.json(stories);
   } catch (error) {
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des stories.' });
@@ -16,11 +15,11 @@ const getStories = async (req, res) => {
 const getStoryById = async (req, res) => {
   const { id } = req.params;
   try {
-    const story = await Stories.findByPk(id);
+    const story = await models.stories.findByPk(id);
 
     const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory"];
-    const longitude = [sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [sequelize.literal("ST_Y(location)"), "latitude"];
+    const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [models.sequelize.literal("ST_Y(location)"), "latitude"];
     const includeOption = [{
       model: models.images,
       attributes: [longitude, latitude],
@@ -31,7 +30,7 @@ const getStoryById = async (req, res) => {
       orderBy: ["indexinstory"],
       include: includeOption
     };
-    const chapters = await Stories_chapters.findAll(sequelizeQuery);
+    const chapters = await models.stories_chapters.findAll(sequelizeQuery);
     story.dataValues.chapters = chapters;
     if (story) {
       res.json(story);
@@ -54,7 +53,7 @@ const addStory = async (req, res) => {
   let { title, logo_link } = req.body;
 
   try {
-    const newStory = await Stories.create({ title, logo_link });
+    const newStory = await models.stories.create({ title, logo_link });
     res.status(201).json(newStory);
 
   } catch (error) {
@@ -71,7 +70,7 @@ const updateStory = async (req, res) => {
   let { title, logo_link } = req.body;
 
   try {
-    const updatedStory = await Stories.update({ title, logo_link }, {where: {id: req.params.id}});
+    const updatedStory = await models.stories.update({ title, logo_link }, {where: {id: req.params.id}});
     res.status(201).json(updatedStory);
 
   } catch (error) {
@@ -81,7 +80,7 @@ const updateStory = async (req, res) => {
 
 const deleteStory = async (req, res) =>{
   try{
-    const deletedStory = await Stories.destroy({where: {id: req.params.id}});
+    const deletedStory = await models.stories.destroy({where: {id: req.params.id}});
     res.status(200).json(deletedStory);
 
   }catch(error){

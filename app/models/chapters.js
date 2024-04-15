@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
     const Chapters = sequelize.define(
-      "Stories_chapters",
+      "stories_chapters",
       {
         id: {
           type: DataTypes.INTEGER,
