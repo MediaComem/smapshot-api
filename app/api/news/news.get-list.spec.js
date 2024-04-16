@@ -1,26 +1,20 @@
 const { sample } = require("lodash");
-
 const {
   expectNoSideEffects,
   loadInitialState,
 } = require("../../../spec/expectations/side-effects");
 const {
-  enumError,
   typeError,
   minimumError,
 } = require("../../../spec/expectations/errors");
-
 const { freeze, testHttpRequest } = require("../../../spec/utils/api");
-
 const { resetDatabase } = require("../../../spec/utils/db");
-
 const { setUpGlobalHooks } = require("../../../spec/utils/hooks");
-
 const { expect } = require("../../../spec/utils/chai");
 const { createApplicationWithMocks } = require("../../../spec/utils/mocks");
-const { generate } = require("../../../spec/utils/fixtures");
 const { createNews } = require("../../../spec/fixtures/news");
-const path = require("path");
+const { getExpectedNews } = require("../../../spec/expectations/news");
+const config = require("../../../config");
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -119,43 +113,46 @@ describe("GET /news", () => {
 
   describe("with default fixtures", () => {
     let newsOneYearAgo, newsThreeMonthsAgo, newsYesterday;
+    const oneYearAgoDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    const threeMonthsAgoDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const yesterdayDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     let initialState;
     beforeEach(async () => {
-      const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
-      const threeMonthsAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
 
       // Generate 3 news
-      [newsThreeMonthsAgo, newsOneYearAgo, newsYesterday] = await generate(
-        3,
-        createNews,
-        [
-          { created_at: threeMonthsAgo, img_url: "http://example.com/2" },
-          { created_at: oneYearAgo },
-          { created_at: yesterday },
-        ]
-      );
+      [newsThreeMonthsAgo, newsYesterday, newsOneYearAgo] = await Promise.all([
+        createNews({
+          created_at: threeMonthsAgoDate,
+          img_url: "http://example.com/2",
+        }),
+        createNews({ created_at: yesterdayDate }),
+        createNews({ created_at: oneYearAgoDate }),
+      ]);
 
       initialState = await loadInitialState();
     });
 
-    it("lists correctly ranking", async () => {
+    it("orders news by date", async () => {
       const req = baseRequest;
       expect(req).to.matchRequestDocumentation();
 
       const res = await testHttpRequest(app, req);
-
       expect(res)
         .to.have.status(200)
         .and.to.have.jsonBody({
           data: {
-            news: [],
+            news: [
+              getExpectedNews(newsYesterday),
+              getExpectedNews(newsThreeMonthsAgo),
+              getExpectedNews(newsOneYearAgo),
+            ],
           },
           pagination: {
             total_records: 3,
             current_page: 1,
-            page_size: 3,
+            page_size: 10,
             total_pages: 1,
             links: {
               prev_page: null,
@@ -168,11 +165,13 @@ describe("GET /news", () => {
       await expectNoSideEffects(app, initialState);
     });
 
-    /* it("count all users correctly even if limit", async () => {
+    it("paginates correctly", async () => {
       const req = {
-        ...baseRequest,
+        method: "GET",
+        path: "/news",
         query: {
-          limit: "1",
+          limit: 1,
+          offset: 1,
         },
       };
       expect(req).to.matchRequestDocumentation();
@@ -181,21 +180,30 @@ describe("GET /news", () => {
 
       expect(res)
         .to.have.status(200)
-        .and.to.have.jsonBody({
-          count: 3,
-          rows: [
-            {
-              id: bob.id,
-              username: bob.username,
-              n_geoloc: 3,
-              n_corr: 2,
-              n_obs: 0,
-            },
-          ],
-        })
         .and.to.matchResponseDocumentation();
+        
+      expect(res.body.pagination).to.eql({
+          total_records: 3,
+          current_page: 2,
+          page_size: 1,
+          total_pages: 3,
+          links: {
+            prev_page:
+              config.apiUrl +
+              "/news?offset=" +
+              (req.query.offset - req.query.limit) +
+              "&limit=" +
+              req.query.limit,
+            next_page:
+              config.apiUrl +
+              "/news?offset=" +
+              (req.query.offset + req.query.limit) +
+              "&limit=" +
+              req.query.limit,
+          },
+      });
 
       await expectNoSideEffects(app, initialState);
-    }); */
+    });
   });
 });
