@@ -16,7 +16,7 @@
       "type": "string"
     },
     "img_url": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "uri"
     },
     "created_at": {

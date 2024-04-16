@@ -61,4 +61,5 @@ exports.resetDatabase = () =>
   sequelize.query(`
   TRUNCATE users RESTART IDENTITY CASCADE;
   TRUNCATE photographers RESTART IDENTITY CASCADE;
+  TRUNCATE news RESTART IDENTITY CASCADE;
 `);
