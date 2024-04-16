@@ -9,6 +9,12 @@
       },
       "logo_link": {
         "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "description_preview": {
+        "type": "string"
       }
 
     },

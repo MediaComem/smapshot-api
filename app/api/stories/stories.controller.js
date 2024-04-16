@@ -53,10 +53,10 @@ const getStoryById = async (req, res) => {
  * @param {*} res 
  */
 const addStory = async (req, res) => {
-  let { title, logo_link } = req.body;
+  const { title, logo_link, description, description_preview } = req.body;
 
   try {
-    const newStory = await models.stories.create({ title, logo_link });
+    const newStory = await models.stories.create({ title, logo_link, description, description_preview });
     res.status(201).json(newStory);
 
   } catch (error) {
@@ -71,10 +71,10 @@ const addStory = async (req, res) => {
  * @param {*} res 
  */
 const updateStory = async (req, res) => {
-  let { title, logo_link } = req.body;
+  const { title, logo_link, description, description_preview }= req.body;
 
   try {
-    const updatedStory = await models.stories.update({ title, logo_link }, {where: {id: req.params.id}});
+    const updatedStory = await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}});
     res.status(201).json(updatedStory);
 
   } catch (error) {

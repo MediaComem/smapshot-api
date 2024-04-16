@@ -15,7 +15,15 @@ module.exports = (sequelize, DataTypes) => {
       logo_link: {
         type: DataTypes.TEXT,
         allowNull: false
-      }
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      description_preview: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
     }
   );
 
