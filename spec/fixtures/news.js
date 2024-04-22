@@ -29,6 +29,11 @@ exports.createNews = async (properties = {}) => {
       generateRandomLocalizedSentence
     ),
     img_url: get(properties, "img_url", null),
+    img_alt: getOrGenerate(
+      properties,
+      "img_alt",
+      generateRandomLocalizedSentence
+    ),
     created_at: get(properties, "created_at", new Date()),
   };
 
@@ -36,10 +41,10 @@ exports.createNews = async (properties = {}) => {
     `
       INSERT INTO news
       (
-        title, description, description_preview, img_url, created_at
+        title, description, description_preview, img_url, img_alt, created_at
       )
       VALUES (
-        :title, :description, :description_preview, :img_url, :created_at
+        :title, :description, :description_preview, :img_url, :img_alt, :created_at
       )
       RETURNING id
     `,

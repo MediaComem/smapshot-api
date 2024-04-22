@@ -19,6 +19,9 @@
       "type": ["string", "null"],
       "format": "uri"
     },
+    "img_alt": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"

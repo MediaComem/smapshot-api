@@ -3,6 +3,7 @@
     summary: List of collection news.
     operationId: GetNews
     parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
       - name: offset
         in: query
         description: The number of the records to skip on return

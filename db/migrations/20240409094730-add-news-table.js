@@ -9,6 +9,7 @@ module.exports = {
         description JSON NOT NULL,
         description_preview JSON NOT NULL,
         img_url VARCHAR(255),
+        img_alt JSON NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
