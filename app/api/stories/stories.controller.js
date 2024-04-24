@@ -29,7 +29,7 @@ const getStoryById = async (req, res) => {
     const sequelizeQuery = {
       attributes: basic_attributes,
       where: { story: id },
-      orderBy: ["indexinstory"],
+      order: [['indexinstory', 'ASC']],
       include: includeOption
     };
     const chapters = await models.stories_chapters.findAll(sequelizeQuery);

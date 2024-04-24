@@ -6,8 +6,11 @@ module.exports = {
       type: Sequelize.DataTypes.STRING
     });
     await queryInterface.addColumn('stories', 'description', {
-      type: Sequelize.DataTypes.STRING
+      type: Sequelize.DataTypes.TEXT
     });
+    await queryInterface.changeColumn('stories_chapters', 'description', {
+      type: Sequelize.DataTypes.TEXT
+    })
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -15,7 +18,10 @@ module.exports = {
       type: Sequelize.DataTypes.STRING
     });
     await queryInterface.removeColumn('stories', 'description', {
-      type: Sequelize.DataTypes.STRING
+      type: Sequelize.DataTypes.TEXT
     });
+    await queryInterface.changeColumn('stories_chapters', 'description', {
+      type: Sequelize.DataTypes.STRING
+    })
   }
 };
