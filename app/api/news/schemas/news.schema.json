@@ -20,9 +20,9 @@
       "format": "uri"
     },
     "img_alt": {
-      "type": "string"
+      "type": ["string", "null"]
     },
-    "created_at": {
+    "published_at": {
       "type": "string",
       "format": "date-time"
     }

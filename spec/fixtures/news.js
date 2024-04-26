@@ -34,17 +34,17 @@ exports.createNews = async (properties = {}) => {
       "img_alt",
       generateRandomLocalizedSentence
     ),
-    created_at: get(properties, "created_at", new Date()),
+    published_at: get(properties, "published_at", new Date()),
   };
 
   const result = await sequelize.query(
     `
       INSERT INTO news
       (
-        title, description, description_preview, img_url, img_alt, created_at
+        title, description, description_preview, img_url, img_alt, published_at
       )
       VALUES (
-        :title, :description, :description_preview, :img_url, :img_alt, :created_at
+        :title, :description, :description_preview, :img_url, :img_alt, :published_at
       )
       RETURNING id
     `,
