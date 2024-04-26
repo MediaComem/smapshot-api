@@ -192,16 +192,10 @@ describe("GET /news", () => {
           links: {
             prev_page:
               config.apiUrl +
-              "/news?offset=" +
-              (req.query.offset - req.query.limit) +
-              "&limit=" +
-              req.query.limit,
+              "/news?offset=0&limit=1",
             next_page:
               config.apiUrl +
-              "/news?offset=" +
-              (req.query.offset + req.query.limit) +
-              "&limit=" +
-              req.query.limit,
+              "/news?offset=2&limit=1",
           },
       });
 
