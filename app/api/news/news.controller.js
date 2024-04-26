@@ -15,7 +15,12 @@ exports.getList = utils.route(async (req, res) => {
   const news = await models.news.findAndCountAll({
     limit,
     offset,
-    order: [["created_at", "DESC"]],
+    order: [["published_at", "DESC"]],
+    where: {
+      published_at: {
+        [Op.lte]: new Date(),
+      },
+    },
   });
 
   const newsPaginated = {
@@ -27,8 +32,8 @@ exports.getList = utils.route(async (req, res) => {
           description: news.description[lang],
           description_preview: news.description_preview[lang],
           img_url: news.img_url,
-          img_alt: news.img_alt[lang],
-          created_at: news.created_at,
+          img_alt: news.img_alt ? news.img_alt[lang] : null,
+          published_at: news.published_at,
         };
       }),
     },

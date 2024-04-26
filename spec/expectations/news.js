@@ -21,7 +21,7 @@ exports.getExpectedNews = (
     description_preview: news.description_preview[locale],
     img_url: news.img_url,
     img_alt: news.img_alt[locale],
-    created_at: news.created_at.toISOString(),
+    published_at: news.published_at.toISOString(),
   };
   
   return expected;

@@ -112,10 +112,11 @@ describe("GET /news", () => {
   });
 
   describe("with default fixtures", () => {
-    let newsOneYearAgo, newsThreeMonthsAgo, newsYesterday;
+    let newsOneYearAgo, newsThreeMonthsAgo, newsYesterday, newsTomorrow;
     const oneYearAgoDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
     const threeMonthsAgoDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
     const yesterdayDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const tomorrowDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     let initialState;
     beforeEach(async () => {
@@ -124,17 +125,18 @@ describe("GET /news", () => {
       // Generate 3 news
       [newsThreeMonthsAgo, newsYesterday, newsOneYearAgo] = await Promise.all([
         createNews({
-          created_at: threeMonthsAgoDate,
+          published_at: threeMonthsAgoDate,
           img_url: "http://example.com/2",
         }),
-        createNews({ created_at: yesterdayDate }),
-        createNews({ created_at: oneYearAgoDate }),
+        createNews({ published_at: yesterdayDate }),
+        createNews({ published_at: oneYearAgoDate }),
+        createNews({ published_at: tomorrowDate }),
       ]);
 
       initialState = await loadInitialState();
     });
 
-    it("orders news by date", async () => {
+    it("orders news by passed publication date", async () => {
       const req = baseRequest;
       expect(req).to.matchRequestDocumentation();
 

@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSON,
         allowNull: false,
       },
-      created_at: {
+      published_at: {
         type: DataTypes.DATE,
         allowNull: false,
       },
