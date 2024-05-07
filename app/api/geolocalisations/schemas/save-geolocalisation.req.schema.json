@@ -150,6 +150,25 @@
     },
     "previous_geoloc_id": {
       "$ref": "ApiId#"
+    },
+    "image_modifiers": {
+      "type": "object",
+      "properties": {
+        "modifier": {
+          "type": "integer"
+        },
+        "imageSize": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            }
+          }
+        }
+      }
     }
   },
   "additionalProperties": false,

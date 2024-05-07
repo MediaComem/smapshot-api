@@ -126,6 +126,7 @@ exports.save = route(async (req, res) => {
   const previous_geoloc_id = data.previous_geoloc_id;
   const remark = data.remark;
   const errors_list = data.errors_list;
+  const image_modifiers = data.image_modifiers;
 
   let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id (l127)
 
@@ -189,7 +190,8 @@ exports.save = route(async (req, res) => {
       date_georef: models.sequelize.literal("now()"),
       geolocalisation_id: geoloc_id,
       state: "waiting_validation",
-      framing_mode: framing_mode
+      framing_mode: framing_mode,
+      image_modifiers: image_modifiers
     },
     {
       where: { id: image_id }

@@ -158,8 +158,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const tilt = parseFloat(req.body.tilt);
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
-   const imageSize = req.body.imageSize;
-   const imageModifier = req.body.imageModifier;
+   const imageModifier = req.body.image_modifiers;
 
    let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
@@ -186,14 +185,14 @@ exports.computePoseCreateGltf = route(async (req, res) => {
     let dst = new cv.Mat();
     let texture = new cv.Mat();
     let dsize = new cv.Size(src.cols, src.rows);
-    let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, imageModifier.size.width, 0, 0, imageModifier.size.height, imageModifier.size.width, imageModifier.size.height]);
-    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [imageModifier.modifier, 0, imageModifier.size.width-imageModifier.modifier, 0, 0, imageModifier.size.height, imageModifier.size.width, imageModifier.size.height]);
+    let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
+    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [imageModifier.modifier, 0, dsize.width-imageModifier.modifier, 0, 0, dsize.height, dsize.width, dsize.height]);
     let M = cv.getPerspectiveTransform(srcTri, dstTri);
 
     cv.warpPerspective(src, dst, M, dsize);
     cv.flip(dst,texture,0);
     let resized_image = new cv.Mat();
-    cv.resize(dst, resized_image,new cv.Size(imageSize.x, imageSize.y), 0, 0, cv.INTER_AREA);
+    cv.resize(dst, resized_image,new cv.Size(imageModifier.imageSize.width, imageModifier.imageSize.height), 0, 0, cv.INTER_AREA);
     new Jimp({
       width: resized_image.cols,
       height: resized_image.rows,

@@ -47,24 +47,13 @@
         "type": "object"
       }
     },
-    "imageSize": {
-      "type": "object",
-      "properties": {
-        "x": {
-          "type": "integer"
-        },
-        "y": {
-          "type": "integer"
-        }
-      }
-    },
-    "imageModifier": {
+    "image_modifiers": {
       "type": "object",
       "properties": {
         "modifier": {
           "type": "integer"
         },
-        "size": {
+        "imageSize": {
           "type": "object",
           "properties": {
             "width": {
