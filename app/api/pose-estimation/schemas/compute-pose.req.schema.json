@@ -47,6 +47,36 @@
         "type": "object"
       }
     },
+    "imageSize": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      }
+    },
+    "imageModifier": {
+      "type": "object",
+      "properties": {
+        "modifier": {
+          "type": "integer"
+        },
+        "size": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
     "regionByPx": {
       "type": "array",
       "items": {

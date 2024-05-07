@@ -121,12 +121,16 @@ async function getSquareImageFromDB(image_id, regionByPx) {
   return image;
 }
 
-async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx) {
+async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx, path2image) {
   //regionByPx = iiif_data.regionByPx, 
   //excepted for composite_images when computing pose during geolocalisation process (= pose-estimation.controller.js "/pose/compute").
 
   const imageSquaredFromDB = await getSquareImageFromDB(image_id, regionByPx);
-  const picPath = imageSquaredFromDB.media.image_url;
+  let picPath = imageSquaredFromDB.media.image_url;
+  if (path2image) {
+    picPath = path2image;
+  }
+  
   const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
 
   const urCorner = [imageCoordinates.ur[0], imageCoordinates.ur[1], imageCoordinates.ur[2]];
