@@ -74,8 +74,9 @@ const updateStory = async (req, res) => {
   const { title, logo_link, description, description_preview }= req.body;
 
   try {
-    const updatedStory = await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}});
-    res.status(201).json(updatedStory);
+    await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}});
+    const updatedStory = await models.stories.findByPk(req.params.id);
+    res.status(200).json(updatedStory);
 
   } catch (error) {
     logger.error(error);
@@ -85,8 +86,8 @@ const updateStory = async (req, res) => {
 
 const deleteStory = async (req, res) =>{
   try{
-    const deletedStory = await models.stories.destroy({where: {id: req.params.id}});
-    res.status(200).json(deletedStory);
+    await models.stories.destroy({where: {id: req.params.id}});
+    res.status(200).json();
 
   }catch(error){
     logger.error(error);
