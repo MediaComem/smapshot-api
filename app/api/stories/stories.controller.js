@@ -87,7 +87,9 @@ const updateStory = async (req, res) => {
 const deleteStory = async (req, res) =>{
   try{
     await models.stories.destroy({where: {id: req.params.id}});
-    res.status(200).json();
+    res.send({
+      message: "The story was deleted."
+    });
 
   }catch(error){
     logger.error(error);

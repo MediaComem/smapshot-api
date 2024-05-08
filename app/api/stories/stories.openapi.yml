@@ -89,4 +89,8 @@
           type: string
     responses:
       '200':
-        description: OK
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
