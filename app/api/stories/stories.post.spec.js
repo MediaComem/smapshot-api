@@ -43,6 +43,27 @@ describe('POST /stories', () => {
     })
     .and.to.matchResponseDocumentation();
 
+    const reqGet = {
+      method: 'GET',
+      path: '/stories'
+    };
+
+    expect(reqGet).to.matchRequestDocumentation();
+  
+    const resGet = await testHttpRequest(app, reqGet);
+
+    expect(resGet)
+      .to.have.status(200)
+      .and.to.have.jsonBody([{
+        id: 1,
+        title: "My story",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg"
+      }
+      ])
+      .and.to.matchResponseDocumentation();
+
     await expectNoSideEffects(app);
 
   });

@@ -21,7 +21,7 @@ const getStoryById = async (req, res) => {
 
     const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory"];
     const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [models.sequelize.literal("ST_Y(location)"), "latitude"];
+    const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
     const includeOption = [{
       model: models.images,
       attributes: [longitude, latitude],
@@ -74,10 +74,9 @@ const updateStory = async (req, res) => {
   const { title, logo_link, description, description_preview }= req.body;
 
   try {
-    await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}});
-    const updatedStory = await models.stories.findByPk(req.params.id);
-    res.status(200).json(updatedStory);
-
+    const updatedStory = await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}, returning: true, plain: true});
+    // The return of an update is an array of two elements. First: the number of affected row. Second: the modified row.
+    res.status(200).json(updatedStory[1]);
   } catch (error) {
     logger.error(error);
     res.status(500).json({ error: "Une erreur s'est produite lors de la mis à jour de la story." });

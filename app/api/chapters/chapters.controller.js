@@ -6,7 +6,7 @@ const getChapters = async (req, res) => {
   try {
     const basic_attributes = ["picture_id", "title", "type", "url_media", "description", "zoom", "story"];
     const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [models.sequelize.literal("ST_Y(location)"), "latitude"];
+    const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
     const includeOption = [{
       model: models.images,
       attributes: [longitude, latitude],

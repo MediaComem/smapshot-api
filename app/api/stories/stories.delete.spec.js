@@ -37,6 +37,20 @@ describe('DELETE /stories', () => {
     .to.have.status(200)
     .and.to.matchResponseDocumentation();
 
+    const reqGet = {
+      method: 'GET',
+      path: '/stories'
+    };
+
+    expect(reqGet).to.matchRequestDocumentation();
+
+    const resGet = await testHttpRequest(app, reqGet);
+
+    expect(resGet)
+      .to.have.status(200)
+      .and.to.have.jsonBody([])
+      .and.to.matchResponseDocumentation();
+
     await expectNoSideEffects(app);
 
   });
