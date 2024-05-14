@@ -19,6 +19,8 @@
   post:
     summary: Add a chapter to the db.
     operationId: addChapter
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
     requestBody:
       required: true
       content:

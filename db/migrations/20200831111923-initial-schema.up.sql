@@ -464,7 +464,7 @@ ALTER SEQUENCE public.geolocalisations_id_seq OWNED BY public.geolocalisations.i
 --
 
 CREATE TABLE public.images (
-    id integer NOT NULL,
+    id integer NOT NULL UNIQUE,
     name character varying(40),
     date_inserted timestamp without time zone,
     date_shot date,

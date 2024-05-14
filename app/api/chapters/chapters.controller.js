@@ -1,19 +1,25 @@
-const { Stories_chapters } = require('../../models');
-
+const models = require("../../models");
+const logger = require('../../../config/logger');
 
 //get all the chapters
 const getChapters = async (req, res) => {
   try {
-    const chapters = await Stories_chapters.sequelize.query(`
-    SELECT stories_chapters.title, stories_chapters.type, picture_id,
-    stories_chapters.url_media, stories_chapters.description, stories_chapters.zoom, stories_chapters.story, 
-    ST_X(images.location) as longitude, ST_Y(images.location) as latitude
-    FROM stories_chapters, images 
-    WHERE stories_chapters.picture_id = images.id`,
-    {type: Stories_chapters.sequelize.QueryTypes.SELECT},
-    )
+    const basic_attributes = ["picture_id", "title", "type", "url_media", "description", "zoom", "story"];
+    const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
+    const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
+    const includeOption = [{
+      model: models.images,
+      attributes: [longitude, latitude],
+    }];
+    const sequelizeQuery = {
+      attributes: basic_attributes,
+      orderBy: ["indexinstory"],
+      include: includeOption
+    };
+    const chapters = await models.stories_chapters.findAll(sequelizeQuery);
     res.json(chapters);
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des chapitres.' });
   }
 };
@@ -23,13 +29,14 @@ const getChapters = async (req, res) => {
 const getChapterById = async (req, res) => {
   const { id } = req.params;
   try {
-    const chapter = await Stories_chapters.findByPk(id);
+    const chapter = await models.stories_chapters.findByPk(id);
     if (chapter) {
       res.json(JSON.stringify({ "chapters": chapter }));
     } else {
       res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
     }
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: `Une erreur s'est produite lors de la récupération du chapitre avec l'ID ${id}.` });
   }
 };
@@ -37,9 +44,9 @@ const getChapterById = async (req, res) => {
 
 //Add a chapter to the db
 const addChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexInStory } = req.body;
+  const { title, type, picture_id, url_media, description, zoom, story, indexinstory } = req.body;
   try {
-    const newChapter = await Stories_chapters.create({
+    const newChapter = await models.stories_chapters.create({
       title,
       type,
       picture_id,
@@ -47,10 +54,11 @@ const addChapter = async (req, res) => {
       description,
       zoom,
       story,
-      indexInStory
+      indexinstory
     });
     res.status(201).json(newChapter); // Return the ID of the newly created chapter
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de l\'ajout du chapitre.' });
   }
 };
@@ -58,9 +66,9 @@ const addChapter = async (req, res) => {
 
 //Update a chapter
 const updateChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexInStory  } = req.body;
+  const { title, type, picture_id, url_media, description, zoom, story, indexinstory  } = req.body;
   try {
-    const updatedChapter = await Stories_chapters.update({
+    const updatedChapter = await models.stories_chapters.update({
       title,
       type,
       picture_id,
@@ -68,13 +76,14 @@ const updateChapter = async (req, res) => {
       description,
       zoom,
       story,
-      indexInStory
+      indexinstory
     },{
 
       where: {id: req.params.id},
     });
     res.status(201).json(updatedChapter); // Return the ID of the newly created chapter
   } catch (error) {
+    logger.error(error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la misz à jour du chapitre.' });
   }
 };
@@ -82,10 +91,11 @@ const updateChapter = async (req, res) => {
 const deleteChapter = async (req, res) =>{
 
   try{
-    const deletedChapter = await Stories_chapters.destroy({where: {id:req.params.id}});
+    const deletedChapter = await models.stories_chapters.destroy({where: {id:req.params.id}});
     res.status(200).json(deletedChapter);
     
   }catch(error){
+    logger.error(error);
     res.status(500).json({error: "Une erreur c'est produite lors de la supression du chapitre"});
   }
 }

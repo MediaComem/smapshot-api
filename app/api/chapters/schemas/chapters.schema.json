@@ -30,7 +30,7 @@
     "story":{
       "type": "integer"
     },
-    "indexInStory":{
+    "indexinstory":{
       "type": "integer"
     }
 

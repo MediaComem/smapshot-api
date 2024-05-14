@@ -3,11 +3,19 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "object",
     "properties": {
-
+      "id": {
+        "type": "integer"
+      },
       "title": {
         "type": "string"
       },
       "logo_link": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "description_preview": {
         "type": "string"
       }
 

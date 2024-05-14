@@ -4,12 +4,11 @@ const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
 const { expectNoSideEffects } = require('../../../spec/expectations/side-effects');
-const { createStory } = require('../../../spec/fixtures/stories');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
 
-describe('GET /stories', () => {
+describe('POST /stories', () => {
   let app;
 
   beforeEach(async () => {
@@ -17,10 +16,16 @@ describe('GET /stories', () => {
     ({ app } = createApplicationWithMocks());
   });
 
-  it('Get empty array when stories empty', async () => {
+  it('Add new story', async () => {
     const req = {
-      method: 'GET',
-      path: '/stories'
+      method: 'POST',
+      path: '/stories',
+      body: {
+        title: "My story",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg"
+      }
     };
 
     expect(req).to.matchRequestDocumentation();
@@ -28,44 +33,39 @@ describe('GET /stories', () => {
     const res = await testHttpRequest(app, req);
 
     expect(res)
-    .to.have.status(200)
-    .and.to.have.jsonBody([])
+    .to.have.status(201)
+    .and.to.have.jsonBody({
+      id: 1,
+      title: "My story",
+      logo_link: "http://localhost",
+      description_preview: "abc",
+      description: "efg"
+    })
     .and.to.matchResponseDocumentation();
 
-    await expectNoSideEffects(app);
+    const reqGet = {
+      method: 'GET',
+      path: '/stories'
+    };
 
-  });
+    expect(reqGet).to.matchRequestDocumentation();
+  
+    const resGet = await testHttpRequest(app, reqGet);
 
-  describe('Get story when stories has one element', () => {
-    it('retrieves the stories', async () => {
-      const { id } = await createStory({
-        title: "Mon titre",
-        logo_link: "http://localhost",
-        description_preview: "abc",
-        description: "efg"
-      });
-      const req = {
-        method: 'GET',
-        path: '/stories'
-      };
-  
-      expect(req).to.matchRequestDocumentation();
-  
-      const res = await testHttpRequest(app, req);
-  
-      expect(res)
+    expect(resGet)
       .to.have.status(200)
       .and.to.have.jsonBody([{
-        id: id,
-        title: "Mon titre",
+        id: 1,
+        title: "My story",
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg"
       }
       ])
       .and.to.matchResponseDocumentation();
-  
-      await expectNoSideEffects(app);
-    });
+
+    await expectNoSideEffects(app);
+
   });
+
 });
