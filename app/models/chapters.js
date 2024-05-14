@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
           field: 'indexinstory'
         },
         view_custom: {
-          type: DataTypes
+          type: DataTypes.JSON
         }
       }
     );
