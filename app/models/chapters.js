@@ -45,6 +45,9 @@ module.exports = (sequelize, DataTypes) => {
           allowNull: false,
           minimum: 0,
           field: 'indexinstory'
+        },
+        view_custom: {
+          type: DataTypes.JSON
         }
       }
     );

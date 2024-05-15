@@ -18,7 +18,7 @@ const getStoryById = async (req, res) => {
     const story = await Stories.findByPk(id);
     const chaptersOfStory = await Stories_chapters.sequelize.query(`
     SELECT stories_chapters.title, stories_chapters.type, picture_id,
-    stories_chapters.url_media, stories_chapters.description, stories_chapters.zoom, stories_chapters.story, 
+    stories_chapters.url_media, stories_chapters.description, stories_chapters.zoom, stories_chapters.story, stories_chapters.view_custom,
     ST_X(images.location) as longitude, ST_Y(images.location) as latitude
     FROM stories_chapters, images 
     WHERE stories_chapters.picture_id = images.id
