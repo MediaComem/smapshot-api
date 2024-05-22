@@ -1,5 +1,6 @@
 const { expect } = require('../utils/chai');
 const { compactObject } = require('../utils/fixtures');
+const config = require("../../config");
 
 /**
  * Returns the expected image JSON from the API for a given database row.
@@ -97,7 +98,7 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
     ...extraProperties
   } = options;
 
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const mainAttributes = getMainAttributes(image);
   const expected = {
@@ -198,7 +199,7 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
   const {
     locale,
   } = options;
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const unrequiredAttributes = {
     is_published,

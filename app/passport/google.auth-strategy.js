@@ -32,7 +32,7 @@ module.exports = passport => {
               email: email,
               first_name: first_name,
               last_name: last_name,
-              lang: profile.locale || "en"
+              lang: profile.locale || config.langFallBack
             }
           });
           /*

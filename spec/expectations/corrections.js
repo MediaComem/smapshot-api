@@ -1,4 +1,5 @@
 const { compactObject } = require('../utils/fixtures');
+const config = require("../../config");
 
 /**
  * Returns the expected correction JSON from the API for a given database row.
@@ -18,7 +19,7 @@ exports.getExpectedCorrection = (
     ...extraProperties
   } = options;
 
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const expected = {
     ...extraProperties,

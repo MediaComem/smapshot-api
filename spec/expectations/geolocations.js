@@ -1,4 +1,5 @@
 const { compactObject } = require('../utils/fixtures');
+const config = require("../../config");
 
 /**
  * Returns the expected geolocation JSON from the API for a given database row.
@@ -18,7 +19,7 @@ exports.getExpectedGeolocation = (
     ...extraProperties
   } = options;
 
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const expected = {
     ...extraProperties,
