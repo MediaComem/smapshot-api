@@ -7,7 +7,7 @@ const mediaUtils = require("../../utils/media");
 const Op = Sequelize.Op;
 
 exports.getList = utils.route(async (req, res) => {
-  const lang = req.query.lang || (req.getLocale() || "en");
+  const lang = req.query.lang || (req.getLocale() || config.langFallback);
 
   const offset = req.query.offset ? parseInt(req.query.offset) : 0;
   const limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -28,11 +28,16 @@ exports.getList = utils.route(async (req, res) => {
       news: news.rows.map((news) => {
         return {
           id: news.id,
-          title: news.title[lang],
-          description: news.description[lang],
-          description_preview: news.description_preview[lang],
+          title: news.title[lang] ?? news.title[config.langFallback],
+          description:
+            news.description[lang] ?? news.description[config.langFallback],
+          description_preview:
+            news.description_preview[lang] ??
+            news.description_preview[config.langFallback],
           img_url: news.img_url,
-          img_alt: news.img_alt ? news.img_alt[lang] : null,
+          img_alt: news.img_alt
+            ? news.img_alt[lang] ?? news.img_alt[config.langFallback]
+            : null,
           published_at: news.published_at,
         };
       }),

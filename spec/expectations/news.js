@@ -1,3 +1,5 @@
+const config = require("../../config");
+
 /**
  * Returns the expected news JSON from the API for a given database row.
  *
@@ -7,12 +9,8 @@
  * @param {string} [options.locale] - The locale to use for the expected object.
  * @returns {Object} The expected API news.
  */
-exports.getExpectedNews = (
-  news,
-  options = {}
-) => {
-
-  const locale = options.locale || 'en';
+exports.getExpectedNews = (news, options = {}) => {
+  const locale = options.locale || config.langFallback;
 
   const expected = {
     id: news.id,
@@ -23,7 +21,6 @@ exports.getExpectedNews = (
     img_alt: news.img_alt[locale],
     published_at: news.published_at.toISOString(),
   };
-  
+
   return expected;
 };
-

@@ -1,6 +1,8 @@
 const { isArray, last, uniq } = require('lodash');
 const Sequelize = require("sequelize");
 
+const config = require("../../config");
+
 const models = require("../models");
 const utils = require("../utils/express");
 
@@ -182,7 +184,7 @@ exports.subQuery = (table, attributes, where) => {
 
 exports.getFieldI18n = (table, field, lang) => {
   // Seems a bit literal (haha) but it doesn't seem to be easy to have a fn for all case include, subInclude, etc…
-  return models.sequelize.literal(`COALESCE("${table}"."${field}"->>'${lang}', "${table}"."${field}"->>'en')`)
+  return models.sequelize.literal(`COALESCE("${table}"."${field}"->>'${lang}', "${table}"."${field}"->>'${config.langFallback}')`)
 };
 
 /**

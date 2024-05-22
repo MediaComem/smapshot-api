@@ -1,4 +1,5 @@
 const { compactObject } = require('../utils/fixtures');
+const config = require("../../config")
 
 /**
  * Returns the expected collection JSON from the API for a given database row.
@@ -26,7 +27,7 @@ exports.getExpectedCollection = (
     ...extraProperties
   } = options;
 
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const expected = {
     ...extraProperties,

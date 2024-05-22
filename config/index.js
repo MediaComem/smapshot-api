@@ -81,4 +81,6 @@ exports.proxyGeoreferencerMode = parseEnvBoolean('PROXY_GEOREFERENCER_MODE', { r
 
 exports.timezone = parseEnv('TZ', { required: false });
 
+exports.langFallback = parseEnv('DEFAULT_LANG', { default: 'en'});
+
 exports.smapcomputeUrl = parseEnv('SMAPCOMPUTE_URL');
