@@ -1,4 +1,5 @@
 const { compactObject } = require('../utils/fixtures');
+const config = require("../../config");
 
 /**
  * Returns the expected owner JSON from the API for a given database row.
@@ -22,7 +23,7 @@ exports.getExpectedOwner = (
     ...extraProperties
   } = options;
 
-  const expectedLocale = locale || 'en';
+  const expectedLocale = locale || config.langFallback;
 
   const expected = {
     ...extraProperties,
