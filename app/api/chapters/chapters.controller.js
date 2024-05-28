@@ -1,50 +1,23 @@
 const models = require("../../models");
 const logger = require('../../../config/logger');
-
-//get all the chapters
-const getChapters = async (req, res) => {
-  try {
-    const basic_attributes = ["picture_id", "title", "type", "url_media", "description", "zoom", "story"];
-    const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
-    const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
-    const includeOption = [{
-      model: models.images,
-      attributes: [longitude, latitude],
-    }];
-    const sequelizeQuery = {
-      attributes: basic_attributes,
-      orderBy: ["indexinstory"],
-      include: includeOption
-    };
-    const chapters = await models.stories_chapters.findAll(sequelizeQuery);
-    res.json(chapters);
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des chapitres.' });
-  }
-};
-
+const { notFoundError } = require('../../utils/errors');
 
 //get a chapter by id
 const getChapterById = async (req, res) => {
   const { id } = req.params;
-  try {
-    const chapter = await models.stories_chapters.findByPk(id);
-    if (chapter) {
-      res.json(JSON.stringify({ "chapters": chapter }));
-    } else {
-      res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
-    }
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({ error: `Une erreur s'est produite lors de la récupération du chapitre avec l'ID ${id}.` });
+  const chapter = await models.stories_chapters.findByPk(id);
+  if (chapter) {
+    res.json(chapter);
+  } else {
+    throw notFoundError(req);
   }
 };
 
 
 //Add a chapter to the db
 const addChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexinstory } = req.body;
+  const { storyId } = req.params;
+  const { title, type, picture_id, url_media, description, zoom, indexinstory } = req.body;
   try {
     const newChapter = await models.stories_chapters.create({
       title,
@@ -53,7 +26,7 @@ const addChapter = async (req, res) => {
       url_media,
       description,
       zoom,
-      story,
+      story: storyId,
       indexinstory
     });
     res.status(201).json(newChapter); // Return the ID of the newly created chapter
@@ -66,7 +39,8 @@ const addChapter = async (req, res) => {
 
 //Update a chapter
 const updateChapter = async (req, res) => {
-  const { title, type, picture_id, url_media, description, zoom, story, indexinstory  } = req.body;
+  const { storyId, id } = req.params;
+  const { title, type, picture_id, url_media, description, zoom, indexinstory  } = req.body;
   try {
     const updatedChapter = await models.stories_chapters.update({
       title,
@@ -75,11 +49,11 @@ const updateChapter = async (req, res) => {
       url_media,
       description,
       zoom,
-      story,
+      story: storyId,
       indexinstory
     },{
 
-      where: {id: req.params.id},
+      where: {id: id},
     });
     res.status(201).json(updatedChapter); // Return the ID of the newly created chapter
   } catch (error) {
@@ -101,7 +75,6 @@ const deleteChapter = async (req, res) =>{
 }
 
 module.exports = {
-  getChapters,
   getChapterById,
   addChapter,
   updateChapter,

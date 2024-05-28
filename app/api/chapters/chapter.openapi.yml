@@ -1,25 +1,13 @@
-/chapters:
-  get:
-    summary: Retrieve all chapters
-    parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-    responses:
-      '200':
-        description: OK
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ChaptersList"
-
+/stories/{story}/chapters:
   post:
     summary: Add a chapter to the db.
     operationId: addChapter
     parameters:
+      - name: stories
+        in: path
+        required: true
+        schema:
+          type: string
       - $ref: "#/components/parameters/LanguageParameter"
     requestBody:
       required: true
@@ -39,10 +27,15 @@
         $ref: "#/components/responses/NotFoundError"
 
 
-/chapters/{id}:
+/stories/{storyId}/chapters/{id}:
   get:
     summary: Retrieve a chapter by ID
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -61,6 +54,11 @@
   put:
     summary: update a chapter.
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -88,6 +86,11 @@
     summary: Delete a chapter by ID
     operationId: deleteChapter
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true

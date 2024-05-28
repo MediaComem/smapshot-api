@@ -6,35 +6,28 @@ const controller = require("./chapters.controller");
 
 const router = new express.Router();
 
-// get all of the chapters.
-router.get("/chapters",
-  authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('GET', '/chapters'),
-  controller.getChapters
-);
-
 // Get a chapter by id.
-router.get("/chapters/:id",
+router.get("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('GET', '/chapters/{id}'),
+  validateDocumentedRequestParametersFor('GET', '/stories/{storyId}/chapters/{id}'),
   controller.getChapterById
 );
 
-router.post("/chapters",
+router.post("/stories/:storyId/chapters",
   authenticate({ required: false }),
   validateRequestBodyWithJsonSchema('Chapters'),
   controller.addChapter
 );
 
-router.put("/chapters/:id",
+router.put("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('PUT', '/chapters/{id}'),
+  validateDocumentedRequestParametersFor('PUT', '/stories/{storyId}/chapters/{id}'),
   controller.updateChapter
 );
 
-router.delete("/chapters/:id",
+router.delete("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('DELETE', '/chapters/{id}'),
+  validateDocumentedRequestParametersFor('DELETE', '/stories/{storyId}/chapters/{id}'),
   controller.deleteChapter
 );
 module.exports = router;
