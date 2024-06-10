@@ -33,7 +33,6 @@ describe('POST /stories/:id/chapters', () => {
         description_preview: "abc",
         description: "efg"
       });
-
       const chapter = {
         title: 'titre',
         type: 'IMAGE',

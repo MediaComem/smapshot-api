@@ -22,9 +22,6 @@
             schema:
               $ref: "#/components/schemas/ChaptersResponse"
 
-      '404':
-        $ref: "#/components/responses/NotFoundError"
-
 
 /stories/{storyId}/chapters/{id}:
   get:
