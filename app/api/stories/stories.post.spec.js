@@ -3,7 +3,6 @@ const { setUpGlobalHooks } = require('../../../spec/utils/hooks');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
-const { expectNoSideEffects } = require('../../../spec/expectations/side-effects');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -64,7 +63,6 @@ describe('POST /stories', () => {
       ])
       .and.to.matchResponseDocumentation();
 
-    await expectNoSideEffects(app);
 
   });
 

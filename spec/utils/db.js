@@ -22,6 +22,8 @@ exports.mainDatabaseTables = [
   "photographers",
   "problems",
   "problems_type",
+  "stories",
+  "stories_chapters",
   "users",
 ];
 

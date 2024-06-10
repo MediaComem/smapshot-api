@@ -3,7 +3,7 @@ const { setUpGlobalHooks } = require('../../../spec/utils/hooks');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
-const { expectNoSideEffects } = require('../../../spec/expectations/side-effects');
+const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
 const { createStory } = require('../../../spec/fixtures/stories');
 
 // This should be in every integration test file.
@@ -24,6 +24,7 @@ describe('PUT /stories', () => {
       description_preview: "abc",
       description: "efg"
     });
+    const initialState = await loadInitialState();
     const req = {
       method: 'PUT',
       path: `/stories/${id}`,
@@ -71,7 +72,7 @@ describe('PUT /stories', () => {
       ])
       .and.to.matchResponseDocumentation();
 
-    await expectNoSideEffects(app);
+    await expectNoSideEffects(app, initialState);
 
   });
 

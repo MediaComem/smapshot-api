@@ -1,0 +1,74 @@
+{
+  "$id": "ChaptersResponse",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum":["IMAGE", "VIDEO", "VIDEO-YOUTUBE", "AUDIO"]
+    },
+
+    "picture_id": {
+      "$ref": "ImageAttributes#/properties/id"
+    },
+
+    "url_media": {
+      "type": "string"
+    },
+
+    "description":{
+      "type": "string"
+    },
+    "zoom":{
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 22
+    },
+    "story":{
+      "type": "integer"
+    },
+    "indexinstory":{
+      "type": "integer"
+    },
+    "view_custom": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "transparency": {
+              "type": "number"
+            },
+            "showBuilding": {
+              "type": "boolean"
+            },
+            "buildingsSlider": {
+              "type": "number"
+            },
+            "depthSlider": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "type",
+    "picture_id",
+    "url_media",
+    "story",
+    "zoom",
+    "description"
+  ]
+}

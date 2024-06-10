@@ -15,7 +15,7 @@ router.get("/stories/:storyId/chapters/:id",
 
 router.post("/stories/:storyId/chapters",
   authenticate({ required: false }),
-  validateRequestBodyWithJsonSchema('Chapters'),
+  validateRequestBodyWithJsonSchema('ChaptersRequest'),
   controller.addChapter
 );
 

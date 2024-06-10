@@ -55,14 +55,8 @@ const getStoryById = async (req, res) => {
 const addStory = async (req, res) => {
   const { title, logo_link, description, description_preview } = req.body;
 
-  try {
-    const newStory = await models.stories.create({ title, logo_link, description, description_preview });
-    res.status(201).json(newStory);
-
-  } catch (error) {
-    logger.error(error);
-    res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout de la story." });
-  }
+  const newStory = await models.stories.create({ title, logo_link, description, description_preview });
+  res.status(201).json(newStory);
 };
 
 /**
@@ -85,8 +79,10 @@ const updateStory = async (req, res) => {
 
 const deleteStory = async (req, res) =>{
   try{
-    const deletedStory = await models.stories.destroy({where: {id: req.params.id}});
-    res.status(200).json(deletedStory);
+    await models.stories.destroy({where: {id: req.params.id}});
+    res.send({
+      message: "The story was deleted."
+    });
   }catch(error){
     logger.error(error);
     res.status(500).json({error: "Une erreur c'est produite lors de la supression de la story"});

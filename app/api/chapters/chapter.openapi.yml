@@ -1,27 +1,26 @@
-/stories/{story}/chapters:
+/stories/{storyId}/chapters:
   post:
     summary: Add a chapter to the db.
     operationId: addChapter
     parameters:
-      - name: stories
+      - name: storyId
         in: path
         required: true
         schema:
           type: string
-      - $ref: "#/components/parameters/LanguageParameter"
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Chapters"
+            $ref: "#/components/schemas/ChaptersRequest"
     responses:
-      '200':
+      '201':
         description: OK
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
+              $ref: "#/components/schemas/ChaptersResponse"
 
       '404':
         $ref: "#/components/responses/NotFoundError"
@@ -47,7 +46,7 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
+              $ref: "#/components/schemas/ChaptersResponse"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
@@ -70,14 +69,14 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Chapters"
+            $ref: "#/components/schemas/ChaptersPutRequest"
     responses:
       '200':
         description: OK
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
+              $ref: "#/components/schemas/ChaptersResponse"
 
       '404':
         $ref: "#/components/responses/NotFoundError"
@@ -98,4 +97,8 @@
           type: string
     responses:
       '200':
-        description: OK
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
