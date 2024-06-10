@@ -53,7 +53,8 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     Chapters.associate = models => {
-      Chapters.hasMany(models.images, { foreignKey: "id" });
+      Chapters.hasOne(models.images, { foreignKey: "id" });
+      Chapters.belongsTo(models.images, { foreignKey: "picture_id" });
     };
 
     return Chapters;

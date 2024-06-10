@@ -13,8 +13,8 @@ const getStoryById = async (req, res) => {
   const story = await models.stories.findByPk(id);
 
   const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory", "view_custom"];
-  const longitude = [models.sequelize.literal("ST_X(images.location)"), "longitude"];
-  const latitude = [models.sequelize.literal("ST_Y(images.location)"), "latitude"];
+  const longitude = [models.sequelize.literal("ST_X(image.location)"), "longitude"];
+  const latitude = [models.sequelize.literal("ST_Y(image.location)"), "latitude"];
   const includeOption = [{
     model: models.images,
     attributes: [longitude, latitude],
@@ -25,6 +25,7 @@ const getStoryById = async (req, res) => {
     order: [['indexinstory', 'ASC']],
     include: includeOption
   };
+
   const chapters = await models.stories_chapters.findAll(sequelizeQuery);
   story.dataValues.chapters = chapters;
   if (story) {
@@ -32,6 +33,7 @@ const getStoryById = async (req, res) => {
   } else {
     res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
   }
+  
 };
 
 
