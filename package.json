@@ -75,6 +75,7 @@
     "helmet": "^3.22.0",
     "http-status-codes": "^1.4.0",
     "i18n": "^0.9.1",
+    "jimp": "^0.22.12",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.20",
     "mathjs": "^7.0.0",
