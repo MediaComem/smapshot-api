@@ -42,6 +42,12 @@ services:
   # Database container (PostgreSQL with PostGIS).
   db:
     image: postgis/postgis:13-3.1-alpine
+    # Known compatiblity issues with ARM architecture (like M1 chip) and postgis image
+    # As a workaround, use the following image instead: 
+    # image: furiousluke/postgis:13-3.3
+    # Increase work_mem could be needed to avoid out of memory errors
+    # command: >
+    # -c work_mem=1GB
     hostname: db
     environment:
       POSTGRES_DB: smapshot_v2
