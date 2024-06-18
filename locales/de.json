@@ -23,6 +23,7 @@
         },
         "resetPassword": {
             "success": "Ihr Passwort wurde erfolgreich geändert!",
+            "failed": "Das Passwort kann nicht aktualisiert werden. Das angegebene alte Passwort ist nicht korrekt",
             "emailTitle": "sMapshot: Passwort zurücksetzen",
             "emailDescription": "<p>Sie erhalten dies, weil Sie (oder jemand anderes) das Zurücksetzen des Passwortes für Ihr Konto beantragt haben.</p><<p>Bitte klicken Sie auf den folgenden Link oder fügen Sie diesen in Ihren Browser ein, um den Vorgang abzuschliessen:</p><p><a href='{{{ url }}}'>Passwort zurücksetzen</a></p><p>Achtung, der Link ist nur eine Stunde gültig!<p>Wenn Sie dies nicht angefordert haben, ignorieren Sie bitte diese E-Mail und Ihr Passwort bleibt unverändert.</p>"
         },
@@ -41,6 +42,14 @@
         "submitted": {
             "success": "Ihre Korrektur wurde übermittelt. Die Institution wird wird nun eine Überprüfung durchführen.",
             "error": "Ihre Korrektur kann nicht übermittelt werden, bitte versuchen Sie es später noch einmal."
+        }
+    },
+    "images": {
+      "missing": "Bild nicht gefunden.",
+        "submitted": {
+            "success": "Ihr Bild wurde erfolgreich eingereicht.",
+            "originalIdAlreadyExist": "Ein Bild mit dieser original_id existiert bereits in der Datenbank.",
+            "photographerDoesNotExist": "Der Fotograf, dessen ID angegeben ist, existiert nicht."
         }
     },
     "problems": {

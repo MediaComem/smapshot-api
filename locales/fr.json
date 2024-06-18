@@ -23,6 +23,7 @@
         },
         "resetPassword": {
             "success": "Votre mot de passe a été changé avec succès\u00A0!",
+            "failed": "Le mot de passe ne peut pas être mis à jour. L'ancien mot de passe fourni n'est pas correct",
             "emailTitle": "Réinitialiser votre mot de passe",
             "emailDescription": "<p>Vous recevez ceci parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe pour votre compte.</p><p>Veuillez cliquer sur le lien suivant, ou collez-le dans votre navigateur pour compléter le processus:</p><p><a href='{{ url }}'>Réinitialiser votre mot de passe</a></p><p>Attention, le lien n'est valable qu'une heure\u00A0!</p><p>Si vous n'avez pas demandé cela, veuillez ignorer cet e-mail et votre mot de passe restera inchangé.</p>"
         },
@@ -41,6 +42,14 @@
         "submitted": {
             "success": "Votre correction a été envoyée. Le propriétaire de la collection va maintenant procéder à une vérification.",
             "error": "Votre correction ne peut pas être envoyée, réessayer plus tard."
+        }
+    },
+    "images": {
+      "missing": "Image non trouvée.",
+        "submitted": {
+            "success": "Votre image a été soumise avec succès.",
+            "originalIdAlreadyExist": "Une image portant ce numéro d'identification existe déjà dans la base de données.",
+            "photographerDoesNotExist": "Le photographe avec l'identifiant spécifié n'existe pas."
         }
     },
     "problems": {

@@ -24,6 +24,7 @@
         },
         "resetPassword": {
             "success": "Your password has been changed successfully!",
+            "failed": "Password can not be updated. Old password provided is not correct.",
             "emailTitle": "Smapshot: Reset your password",
             "emailDescription": "<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p><p>Please click on the following link, or paste this into your browser to complete the process:</p><p><a href='{{ url }}'>Reset your password</a></p><p>Attention, the link is only valid for one hour!<p>If you did not request this, please ignore this email and your password will remain unchanged.</p>"
         },
@@ -45,6 +46,7 @@
         }
     },
     "images": {
+      "missing": "Image not found.",
         "submitted": {
             "success": "Your image has been successfully submitted.",
             "originalIdAlreadyExist": "An image with this original_id already exists in the database.",

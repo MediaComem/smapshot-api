@@ -5,6 +5,7 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const { cleanProp, getFieldI18n } = require("../../utils/params");
 const mediaUtils = require('../../utils/media');
+const { authorizationError } = require("../../utils/errors");
 
 const Op = Sequelize.Op;
 
@@ -78,12 +79,7 @@ exports.updatePwd = utils.route(async (req, res) => {
   });
 
   if (!(await user.validPassword(req.body.old_pwd)))
-    throw utils.createApiError(
-      "Password can not be updated. Old password provided is not correct.",
-      {
-        status: 403
-      }
-    );
+    throw authorizationError(req.__('auth.resetPassword.failed'));
 
   const queryPromise = await user.update({
     password: req.body.new_pwd
