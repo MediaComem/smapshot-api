@@ -22,7 +22,7 @@ const addChapter = async (req, res) => {
       url_media,
       description,
       zoom,
-      story: storyId,
+      story_id: storyId,
       indexinstory,
       view_custom
   });
@@ -41,7 +41,7 @@ const updateChapter = async (req, res) => {
     url_media,
     description,
     zoom,
-    story: storyId,
+    story_id: storyId,
     indexinstory,
     view_custom
   },

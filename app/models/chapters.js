@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
             minimum: 0,
             maximum: 22
         },
-        story:{
+        story_id:{
           type: DataTypes.INTEGER,
           allowNull: false,
           minimum: 0
@@ -55,6 +55,7 @@ module.exports = (sequelize, DataTypes) => {
     Chapters.associate = models => {
       Chapters.hasOne(models.images, { foreignKey: "id" });
       Chapters.belongsTo(models.images, { foreignKey: "picture_id" });
+      Chapters.belongsTo(models.stories, { foreignKey: "story_id" });
     };
 
     return Chapters;

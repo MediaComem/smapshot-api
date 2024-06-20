@@ -3,7 +3,6 @@ const { QueryTypes } = require('sequelize');
 const { sequelize } = require('../../app/models');
 const { chance } = require('../utils/chance');
 const { get, getOrGenerate, serialize } = require('../utils/fixtures');
-const { generateRandomLocalizedDescription, generateRandomLocalizedName } = require('./i18n');
 
 /**
  * Inserts an image collection into the database. Column values that are not
@@ -20,19 +19,20 @@ const { generateRandomLocalizedDescription, generateRandomLocalizedName } = requ
 exports.createStory = async (options = {}) => {
 
   const columns = {
-    title: getOrGenerate(options, 'title', generateRandomLocalizedName),
+    title: getOrGenerate(options, 'title', createRandomString),
     logo_link: getOrGenerate(options, 'logo_link', () => chance.url({ domain: 'localhost.localdomain' })),
-    description_preview: getOrGenerate(options, 'description_preview', generateRandomLocalizedDescription),
-    description: get(options, 'description', generateRandomLocalizedDescription),
+    description_preview: getOrGenerate(options, 'description_preview', createRandomString),
+    description: getOrGenerate(options, 'description', createRandomString),
+    owner_id: get(options, 'owner_id', null),
   };
 
   const result = await sequelize.query(
     `
       INSERT INTO stories(
-        title, logo_link, description_preview, description
+        title, logo_link, description_preview, description, owner_id
       )
       VALUES (
-        :title, :logo_link, :description_preview, :description
+        :title, :logo_link, :description_preview, :description, :owner_id
       )
       RETURNING id
     `,
@@ -50,3 +50,13 @@ exports.createStory = async (options = {}) => {
     id: insertedCollection.id
   };
 };
+
+const createRandomString = () => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < 20; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+

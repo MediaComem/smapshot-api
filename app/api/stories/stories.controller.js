@@ -1,8 +1,34 @@
 const models = require("../../models");
+const { getFieldI18n } = require("../../utils/params");
 
 //get all the stories
 const getStories = async (req, res) => {
-  const stories = await models.stories.findAll();
+  const lang = req.getLocale();
+  const includeOption = [{
+    model: models.owners,
+    attributes: [
+      'id',
+      [getFieldI18n('owner', 'name', lang), 'name'],
+    ],
+  },
+  {
+    model: models.stories_chapters,
+    attributes: []
+  }];
+  const stories = await models.stories.findAll({
+    attributes: [
+      'id',
+      "title",
+      "logo_link",
+      "description",
+      "description_preview",
+      "owner_id",
+      [models.sequelize.fn("COUNT", models.sequelize.col("stories_chapters.id")), "nbChapters"] 
+    ],
+    include: includeOption,
+    group: ['stories.id', 'owner.id'],
+    order: [['id', 'ASC']],
+  });
   res.json(stories);
 };
 
@@ -12,7 +38,7 @@ const getStoryById = async (req, res) => {
   const { id } = req.params;
   const story = await models.stories.findByPk(id);
 
-  const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story", "indexinstory", "view_custom"];
+  const basic_attributes = ["id", "picture_id", "title", "type", "url_media", "description", "zoom", "story_id", "indexinstory", "view_custom"];
   const longitude = [models.sequelize.literal("ST_X(image.location)"), "longitude"];
   const latitude = [models.sequelize.literal("ST_Y(image.location)"), "latitude"];
   const includeOption = [{
@@ -21,7 +47,7 @@ const getStoryById = async (req, res) => {
   }];
   const sequelizeQuery = {
     attributes: basic_attributes,
-    where: { story: id },
+    where: { story_id: id },
     order: [['indexinstory', 'ASC']],
     include: includeOption
   };
@@ -43,9 +69,9 @@ const getStoryById = async (req, res) => {
  * @param {*} res 
  */
 const addStory = async (req, res) => {
-  const { title, logo_link, description, description_preview } = req.body;
+  const { title, logo_link, description, description_preview, owner_id } = req.body;
 
-  const newStory = await models.stories.create({ title, logo_link, description, description_preview });
+  const newStory = await models.stories.create({ title, logo_link, description, description_preview, owner_id });
   res.status(201).json(newStory);
 };
 
@@ -55,9 +81,9 @@ const addStory = async (req, res) => {
  * @param {*} res 
  */
 const updateStory = async (req, res) => {
-  const { title, logo_link, description, description_preview }= req.body;
+  const { title, logo_link, description, description_preview, owner_id }= req.body;
 
-  const updatedStory = await models.stories.update({ title, logo_link, description, description_preview }, {where: {id: req.params.id}, returning: true, plain: true});
+  const updatedStory = await models.stories.update({ title, logo_link, description, description_preview, owner_id }, {where: {id: req.params.id}, returning: true, plain: true});
   // The return of an update is an array of two elements. First: the number of affected row. Second: the modified row.
   res.status(200).json(updatedStory[1]);
 };

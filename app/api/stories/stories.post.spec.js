@@ -3,6 +3,9 @@ const { setUpGlobalHooks } = require('../../../spec/utils/hooks');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
+const { createOwner } = require('../../../spec/fixtures/owners');
+const { generate } = require('../../../spec/utils/fixtures');
+const { getExpectedOwner } = require('../../../spec/expectations/owners');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -16,6 +19,7 @@ describe('POST /stories', () => {
   });
 
   it('Add new story', async () => {
+    const [ owner1 ] = await generate(1, createOwner);
     const req = {
       method: 'POST',
       path: '/stories',
@@ -23,7 +27,8 @@ describe('POST /stories', () => {
         title: "My story",
         logo_link: "http://localhost",
         description_preview: "abc",
-        description: "efg"
+        description: "efg",
+        owner_id: owner1.id
       }
     };
 
@@ -38,7 +43,8 @@ describe('POST /stories', () => {
       title: "My story",
       logo_link: "http://localhost",
       description_preview: "abc",
-      description: "efg"
+      description: "efg",
+      owner_id: owner1.id
     })
     .and.to.matchResponseDocumentation();
 
@@ -50,6 +56,7 @@ describe('POST /stories', () => {
     expect(reqGet).to.matchRequestDocumentation();
   
     const resGet = await testHttpRequest(app, reqGet);
+    const expectedOwner = getExpectedOwner(owner1);
 
     expect(resGet)
       .to.have.status(200)
@@ -58,7 +65,12 @@ describe('POST /stories', () => {
         title: "My story",
         logo_link: "http://localhost",
         description_preview: "abc",
-        description: "efg"
+        description: "efg",
+        owner_id: owner1.id,
+        owner: {
+          id: expectedOwner.id,
+          name: expectedOwner.name
+        }
       }
       ])
       .and.to.matchResponseDocumentation();

@@ -17,8 +17,10 @@
       },
       "description_preview": {
         "type": "string"
+      },
+      "owner_id": {
+        "type": "integer"
       }
-
     },
     "additionalProperties": false,
     "required": [

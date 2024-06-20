@@ -24,8 +24,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true
       },
+      owner_id: {
+        type: DataTypes.INTEGER,
+      },
     }
   );
+
+  Stories.associate = models => {
+    Stories.hasOne(models.owners, { foreignKey: "id" });
+    Stories.belongsTo(models.owners, { foreignKey: "owner_id" });
+    Stories.hasMany(models.stories_chapters, { foreignKey: "story_id" });
+  };
 
 
   return Stories;

@@ -25,7 +25,7 @@ exports.createChapter = async (options = {}) => {
     url_media: get(options, 'url_media', null),
     description: get(options, 'description', null),
     zoom: get(options, 'zoom', null),
-    story: get(options, 'story', null),
+    story_id: get(options, 'story_id', null),
     indexinstory: get(options, 'indexinstory', null),
     view_custom: get(options, 'view_custom', null),
   };
@@ -34,10 +34,10 @@ exports.createChapter = async (options = {}) => {
     const result = await sequelize.query(
       `
         INSERT INTO stories_chapters(
-          title, type, picture_id, url_media, description, zoom, story, indexinstory, view_custom
+          title, type, picture_id, url_media, description, zoom, story_id, indexinstory, view_custom
         )
         VALUES (
-          :title, :type, :picture_id, :url_media, :description, :zoom, :story, :indexinstory, :view_custom
+          :title, :type, :picture_id, :url_media, :description, :zoom, :story_id, :indexinstory, :view_custom
         )
         RETURNING id
       `,

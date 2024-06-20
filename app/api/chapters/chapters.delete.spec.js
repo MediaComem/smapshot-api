@@ -33,7 +33,8 @@ describe('DELETE /stories/:storyId/chapters/:id', () => {
       title: "Mon titre",
       logo_link: "http://localhost",
       description_preview: "abc",
-      description: "efg"
+      description: "efg",
+      owner_id: owner1.id
     });
     const initialState = await loadInitialState();
     const chapter = await createChapter({
@@ -43,7 +44,7 @@ describe('DELETE /stories/:storyId/chapters/:id', () => {
       url_media: '',
       description: 'description',
       zoom: 14,
-      story: story.id,
+      story_id: story.id,
       indexinstory: 0,
       view_custom: {
         transparency: 0.5,

@@ -27,7 +27,7 @@
       "minimum": 0,
       "maximum": 22
     },
-    "story":{
+    "story_id":{
       "type": "integer"
     },
     "indexinstory":{
@@ -64,7 +64,7 @@
     "type",
     "picture_id",
     "url_media",
-    "story",
+    "story_id",
     "zoom",
     "description"
   ]

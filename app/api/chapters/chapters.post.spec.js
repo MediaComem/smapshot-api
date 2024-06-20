@@ -31,7 +31,8 @@ describe('POST /stories/:id/chapters', () => {
         title: "Mon titre",
         logo_link: "http://localhost",
         description_preview: "abc",
-        description: "efg"
+        description: "efg",
+        owner_id: owner1.id
       });
       const chapter = {
         title: 'titre',
@@ -40,7 +41,7 @@ describe('POST /stories/:id/chapters', () => {
         url_media: '',
         description: 'description',
         zoom: 14,
-        story: story.id,
+        story_id: story.id,
         indexinstory: 0,
         view_custom: null,
       }
@@ -75,7 +76,8 @@ describe('POST /stories/:id/chapters', () => {
         title: "Mon titre",
         logo_link: "http://localhost",
         description_preview: "abc",
-        description: "efg"
+        description: "efg",
+        owner_id: owner1.id
       });
 
       const chapter = {
@@ -85,7 +87,7 @@ describe('POST /stories/:id/chapters', () => {
         url_media: '',
         description: 'description',
         zoom: 14,
-        story: story.id,
+        story_id: story.id,
         indexinstory: 0,
         view_custom: {
           transparency: 0.5,
@@ -125,7 +127,8 @@ describe('POST /stories/:id/chapters', () => {
         title: "Mon titre",
         logo_link: "http://localhost",
         description_preview: "abc",
-        description: "efg"
+        description: "efg",
+        owner_id: owner1.id
       });
       await createChapter({
         title: 'titre',
@@ -134,7 +137,7 @@ describe('POST /stories/:id/chapters', () => {
         url_media: '',
         description: 'description',
         zoom: 14,
-        story: story.id,
+        story_id: story.id,
         indexinstory: 0,
         view_custom: {
           transparency: 0.5,
@@ -151,7 +154,7 @@ describe('POST /stories/:id/chapters', () => {
         url_media: '',
         description: 'description2',
         zoom: 15,
-        story: story.id,
+        story_id: story.id,
         indexinstory: 0,
         view_custom: {
           transparency: 1,
