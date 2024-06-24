@@ -173,7 +173,7 @@ describe('GET /stories', () => {
 
       expect(res)
       .to.have.status(200)
-      .and.to.have.jsonBody(stories)
+      .and.to.have.jsonBody(stories.reverse())
       .and.to.matchResponseDocumentation();
 
     await expectNoSideEffects(app, initialState);

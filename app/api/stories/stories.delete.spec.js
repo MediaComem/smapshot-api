@@ -8,6 +8,7 @@ const { createStory } = require('../../../spec/fixtures/stories');
 const { createOwner } = require('../../../spec/fixtures/owners');
 const { countDatabaseRows } = require('../../../spec/utils/db');
 const { generate } = require('../../../spec/utils/fixtures');
+const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
 
 // This should be in every integration test file.
@@ -22,6 +23,8 @@ describe('DELETE /stories', () => {
   });
 
   it('Delete a story', async () => {
+    const user = await createUser({ roles: [ 'owner_admin' ] });
+    const token = await generateJwtFor(user);
     const [ owner1 ] = await generate(1, createOwner);
     const initialState = await loadInitialState();
     const { id } = await createStory({
@@ -38,6 +41,9 @@ describe('DELETE /stories', () => {
     const req = {
       method: 'DELETE',
       path: `/stories/${id}`,
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     };
 
     expect(req).to.matchRequestDocumentation();

@@ -6,6 +6,7 @@ const { testHttpRequest } = require('../../../spec/utils/api');
 const { createOwner } = require('../../../spec/fixtures/owners');
 const { generate } = require('../../../spec/utils/fixtures');
 const { getExpectedOwner } = require('../../../spec/expectations/owners');
+const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -19,6 +20,8 @@ describe('POST /stories', () => {
   });
 
   it('Add new story', async () => {
+    const user = await createUser({ roles: [ 'owner_admin' ] });
+    const token = await generateJwtFor(user);
     const [ owner1 ] = await generate(1, createOwner);
     const req = {
       method: 'POST',
@@ -29,6 +32,9 @@ describe('POST /stories', () => {
         description_preview: "abc",
         description: "efg",
         owner_id: owner1.id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
       }
     };
 

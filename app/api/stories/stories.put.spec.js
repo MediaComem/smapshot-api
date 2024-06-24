@@ -8,6 +8,7 @@ const { createStory } = require('../../../spec/fixtures/stories');
 const { createOwner } = require('../../../spec/fixtures/owners');
 const { generate } = require('../../../spec/utils/fixtures');
 const { getExpectedOwner } = require('../../../spec/expectations/owners');
+const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
 
 // This should be in every integration test file.
@@ -22,6 +23,8 @@ describe('PUT /stories', () => {
   });
 
   it('Update a story', async () => {
+    const user = await createUser({ roles: [ 'owner_admin' ] });
+    const token = await generateJwtFor(user);
     const [ owner1 ] = await generate(1, createOwner);
     const { id } = await createStory({
       title: "Mon titre",
@@ -40,6 +43,9 @@ describe('PUT /stories', () => {
         description_preview: "abc2",
         description: "efg2",
         owner_id: owner1.id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
       }
     };
 

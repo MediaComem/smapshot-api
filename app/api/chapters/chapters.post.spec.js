@@ -9,6 +9,7 @@ const { createChapter } = require('../../../spec/fixtures/chapters');
 const { createCollection } = require('../../../spec/fixtures/collections');
 const { createImage } = require('../../../spec/fixtures/images');
 const { generate } = require('../../../spec/utils/fixtures');
+const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
 // This should be in every integration test file.
 setUpGlobalHooks();
@@ -23,6 +24,8 @@ describe('POST /stories/:id/chapters', () => {
 
   describe('Post chapter when stories has no chapters and there is no view_custom', () => {
     it('Add a chapter', async () => {
+      const user = await createUser({ roles: [ 'owner_admin' ] });
+      const token = await generateJwtFor(user);
       const [ owner1 ] = await generate(1, createOwner);
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
@@ -49,7 +52,10 @@ describe('POST /stories/:id/chapters', () => {
       const req = {
         method: 'POST',
         path: `/stories/${story.id}/chapters`,
-        body: chapter
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       };
   
       expect(req).to.matchRequestDocumentation();
@@ -68,6 +74,8 @@ describe('POST /stories/:id/chapters', () => {
 
   describe('Post chapter when stories has no chapters', () => {
     it('Add a chapter', async () => {
+      const user = await createUser({ roles: [ 'owner_admin' ] });
+      const token = await generateJwtFor(user);
       const [ owner1 ] = await generate(1, createOwner);
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
@@ -100,7 +108,10 @@ describe('POST /stories/:id/chapters', () => {
       const req = {
         method: 'POST',
         path: `/stories/${story.id}/chapters`,
-        body: chapter
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       };
   
       expect(req).to.matchRequestDocumentation();
@@ -119,6 +130,8 @@ describe('POST /stories/:id/chapters', () => {
 
   describe('Post chapter when stories has chapters', () => {
     it('Add a chapter', async () => {
+      const user = await createUser({ roles: [ 'owner_admin' ] });
+      const token = await generateJwtFor(user);
       const [ owner1 ] = await generate(1, createOwner);
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
@@ -167,7 +180,10 @@ describe('POST /stories/:id/chapters', () => {
       const req = {
         method: 'POST',
         path: `/stories/${story.id}/chapters`,
-        body: chapter
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       };
   
       expect(req).to.matchRequestDocumentation();

@@ -33,7 +33,7 @@ const getStories = async (req, res) => {
     where: cleanProp(whereClause),
     include: includeOption,
     group: ['stories.id', 'owner.id'],
-    order: [['id', 'ASC']],
+    order: [['id', 'DESC']],
   });
   res.json(stories);
 };
