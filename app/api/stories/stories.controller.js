@@ -1,9 +1,14 @@
 const models = require("../../models");
 const { getFieldI18n } = require("../../utils/params");
+const { inUniqueOrList, cleanProp } = require("../../utils/params");
 
 //get all the stories
 const getStories = async (req, res) => {
   const lang = req.getLocale();
+  const owner_id = inUniqueOrList(req.query.owner_id);
+  const whereClause = owner_id ? {
+    owner_id: owner_id
+  } : {};
   const includeOption = [{
     model: models.owners,
     attributes: [
@@ -25,6 +30,7 @@ const getStories = async (req, res) => {
       "owner_id",
       [models.sequelize.fn("COUNT", models.sequelize.col("stories_chapters.id")), "nbChapters"] 
     ],
+    where: cleanProp(whereClause),
     include: includeOption,
     group: ['stories.id', 'owner.id'],
     order: [['id', 'ASC']],

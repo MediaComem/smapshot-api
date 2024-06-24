@@ -3,12 +3,12 @@
     summary: Get all stories
     parameters:
       - $ref: "#/components/parameters/LanguageParameter"
-      - name: page
+      - name: owner_id
         in: query
-        required: false
+        description: Select only the story belonging to the owner(s) with the specified ID(s).
+        example: 3
         schema:
-          type: integer
-          minimum: 1
+          $ref: "#/components/schemas/ApiIdListParameter"
     responses:
       '200':
         description: OK

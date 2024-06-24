@@ -1,6 +1,6 @@
 const express = require("express");
 
-const { authenticate } = require('../../utils/authorization');
+const { authenticate, authorize } = require("../../utils/authorization");
 const { validateDocumentedRequestParametersFor, validateRequestBodyWithJsonSchema } = require('../../utils/validation');
 const controller = require("./chapters.controller");
 
@@ -15,18 +15,21 @@ router.get("/stories/:storyId/chapters/:id",
 
 router.post("/stories/:storyId/chapters",
   authenticate({ required: false }),
+  authorize("owner_admin", "owner_validator"),
   validateRequestBodyWithJsonSchema('ChaptersRequest'),
   controller.addChapter
 );
 
 router.put("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
+  authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('PUT', '/stories/{storyId}/chapters/{id}'),
   controller.updateChapter
 );
 
 router.delete("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
+  authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('DELETE', '/stories/{storyId}/chapters/{id}'),
   controller.deleteChapter
 );

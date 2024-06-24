@@ -19,7 +19,14 @@
         "type": "string"
       },
       "owner_id": {
-        "type": "integer"
+        "oneOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "additionalProperties": false,
