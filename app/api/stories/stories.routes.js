@@ -22,7 +22,7 @@ router.get('/stories/:id',
 
 // Route to add a new story
 router.post('/stories', 
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateRequestBodyWithJsonSchema('Stories'),
   controller.addStory
@@ -30,7 +30,7 @@ router.post('/stories',
 
 // Route to update a story
 router.put('/stories/:id', 
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('PUT', '/stories/{id}'),
   controller.updateStory
@@ -38,7 +38,7 @@ router.put('/stories/:id',
 
 // Route to delete a story
 router.delete('/stories/:id', 
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('DELETE', '/stories/{id}'),
   controller.deleteStory

@@ -34,6 +34,8 @@
         application/json:
           schema:
             $ref: '#/components/schemas/Stories'
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
 
 /stories/{id}:
   get:
@@ -75,6 +77,8 @@
           application/json:
             schema:
               $ref: "#/components/schemas/Stories"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
@@ -94,3 +98,5 @@
           application/json:
             schema:
               $ref: "#/components/schemas/SuccessMessageResponse"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"

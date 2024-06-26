@@ -22,6 +22,53 @@ describe('POST /stories/:id/chapters', () => {
     ({ app } = createApplicationWithMocks());
   });
 
+  describe('Post chapter when user has not the right to create a chapter', () => {
+    it('Add a chapter', async () => {
+      const user = await createUser({ roles: [ 'volunteer' ] });
+      const token = await generateJwtFor(user);
+      const [ owner1 ] = await generate(1, createOwner);
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
+      const image = await createImage({ collection: col1, state: 'initial' });
+      const story = await createStory({
+        title: "Mon titre",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg",
+        owner_id: owner1.id
+      });
+      const chapter = {
+        title: 'titre',
+        type: 'IMAGE',
+        picture_id: image.id,
+        url_media: '',
+        description: 'description',
+        zoom: 14,
+        story_id: story.id,
+        indexinstory: 0,
+        view_custom: null,
+      }
+
+      const req = {
+        method: 'POST',
+        path: `/stories/${story.id}/chapters`,
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      expect(req).to.matchRequestDocumentation();
+  
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+      .to.have.status(403)
+      .and.to.matchResponseDocumentation();
+  
+    });
+  });
+
   describe('Post chapter when stories has no chapters and there is no view_custom', () => {
     it('Add a chapter', async () => {
       const user = await createUser({ roles: [ 'owner_admin' ] });

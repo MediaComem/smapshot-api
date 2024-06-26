@@ -21,6 +21,9 @@
           application/json:
             schema:
               $ref: "#/components/schemas/ChaptersResponse"
+              
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
 
 
 /stories/{storyId}/chapters/{id}:
@@ -74,7 +77,8 @@
           application/json:
             schema:
               $ref: "#/components/schemas/ChaptersResponse"
-
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
@@ -99,3 +103,5 @@
           application/json:
             schema:
               $ref: "#/components/schemas/SuccessMessageResponse"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"

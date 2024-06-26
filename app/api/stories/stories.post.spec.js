@@ -19,6 +19,35 @@ describe('POST /stories', () => {
     ({ app } = createApplicationWithMocks());
   });
 
+  it('Add new story with user without the right', async () => {
+    const user = await createUser({ roles: [ 'volunteer' ] });
+    const token = await generateJwtFor(user);
+    const [ owner1 ] = await generate(1, createOwner);
+    const req = {
+      method: 'POST',
+      path: '/stories',
+      body: {
+        title: "My story",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg",
+        owner_id: owner1.id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+
+    expect(req).to.matchRequestDocumentation();
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+    .to.have.status(403)
+    .and.to.matchResponseDocumentation();
+  });
+
+
   it('Add new story', async () => {
     const user = await createUser({ roles: [ 'owner_admin' ] });
     const token = await generateJwtFor(user);

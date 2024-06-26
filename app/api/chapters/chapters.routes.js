@@ -14,21 +14,21 @@ router.get("/stories/:storyId/chapters/:id",
 );
 
 router.post("/stories/:storyId/chapters",
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateRequestBodyWithJsonSchema('ChaptersRequest'),
   controller.addChapter
 );
 
 router.put("/stories/:storyId/chapters/:id",
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('PUT', '/stories/{storyId}/chapters/{id}'),
   controller.updateChapter
 );
 
 router.delete("/stories/:storyId/chapters/:id",
-  authenticate({ required: false }),
+  authenticate(),
   authorize("owner_admin", "owner_validator"),
   validateDocumentedRequestParametersFor('DELETE', '/stories/{storyId}/chapters/{id}'),
   controller.deleteChapter

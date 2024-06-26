@@ -22,6 +22,45 @@ describe('PUT /stories', () => {
     ({ app } = createApplicationWithMocks());
   });
 
+  it('Update a story with owner without right', async () => {
+    const user = await createUser({ roles: [ 'volunteer' ] });
+    const token = await generateJwtFor(user);
+    const [ owner1 ] = await generate(1, createOwner);
+    const { id } = await createStory({
+      title: "Mon titre",
+      logo_link: "http://localhost",
+      description_preview: "abc",
+      description: "efg",
+      owner_id: owner1.id
+    });
+    const initialState = await loadInitialState();
+    const req = {
+      method: 'PUT',
+      path: `/stories/${id}`,
+      body: {
+        title: "My story 2",
+        logo_link: "http://localhost2",
+        description_preview: "abc2",
+        description: "efg2",
+        owner_id: owner1.id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+
+    expect(req).to.matchRequestDocumentation();
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+    .to.have.status(403)
+    .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app, initialState);
+
+  });
+
   it('Update a story', async () => {
     const user = await createUser({ roles: [ 'owner_admin' ] });
     const token = await generateJwtFor(user);
