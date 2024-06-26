@@ -5,8 +5,6 @@ const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
 const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
 const { createStory } = require('../../../spec/fixtures/stories');
-const { createOwner } = require('../../../spec/fixtures/owners');
-const { generate } = require('../../../spec/utils/fixtures');
 const { getExpectedOwner } = require('../../../spec/expectations/owners');
 const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
@@ -25,13 +23,12 @@ describe('PUT /stories', () => {
   it('Update a story with owner without right', async () => {
     const user = await createUser({ roles: [ 'volunteer' ] });
     const token = await generateJwtFor(user);
-    const [ owner1 ] = await generate(1, createOwner);
     const { id } = await createStory({
       title: "Mon titre",
       logo_link: "http://localhost",
       description_preview: "abc",
       description: "efg",
-      owner_id: owner1.id
+      owner_id: user.owner_id
     });
     const initialState = await loadInitialState();
     const req = {
@@ -42,7 +39,7 @@ describe('PUT /stories', () => {
         logo_link: "http://localhost2",
         description_preview: "abc2",
         description: "efg2",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       },
       headers: {
         Authorization: `Bearer ${token}`
@@ -64,13 +61,12 @@ describe('PUT /stories', () => {
   it('Update a story', async () => {
     const user = await createUser({ roles: [ 'owner_admin' ] });
     const token = await generateJwtFor(user);
-    const [ owner1 ] = await generate(1, createOwner);
     const { id } = await createStory({
       title: "Mon titre",
       logo_link: "http://localhost",
       description_preview: "abc",
       description: "efg",
-      owner_id: owner1.id
+      owner_id: user.owner_id
     });
     const initialState = await loadInitialState();
     const req = {
@@ -81,7 +77,7 @@ describe('PUT /stories', () => {
         logo_link: "http://localhost2",
         description_preview: "abc2",
         description: "efg2",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       },
       headers: {
         Authorization: `Bearer ${token}`
@@ -100,7 +96,7 @@ describe('PUT /stories', () => {
       logo_link: "http://localhost2",
       description_preview: "abc2",
       description: "efg2",
-      owner_id: owner1.id
+      owner_id: user.owner_id
     })
     .and.to.matchResponseDocumentation();
 
@@ -113,7 +109,7 @@ describe('PUT /stories', () => {
 
     const resGet = await testHttpRequest(app, reqGet);
 
-    const expectedOwner = getExpectedOwner(owner1);
+    const expectedOwner = getExpectedOwner(user.owner);
 
     expect(resGet)
       .to.have.status(200)
@@ -123,7 +119,7 @@ describe('PUT /stories', () => {
         logo_link: "http://localhost2",
         description_preview: "abc2",
         description: "efg2",
-        owner_id: owner1.id,
+        owner_id: user.owner_id,
         nbChapters: 0,
         owner: {
           id: expectedOwner.id,
@@ -132,6 +128,43 @@ describe('PUT /stories', () => {
       }
       ])
       .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app, initialState);
+
+  });
+
+  it('Update a story without the owner_right', async () => {
+    const user = await createUser({ roles: [ 'owner_admin' ] });
+    const token = await generateJwtFor(user);
+    const { id } = await createStory({
+      title: "Mon titre",
+      logo_link: "http://localhost",
+      description_preview: "abc",
+      description: "efg"
+    });
+    const initialState = await loadInitialState();
+    const req = {
+      method: 'PUT',
+      path: `/stories/${id}`,
+      body: {
+        title: "My story 2",
+        logo_link: "http://localhost2",
+        description_preview: "abc2",
+        description: "efg2",
+        owner_id: user.owner_id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+
+    expect(req).to.matchRequestDocumentation();
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+    .to.have.status(403)
+    .and.to.matchResponseDocumentation();
 
     await expectNoSideEffects(app, initialState);
 

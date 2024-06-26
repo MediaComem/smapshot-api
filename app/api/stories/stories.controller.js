@@ -1,14 +1,14 @@
 const models = require("../../models");
 const { getFieldI18n } = require("../../utils/params");
 const { inUniqueOrList, cleanProp } = require("../../utils/params");
+const { validateStoryRight } = require('../../utils/story');
+const { route } = require("../../utils/express");
 
 //get all the stories
-const getStories = async (req, res) => {
+const getStories = route(async (req, res) => {
   const lang = req.getLocale();
   const owner_id = inUniqueOrList(req.query.owner_id);
-  const whereClause = owner_id ? {
-    owner_id: owner_id
-  } : {};
+  const whereClause = owner_id ? {} : {};
   const includeOption = [{
     model: models.owners,
     attributes: [
@@ -36,11 +36,11 @@ const getStories = async (req, res) => {
     order: [['id', 'DESC']],
   });
   res.json(stories);
-};
+});
 
 
 //get a story by id
-const getStoryById = async (req, res) => {
+const getStoryById = route(async (req, res) => {
   const { id } = req.params;
   const story = await models.stories.findByPk(id);
 
@@ -66,7 +66,7 @@ const getStoryById = async (req, res) => {
     res.status(404).json({ error: 'Aucun chapitre trouvé avec cet ID.' });
   }
   
-};
+});
 
 
 /**
@@ -74,33 +74,38 @@ const getStoryById = async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-const addStory = async (req, res) => {
+const addStory = route(async (req, res) => {
   const { title, logo_link, description, description_preview, owner_id } = req.body;
 
   const newStory = await models.stories.create({ title, logo_link, description, description_preview, owner_id });
   res.status(201).json(newStory);
-};
+});
 
 /**
  * Method to update a Stories
  * @param {*} req 
  * @param {*} res 
  */
-const updateStory = async (req, res) => {
+const updateStory = route(async (req, res) => {
   const { title, logo_link, description, description_preview, owner_id }= req.body;
 
+  await validateStoryRight(req, res, req.params.id);
+
+  
   const updatedStory = await models.stories.update({ title, logo_link, description, description_preview, owner_id }, {where: {id: req.params.id}, returning: true, plain: true});
   // The return of an update is an array of two elements. First: the number of affected row. Second: the modified row.
   res.status(200).json(updatedStory[1]);
-};
+});
 
-const deleteStory = async (req, res) =>{
+const deleteStory = route(async (req, res) =>{
+
+  await validateStoryRight(req, res, req.params.id);
+
   await models.stories.destroy({where: {id: req.params.id}});
   res.send({
     message: "The story was deleted."
   });
-}
-
+})
 
 module.exports = {
   getStories,

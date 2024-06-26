@@ -35,6 +35,95 @@ describe('POST /stories/:id/chapters', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
+        owner_id: user.owner_id
+      });
+      const chapter = {
+        title: 'titre',
+        type: 'IMAGE',
+        picture_id: image.id,
+        url_media: '',
+        description: 'description',
+        zoom: 14,
+        story_id: story.id,
+        indexinstory: 0,
+        view_custom: null,
+      }
+
+      const req = {
+        method: 'POST',
+        path: `/stories/${story.id}/chapters`,
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      expect(req).to.matchRequestDocumentation();
+  
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+      .to.have.status(403)
+      .and.to.matchResponseDocumentation();
+  
+    });
+    it('Add a chapter', async () => {
+      const user = await createUser({ roles: [ 'volunteer' ] });
+      const token = await generateJwtFor(user);
+      const [ owner1 ] = await generate(1, createOwner);
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
+      const image = await createImage({ collection: col1, state: 'initial' });
+      const story = await createStory({
+        title: "Mon titre",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg",
+        owner_id: user.owner_id
+      });
+      const chapter = {
+        title: 'titre',
+        type: 'IMAGE',
+        picture_id: image.id,
+        url_media: '',
+        description: 'description',
+        zoom: 14,
+        story_id: story.id,
+        indexinstory: 0,
+        view_custom: null,
+      }
+
+      const req = {
+        method: 'POST',
+        path: `/stories/${story.id}/chapters`,
+        body: chapter,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      expect(req).to.matchRequestDocumentation();
+  
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+      .to.have.status(403)
+      .and.to.matchResponseDocumentation();
+  
+    });
+    
+    it('Add a chapter without owner right', async () => {
+      const user = await createUser({ roles: [ 'owner_admin' ] });
+      const token = await generateJwtFor(user);
+      const [ owner1 ] = await generate(1, createOwner);
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const col1 = await createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 });
+      const image = await createImage({ collection: col1, state: 'initial' });
+      const story = await createStory({
+        title: "Mon titre",
+        logo_link: "http://localhost",
+        description_preview: "abc",
+        description: "efg",
         owner_id: owner1.id
       });
       const chapter = {
@@ -82,7 +171,7 @@ describe('POST /stories/:id/chapters', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       });
       const chapter = {
         title: 'titre',
@@ -132,7 +221,7 @@ describe('POST /stories/:id/chapters', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       });
 
       const chapter = {
@@ -188,7 +277,7 @@ describe('POST /stories/:id/chapters', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       });
       await createChapter({
         title: 'titre',

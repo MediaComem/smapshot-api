@@ -22,7 +22,6 @@ describe('POST /stories', () => {
   it('Add new story with user without the right', async () => {
     const user = await createUser({ roles: [ 'volunteer' ] });
     const token = await generateJwtFor(user);
-    const [ owner1 ] = await generate(1, createOwner);
     const req = {
       method: 'POST',
       path: '/stories',
@@ -31,7 +30,7 @@ describe('POST /stories', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       },
       headers: {
         Authorization: `Bearer ${token}`
@@ -60,7 +59,7 @@ describe('POST /stories', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id
+        owner_id: user.owner_id
       },
       headers: {
         Authorization: `Bearer ${token}`
@@ -79,7 +78,7 @@ describe('POST /stories', () => {
       logo_link: "http://localhost",
       description_preview: "abc",
       description: "efg",
-      owner_id: owner1.id
+      owner_id: user.owner_id
     })
     .and.to.matchResponseDocumentation();
 
@@ -101,7 +100,7 @@ describe('POST /stories', () => {
         logo_link: "http://localhost",
         description_preview: "abc",
         description: "efg",
-        owner_id: owner1.id,
+        owner_id: user.owner_id,
         owner: {
           id: expectedOwner.id,
           name: expectedOwner.name
