@@ -3,8 +3,6 @@ const { setUpGlobalHooks } = require('../../../spec/utils/hooks');
 const { createApplicationWithMocks } = require('../../../spec/utils/mocks');
 const { expect } = require('../../../spec/utils/chai');
 const { testHttpRequest } = require('../../../spec/utils/api');
-const { createOwner } = require('../../../spec/fixtures/owners');
-const { generate } = require('../../../spec/utils/fixtures');
 const { getExpectedOwner } = require('../../../spec/expectations/owners');
 const { createUser, generateJwtFor } = require('../../../spec/fixtures/users');
 
@@ -50,7 +48,6 @@ describe('POST /stories', () => {
   it('Add new story', async () => {
     const user = await createUser({ roles: [ 'owner_admin' ] });
     const token = await generateJwtFor(user);
-    const [ owner1 ] = await generate(1, createOwner);
     const req = {
       method: 'POST',
       path: '/stories',
@@ -90,7 +87,7 @@ describe('POST /stories', () => {
     expect(reqGet).to.matchRequestDocumentation();
   
     const resGet = await testHttpRequest(app, reqGet);
-    const expectedOwner = getExpectedOwner(owner1);
+    const expectedOwner = getExpectedOwner(user.owner);
 
     expect(resGet)
       .to.have.status(200)
@@ -101,6 +98,7 @@ describe('POST /stories', () => {
         description_preview: "abc",
         description: "efg",
         owner_id: user.owner_id,
+        nbChapters: 0,
         owner: {
           id: expectedOwner.id,
           name: expectedOwner.name

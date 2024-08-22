@@ -8,7 +8,7 @@ const { route } = require("../../utils/express");
 const getStories = route(async (req, res) => {
   const lang = req.getLocale();
   const owner_id = inUniqueOrList(req.query.owner_id);
-  const whereClause = owner_id ? {} : {};
+  const whereClause = owner_id ? { owner_id: owner_id } : {};
   const includeOption = [{
     model: models.owners,
     attributes: [
@@ -76,6 +76,7 @@ const getStoryById = route(async (req, res) => {
  */
 const addStory = route(async (req, res) => {
   const { title, logo_link, description, description_preview, owner_id } = req.body;
+  await validateStoryRight(req, res, null);
 
   const newStory = await models.stories.create({ title, logo_link, description, description_preview, owner_id });
   res.status(201).json(newStory);
@@ -88,7 +89,6 @@ const addStory = route(async (req, res) => {
  */
 const updateStory = route(async (req, res) => {
   const { title, logo_link, description, description_preview, owner_id }= req.body;
-
   await validateStoryRight(req, res, req.params.id);
 
   

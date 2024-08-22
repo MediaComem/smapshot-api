@@ -170,4 +170,79 @@ describe('PUT /stories', () => {
 
   });
 
+  it('Update a story with the super admin right', async () => {
+    const user = await createUser({ roles: [ 'owner_admin' ] });
+    const { id } = await createStory({
+      title: "Mon titre",
+      logo_link: "http://localhost",
+      description_preview: "abc",
+      description: "efg",
+      owner_id: user.owner_id
+    });
+    const userAdmin = await createUser({ roles: [ 'super_admin' ] });
+    const token = await generateJwtFor(userAdmin);
+    const initialState = await loadInitialState();
+    const req = {
+      method: 'PUT',
+      path: `/stories/${id}`,
+      body: {
+        title: "My story 2",
+        logo_link: "http://localhost2",
+        description_preview: "abc2",
+        description: "efg2",
+        owner_id: user.owner_id
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+
+    expect(req).to.matchRequestDocumentation();
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+    .to.have.status(200)
+    .and.to.have.jsonBody({
+      id: id,
+      title: "My story 2",
+      logo_link: "http://localhost2",
+      description_preview: "abc2",
+      description: "efg2",
+      owner_id: user.owner_id
+    })
+    .and.to.matchResponseDocumentation();
+
+    const reqGet = {
+      method: 'GET',
+      path: '/stories'
+    };
+
+    expect(reqGet).to.matchRequestDocumentation();
+
+    const resGet = await testHttpRequest(app, reqGet);
+
+    const expectedOwner = getExpectedOwner(user.owner);
+
+    expect(resGet)
+      .to.have.status(200)
+      .and.to.have.jsonBody([{
+        id: 1,
+        title: "My story 2",
+        logo_link: "http://localhost2",
+        description_preview: "abc2",
+        description: "efg2",
+        owner_id: user.owner_id,
+        nbChapters: 0,
+        owner: {
+          id: expectedOwner.id,
+          name: expectedOwner.name
+        }
+      }
+      ])
+      .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app, initialState);
+  });
+
 });
