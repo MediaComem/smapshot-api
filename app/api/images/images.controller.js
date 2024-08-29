@@ -530,7 +530,7 @@ exports.getFootprint = utils.route(async (req, res) => {
     attributes: [[models.sequelize.literal(
       `
       CASE
-        WHEN geometadatum.viewshed_simple IS NOT NULL
+        WHEN geometadatum.viewshed_simple IS NOT NULL AND ST_AsText(geometadatum.viewshed_simple) != 'MULTIPOLYGON EMPTY'
         THEN ST_AsGeoJson(geometadatum.viewshed_simple, 5, 2)
         WHEN images.viewshed_simple IS NOT NULL
         THEN ST_AsGeoJson(images.viewshed_simple, 5, 2)
