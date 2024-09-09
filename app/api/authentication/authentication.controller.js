@@ -6,7 +6,8 @@ const config = require('../../../config');
 const models = require("../../models");
 const { sendMail } = require('../../services/send-mail');
 const { requestBodyValidationError, uniqueConstraintError, isSequelizeUniqueConstraintErrorForColumn } = require('../../utils/errors');
-const { createApiError, getLogger, route } = require("../../utils/express");
+const { getLogger, route } = require("../../utils/express");
+const { authenticationError, authorizationError, notFoundError, requestParametersValidationError } = require("../../utils/errors");
 
 exports.login = [
   passportLocalAuthenticationMiddleware,
@@ -50,22 +51,12 @@ exports.activate = route(async (req, res) => {
 
   if (!user || (Date.now() >= user.active_expires)) {
     getLogger(req).warn("User activation: Invalid token or token has expired");
-    throw createApiError(
-      req.__('auth.error.linkNotValid'),
-      {
-        status: 400
-      }
-    );
+    throw authorizationError(req.__('auth.error.linkNotValid'));
   }
 
   if (user.active){
     getLogger(req).warn("User account has already been activated");
-    throw createApiError(
-      req.__('auth.error.alreadyActivated'),
-      {
-        status: 400
-      }
-    );
+    throw authorizationError(req.__('auth.error.alreadyActivated'));
   }
 
   user.active = true;
@@ -151,20 +142,11 @@ exports.forgot = route(async (req, res) => {
   });
 
   if (!user) {
-    throw createApiError(
-      req.__('auth.error.noAccountExist'),
-      {
-        status: 400
-      }
-    );
+    throw notFoundError(req, req.body.email + '--' + req.__('auth.error.noAccountExist'));
   }
 
   if (user.facebookid != null || user.googleid != null){
-    throw createApiError(
-      req.__('auth.error.noPasswordChangeWithSocialEmail'),
-      {
-        status: 400
-      }
+    throw requestParametersValidationError(req, [req.__('auth.error.noPasswordChangeWithSocialEmail')]
     );
   }
 
@@ -199,12 +181,7 @@ exports.reset = route(async (req, res) => {
 
   if (!user || (Date.now() >= user.reset_password_expires)) {
     getLogger(req).warn("Reset password: Invalid token or token has expired");
-    throw createApiError(
-      req.__('auth.error.linkNotValid'),
-      {
-        status: 400
-      }
-    );
+    throw authorizationError(req.__('auth.error.linkNotValid'));
   }
 
   user.password = req.body.password;
@@ -225,9 +202,9 @@ exports.reset = route(async (req, res) => {
 function passportLocalAuthenticationMiddleware(req, res, next) {
   passport.authenticate("login", { session: false }, (err, user, _info) => {
     if (err) {
-      return next(err);
+      return next(authenticationError(err.body.detail));
     } else if (!user) {
-      return next(new Error('User not available after login'));
+      return next(notFoundError(req, req.__('auth.error.noAccountExist')));
     }
 
     req.user = user;

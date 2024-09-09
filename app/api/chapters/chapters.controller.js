@@ -3,6 +3,7 @@ const { notFoundError } = require('../../utils/errors');
 const { validateStoryRight } = require('../../utils/story');
 const { route } = require("../../utils/express");
 
+
 const getChapterById = route(async (req, res) => {
   const { id } = req.params;
   const chapter = await models.stories_chapters.findByPk(id);
