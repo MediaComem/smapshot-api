@@ -33,7 +33,7 @@ module.exports = passport => {
               email: email,
               first_name: first_name,
               last_name: last_name,
-              lang: req.getLocale() || "en"
+              lang: req.getLocale() || config.langFallback
             }
           });
           /*

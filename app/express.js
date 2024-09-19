@@ -75,8 +75,8 @@ exports.createApplication = ({ sendMail }) => {
   // i18n
   i18n.configure({
     locales: ['en', 'fr', 'de', 'it', 'pt'],
-    defaultLocale: 'en', // When changing the value here, you need as well to change the function getFieldI18n manually in utils/params.js
-    fallbacks: { '*': 'en' },
+    defaultLocale: config.langFallback, // When changing the value here, you need as well to change the function getFieldI18n manually in utils/params.js
+    fallbacks: { '*': config.langFallback },
     queryParameter: 'lang',
     autoReload: (app.get('env') === 'development'),
     preserveLegacyCase: true,
