@@ -1,40 +1,36 @@
 const express = require("express");
 
-const { authenticate } = require('../../utils/authorization');
+const { authenticate, authorize } = require("../../utils/authorization");
 const { validateDocumentedRequestParametersFor, validateRequestBodyWithJsonSchema } = require('../../utils/validation');
 const controller = require("./chapters.controller");
 
 const router = new express.Router();
 
-// get all of the chapters.
-router.get("/chapters",
-  authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('GET', '/chapters'),
-  controller.getChapters
-);
-
 // Get a chapter by id.
-router.get("/chapters/:id",
+router.get("/stories/:storyId/chapters/:id",
   authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('GET', '/chapters/{id}'),
+  validateDocumentedRequestParametersFor('GET', '/stories/{storyId}/chapters/{id}'),
   controller.getChapterById
 );
 
-router.post("/chapters",
-  authenticate({ required: false }),
-  validateRequestBodyWithJsonSchema('Chapters'),
+router.post("/stories/:storyId/chapters",
+  authenticate(),
+  authorize("owner_admin", "owner_validator"),
+  validateRequestBodyWithJsonSchema('ChaptersRequest'),
   controller.addChapter
 );
 
-router.put("/chapters/:id",
-  authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('PUT', '/chapters/{id}'),
+router.put("/stories/:storyId/chapters/:id",
+  authenticate(),
+  authorize("owner_admin", "owner_validator"),
+  validateDocumentedRequestParametersFor('PUT', '/stories/{storyId}/chapters/{id}'),
   controller.updateChapter
 );
 
-router.delete("/chapters/:id",
-  authenticate({ required: false }),
-  validateDocumentedRequestParametersFor('DELETE', '/chapters/{id}'),
+router.delete("/stories/:storyId/chapters/:id",
+  authenticate(),
+  authorize("owner_admin", "owner_validator"),
+  validateDocumentedRequestParametersFor('DELETE', '/stories/{storyId}/chapters/{id}'),
   controller.deleteChapter
 );
 module.exports = router;
