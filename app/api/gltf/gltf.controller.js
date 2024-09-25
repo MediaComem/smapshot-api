@@ -8,6 +8,34 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
+const getGltfPaths = async(id, regionByPx) => {
+  const sql = `
+    SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
+    FROM images
+    WHERE id = ${id}
+  `;
+  const queryCollectionIdPromise = await models.sequelize.query(sql, {
+    type: models.sequelize.QueryTypes.SELECT
+  });
+  const collection_id = queryCollectionIdPromise[0].collection_id;
+  if (!regionByPx) {
+    regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
+  }
+
+  const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
+
+  const rootGltf = `/data/collections/${
+    collection_id}/gltf/`;
+  
+  const gltfTemp = `${rootGltf + id}${region_url}_temp.gltf`;
+  const gltfPath = `${rootGltf + id}${region_url}.gltf`;
+
+  return {
+    gltfTemp: gltfTemp,
+    gltfPath: gltfPath
+  }
+}
+
 exports.generateFromDbPose = utils.route(async (req, res) => {
   const image_id = req.query.image_id;
   // await exports.generateFromDbPosePromise(image_id);
@@ -82,29 +110,11 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
 
 exports.saveGltf = utils.route(async (req, res) => {
   const { id } = req.params;
-  let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
-
-  const sql = `
-    SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
-    FROM images
-    WHERE id = ${id}
-  `;
-  const queryCollectionIdPromise = await models.sequelize.query(sql, {
-    type: models.sequelize.QueryTypes.SELECT
-  });
-  const collection_id = queryCollectionIdPromise[0].collection_id;
-  if (!regionByPx) {
-    regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
-  }
-
-  const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
-
-  const rootGltf = `/data/collections/${
-    collection_id}/gltf/`;
+  const regionByPx = req.body.regionByPx;
+  
+  const { gltfTemp, gltfPath } = await getGltfPaths(id, regionByPx);
   // gltf
-  const gltfTemp = `${rootGltf + id}${region_url}_temp.gltf`;
   if (fs.existsSync(gltfTemp)) {
-    const gltfPath = `${rootGltf + id}${region_url}.gltf`;
     await fs.rename(gltfTemp, gltfPath);
   }
   res.status(201).send();
@@ -112,27 +122,9 @@ exports.saveGltf = utils.route(async (req, res) => {
 
 exports.deleteTempGltf = utils.route(async (req, res) => {
   const { id } = req.params;
-  let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
-
-  const sql = `
-    SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
-    FROM images
-    WHERE id = ${id}
-  `;
-  const queryCollectionIdPromise = await models.sequelize.query(sql, {
-    type: models.sequelize.QueryTypes.SELECT
-  });
-  const collection_id = queryCollectionIdPromise[0].collection_id;
-  if (!regionByPx) {
-    regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
-  }
-
-  const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
-
-  const rootGltf = `/data/collections/${
-    collection_id}/gltf/`;
-  // gltf
-  const gltfTemp = `${rootGltf + id}${region_url}_temp.gltf`;
+  const regionByPx = req.body.regionByPx;
+  
+  const { gltfTemp } = await getGltfPaths(id, regionByPx);
   if (fs.existsSync(gltfTemp)) {
     await fs.unlink(gltfTemp);
   }
