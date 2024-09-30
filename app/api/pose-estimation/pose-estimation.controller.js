@@ -160,6 +160,10 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const id = parseInt(req.body.image_id);
    const imageModifier = req.body.image_modifiers;
 
+   // The image used to compute in background has a width of 1024px where the image use by the slider in fron has a width of 500px.
+   // The conversion is done to apply the same modification here as the front.
+   const convertedModifier = imageModifier.modifier * (1024/500);
+
    let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
     // Get image collection id and region
@@ -186,7 +190,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
     let texture = new cv.Mat();
     let dsize = new cv.Size(src.cols, src.rows);
     let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
-    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [imageModifier.modifier, 0, dsize.width-imageModifier.modifier, 0, 0, dsize.height, dsize.width, dsize.height]);
+    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
     let M = cv.getPerspectiveTransform(srcTri, dstTri);
 
     cv.warpPerspective(src, dst, M, dsize);
