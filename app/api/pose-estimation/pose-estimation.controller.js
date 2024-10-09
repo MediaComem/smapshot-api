@@ -10,7 +10,7 @@ const { poseEstimationError } = require('../../utils/errors');
 const { route, getLogger } = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
-const cv = require("../../../utils/opencv");
+const cv = require("@techstark/opencv-js");
 const Jimp = require('jimp');
 
 async function getDbImage(image_id){
