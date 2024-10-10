@@ -10,6 +10,8 @@ const { poseEstimationError } = require('../../utils/errors');
 const { route, getLogger } = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
+const fs = require("fs");
+
 const cv = require("@techstark/opencv-js");
 const Jimp = require('jimp');
 
@@ -183,8 +185,14 @@ exports.computePoseCreateGltf = route(async (req, res) => {
     const path2collections = "/data/collections/";
     const path2image = `${path2collections}${
       collection_id}/images/output/${id}.png`;
+    let srcImage = `${config.apiUrl}${path2collections}${collection_id}/images/1024/${id}.jpg`
 
-    let jimpSrc = await Jimp.read(`${config.apiUrl}${path2collections}${collection_id}/images/1024/${id}.jpg`);
+    if (!fs.existsSync(srcImage)) {
+      const imageSquaredFromDB = await gltf.getSquareImageFromDB(id, regionByPx);
+      srcImage = imageSquaredFromDB.media.image_url;
+    }
+
+    let jimpSrc = await Jimp.read(srcImage);
     var src = cv.matFromImageData(jimpSrc.bitmap);
     let dst = new cv.Mat();
     let texture = new cv.Mat();

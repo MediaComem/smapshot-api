@@ -219,4 +219,5 @@ async function copyGltf(image_id, collection_id, region_url) {
 }
 
 // exports.createGltf = createGltf;
-exports.createGltfFromImageCoordinates = createGltfFromImageCoordinates
+exports.createGltfFromImageCoordinates = createGltfFromImageCoordinates;
+exports.getSquareImageFromDB = getSquareImageFromDB;
