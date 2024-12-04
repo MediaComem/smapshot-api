@@ -307,6 +307,7 @@ module.exports = (sequelize, DataTypes) => {
     Images.belongsTo(models.geolocalisations, { foreignKey: "geolocalisation_id" });
     Images.belongsTo(models.users, { foreignKey: "user_id", as: "georeferencer" });
     Images.hasOne(models.geometadata, { foreignKey: "fk_image_id" });
+    Images.hasOne(models.stories_chapters, {foreignKey: 'picture_id'});
   };
 
   return Images;

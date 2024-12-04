@@ -2,12 +2,13 @@
   get:
     summary: Get all stories
     parameters:
-      - name: page
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: owner_id
         in: query
-        required: false
+        description: Select only the story belonging to the owner(s) with the specified ID(s).
+        example: 3
         schema:
-          type: integer
-          minimum: 1
+          $ref: "#/components/schemas/ApiIdListParameter"
     responses:
       '200':
         description: OK
@@ -18,6 +19,8 @@
 
   post:
     summary: Add a new story
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
     requestBody:
       required: true
       content:
@@ -25,12 +28,14 @@
           schema:
             $ref: '#/components/schemas/Stories'
     responses:
-      '200':
+      '201':
         description: OK
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Stories'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Stories'
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
 
 /stories/{id}:
   get:
@@ -45,9 +50,9 @@
       '200':
         description: OK
         content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Stories"
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Stories"
       '404':
         $ref: "#/components/responses/NotFoundError"
   put:
@@ -72,6 +77,8 @@
           application/json:
             schema:
               $ref: "#/components/schemas/Stories"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
@@ -86,4 +93,10 @@
           type: string
     responses:
       '200':
-        description: OK
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"

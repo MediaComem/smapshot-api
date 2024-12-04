@@ -22,6 +22,8 @@ exports.mainDatabaseTables = [
   "photographers",
   "problems",
   "problems_type",
+  "stories",
+  "stories_chapters",
   "users",
 ];
 
@@ -61,5 +63,8 @@ exports.resetDatabase = () =>
   sequelize.query(`
   TRUNCATE users RESTART IDENTITY CASCADE;
   TRUNCATE photographers RESTART IDENTITY CASCADE;
+  TRUNCATE stories RESTART IDENTITY CASCADE;
+  TRUNCATE news RESTART IDENTITY CASCADE;
+  TRUNCATE stories RESTART IDENTITY CASCADE;
   TRUNCATE news RESTART IDENTITY CASCADE;
 `);

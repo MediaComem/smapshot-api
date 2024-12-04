@@ -1,46 +1,40 @@
-/chapters:
-  get:
-    summary: Retrieve all chapters
-    parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-    responses:
-      '200':
-        description: OK
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ChaptersList"
-
+/stories/{storyId}/chapters:
   post:
     summary: Add a chapter to the db.
     operationId: addChapter
+    parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Chapters"
+            $ref: "#/components/schemas/ChaptersRequest"
     responses:
-      '200':
+      '201':
         description: OK
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
+              $ref: "#/components/schemas/ChaptersResponse"
+              
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
 
-      '404':
-        $ref: "#/components/responses/NotFoundError"
 
-
-/chapters/{id}:
+/stories/{storyId}/chapters/{id}:
   get:
     summary: Retrieve a chapter by ID
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -52,13 +46,18 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
+              $ref: "#/components/schemas/ChaptersResponse"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
   put:
     summary: update a chapter.
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -70,15 +69,16 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Chapters"
+            $ref: "#/components/schemas/ChaptersPutRequest"
     responses:
       '200':
         description: OK
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Chapters"
-
+              $ref: "#/components/schemas/ChaptersResponse"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
       '404':
         $ref: "#/components/responses/NotFoundError"
 
@@ -86,6 +86,11 @@
     summary: Delete a chapter by ID
     operationId: deleteChapter
     parameters:
+      - name: storyId
+        in: path
+        required: true
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -93,4 +98,10 @@
           type: string
     responses:
       '200':
-        description: OK
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      '403':
+        $ref: "#/components/responses/UnauthorizedError"
