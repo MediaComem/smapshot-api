@@ -61,7 +61,7 @@ const deleteChapter = route(async (req, res) => {
 
   await models.stories_chapters.destroy({where: {id:req.params.id}});
   res.send({
-    message: "The story was deleted."
+    message: "The chapter was deleted."
   });
   
 });
