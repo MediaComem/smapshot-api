@@ -204,9 +204,9 @@ exports.computePoseCreateGltf = route(async (req, res) => {
      filteredResults.regionByPx = regionByPx;
 
      //Build gltf_url
-     filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx);
+     filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true);
      try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx)
+       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, true);
        res.status(201).send(filteredResults);
      } catch (error) {
       getLogger().error(error);
