@@ -198,7 +198,12 @@ exports.computePoseCreateGltf = route(async (req, res) => {
     let texture = new cv.Mat();
     let dsize = new cv.Size(src.cols, src.rows);
     let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
-    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
+    let dstTri;
+
+    if (convertedModifier > 0)
+      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
+    else
+      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, Math.abs(convertedModifier), dsize.height, dsize.width-Math.abs(convertedModifier), dsize.height]);
     let M = cv.getPerspectiveTransform(srcTri, dstTri);
 
     cv.warpPerspective(src, dst, M, dsize);
