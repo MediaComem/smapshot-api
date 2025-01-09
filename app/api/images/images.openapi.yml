@@ -425,6 +425,30 @@
       "404":
         $ref: "#/components/responses/NotFoundError"
 
+/images/{id}/geolocation_id:
+  get:
+    summary: Get the geolocation of a validate image.
+    operationId: getGeolocationId
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageGeolocationId"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
 /images/{id}/state:
   put:
     summary: Update the state of an image.
