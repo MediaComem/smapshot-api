@@ -127,6 +127,7 @@ exports.save = route(async (req, res) => {
   const remark = data.remark;
   const errors_list = data.errors_list;
   const image_modifiers = data.image_modifiers;
+  const improveFromVisit = data.improveFromVisit;
 
   let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id (l127)
 
@@ -173,31 +174,33 @@ exports.save = route(async (req, res) => {
   surfaceRatio = Math.round((areaBbox / areaImage) * 100);
 
   //for composite_image, the multiple geolocalisations are saved one after the other in the front-end. The last one will be the one also saved in the table images.
-  await models.images.update(
-    {
-      location: models.sequelize.fn(
-        "ST_SetSRID",
-        models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
-        "4326"
-      ),
-      roll: roll,
-      tilt: tilt,
-      azimuth: azimuth,
-      focal: focal,
-      px: px,
-      py: py,
-      user_id: georeferencer_id,
-      date_georef: models.sequelize.literal("now()"),
-      geolocalisation_id: geoloc_id,
-      state: "waiting_validation",
-      framing_mode: framing_mode,
-      image_modifiers: image_modifiers
-    },
-    {
-      where: { id: image_id }
-    }
-  );
-
+  if (!improveFromVisit) {
+    await models.images.update(
+      {
+        location: models.sequelize.fn(
+          "ST_SetSRID",
+          models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
+          "4326"
+        ),
+        roll: roll,
+        tilt: tilt,
+        azimuth: azimuth,
+        focal: focal,
+        px: px,
+        py: py,
+        user_id: georeferencer_id,
+        date_georef: models.sequelize.literal("now()"),
+        geolocalisation_id: geoloc_id,
+        state: "waiting_validation",
+        framing_mode: framing_mode,
+        image_modifiers: image_modifiers
+      },
+      {
+        where: { id: image_id }
+      }
+    );  
+  }
+  
   // store the geolocalisation parameters
   await models.geolocalisations.update(
     {
@@ -216,7 +219,7 @@ exports.save = route(async (req, res) => {
       score: maxerror,
       surface_ratio: surfaceRatio,
       n_gcp: nGCP,
-      previous_geolocalisation_id: null,
+      previous_geolocalisation_id: improveFromVisit ? previous_geoloc_id : null,
       stop: models.sequelize.literal("now()"),
       user_id: georeferencer_id,
       state: "waiting_validation",
