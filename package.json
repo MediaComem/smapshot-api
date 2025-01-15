@@ -53,6 +53,7 @@
     "@aws-sdk/client-ses": "^3.658.1",
     "@aws-sdk/credential-provider-node": "^3.658.1",
     "@small-tech/express-ws": "^1.0.1",
+    "@techstark/opencv-js": "^4.10.0-release.1",
     "@turf/bbox": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/turf": "^5.1.6",
