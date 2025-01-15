@@ -8,6 +8,34 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
+const getGltfPaths = async(id, regionByPx) => {
+  const sql = `
+    SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
+    FROM images
+    WHERE id = ${id}
+  `;
+  const queryCollectionIdPromise = await models.sequelize.query(sql, {
+    type: models.sequelize.QueryTypes.SELECT
+  });
+  const collection_id = queryCollectionIdPromise[0].collection_id;
+  if (!regionByPx) {
+    regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
+  }
+
+  const region_url = regionByPx ? `_${regionByPx[0]}_${regionByPx[1]}_${regionByPx[2]}_${regionByPx[3]}` : "";
+
+  const rootGltf = `/data/collections/${
+    collection_id}/gltf/`;
+  
+  const gltfTemp = `${rootGltf + id}${region_url}_temp.gltf`;
+  const gltfPath = `${rootGltf + id}${region_url}.gltf`;
+
+  return {
+    gltfTemp: gltfTemp,
+    gltfPath: gltfPath
+  }
+}
+
 exports.generateFromDbPose = utils.route(async (req, res) => {
   const image_id = req.query.image_id;
   // await exports.generateFromDbPosePromise(image_id);
@@ -80,6 +108,29 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
   }
 });
 
+exports.saveGltf = utils.route(async (req, res) => {
+  const { id } = req.params;
+  const regionByPx = req.body.regionByPx;
+  
+  const { gltfTemp, gltfPath } = await getGltfPaths(id, regionByPx);
+  // gltf
+  if (fs.existsSync(gltfTemp)) {
+    await fs.rename(gltfTemp, gltfPath);
+  }
+  res.status(201).send();
+});
+
+exports.deleteTempGltf = utils.route(async (req, res) => {
+  const { id } = req.params;
+  const regionByPx = req.body.regionByPx;
+  
+  const { gltfTemp } = await getGltfPaths(id, regionByPx);
+  if (fs.existsSync(gltfTemp)) {
+    await fs.unlink(gltfTemp);
+  }
+  res.status(201).send();
+});
+
 async function getSquareImageFromDB(image_id, regionByPx) {
   const query = models.images.findOne({
     raw: true,
@@ -121,7 +172,9 @@ async function getSquareImageFromDB(image_id, regionByPx) {
   return image;
 }
 
-async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx, path2image) {
+async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx, path2image, isTemp=false) {
+
+
   //regionByPx = iiif_data.regionByPx, 
   //excepted for composite_images when computing pose during geolocalisation process (= pose-estimation.controller.js "/pose/compute").
 
@@ -190,7 +243,7 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
   const path2jpg = `${path2collections}${
     collection_id}/temp_collada/output/${image_id}${region_url}.jpg`;
   await fs.remove(path2jpg);
-  await copyGltf(image_id, collection_id, region_url);
+  await copyGltf(image_id, collection_id, region_url, isTemp);
 }
 
 async function collada2gltfPromise(path2tempDae, options) {
@@ -206,7 +259,7 @@ async function collada2gltfPromise(path2tempDae, options) {
   });
 }
 
-async function copyGltf(image_id, collection_id, region_url) {
+async function copyGltf(image_id, collection_id, region_url, isTemp) {
   // Generate the path of the files to be copied
   const rootTemp = `/data/collections/${
     collection_id}/temp_collada/output/`;
@@ -214,7 +267,7 @@ async function copyGltf(image_id, collection_id, region_url) {
     collection_id}/gltf/`;
   // gltf
   const gltfTemp = `${rootTemp + image_id}${region_url}.gltf`;
-  const gltfPath = `${rootGltf + image_id}${region_url}.gltf`;
+  const gltfPath = `${rootGltf + image_id}${region_url}${isTemp ? '_temp' : ''}.gltf`;
   await fs.copy(gltfTemp, gltfPath);
 }
 
