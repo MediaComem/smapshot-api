@@ -374,7 +374,12 @@ const getImagesFromPOI = async (req) => {
   const query = req.query;
   const attributes = parseAttributes(query);
   const orderBy = query.sortKey;
-  const orderByNearest = models.sequelize.literal(`images.location <-> st_setsrid(ST_makepoint(${query.longitude}, ${query.latitude}), 4326)`);
+  const orderByNearest = models.sequelize.literal(`
+    ST_Distance(
+      CAST(images.location AS GEOGRAPHY),
+      CAST(ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326) AS GEOGRAPHY)
+    )
+  `);
 
   let whereClauses = [];
 
@@ -476,7 +481,7 @@ const getImagesFromPOI = async (req) => {
     subQuery: false,
     attributes: attributes,
     where: { [Op.and]: whereClauses },
-    order: orderBy === 'distance' ? orderByNearest : (orderBy === 'title' ? [['title']] : [['date_shot_min']]),
+    order: orderBy === 'distance' ? [orderByNearest] : (orderBy === 'title' ? [['title']] : [['date_shot_min']]),
     limit: query.limit || 30,
     offset: query.offset || 0,
   };
@@ -595,6 +600,7 @@ exports.getListMetadata = utils.route(async (req, res) => {
     "title",
     "caption",
     "link",
+    "is_published",
     [models.sequelize.literal("ST_X(images.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(images.location)"), "latitude"]
   ];

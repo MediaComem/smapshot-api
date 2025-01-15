@@ -3,7 +3,7 @@ tasks:
   visit:
     channelName: "update_vt_visit"
     sql: "
-      SELECT images.id, owner_id, collection_id, ST_Force2D(ST_SnapToGrid(geolocalisations.location, 0.0001)) AS geom,
+      SELECT images.id, images.view_type, owner_id, collection_id, ST_Force2D(ST_SnapToGrid(geolocalisations.location, 0.0001)) AS geom,
       (CASE
           WHEN date_shot IS NOT NULL
           THEN to_char(date(date_shot),'yyyymmdd')::int

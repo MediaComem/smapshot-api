@@ -7,7 +7,7 @@
     "rows": {
       "type": "array",
       "items": {
-        "$ref": "Chapters#"
+        "$ref": "ChaptersResponse#"
       }
     }
   },
