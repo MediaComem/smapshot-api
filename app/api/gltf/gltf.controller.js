@@ -111,6 +111,11 @@ exports.generateFromDbPose = utils.route(async (req, res) => {
 exports.saveGltf = utils.route(async (req, res) => {
   const { id } = req.params;
   const regionByPx = req.body.regionByPx;
+  const improveFromVisit = req.body.improveFromVisit;
+
+  if (improveFromVisit) {
+    res.status(201).send();
+  }
   
   const { gltfTemp, gltfPath } = await getGltfPaths(id, regionByPx);
   // gltf
@@ -123,6 +128,11 @@ exports.saveGltf = utils.route(async (req, res) => {
 exports.deleteTempGltf = utils.route(async (req, res) => {
   const { id } = req.params;
   const regionByPx = req.body.regionByPx;
+  const improveFromVisit = req.body.improveFromVisit;
+  
+  if (improveFromVisit) {
+    res.status(201).send();
+  }
   
   const { gltfTemp } = await getGltfPaths(id, regionByPx);
   if (fs.existsSync(gltfTemp)) {
@@ -172,7 +182,7 @@ async function getSquareImageFromDB(image_id, regionByPx) {
   return image;
 }
 
-async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx, path2image, isTemp=false) {
+async function createGltfFromImageCoordinates(imageCoordinates, image_id, collection_id, regionByPx, path2image, isTemp=false, improveFromVisit=false) {
 
 
   //regionByPx = iiif_data.regionByPx, 
@@ -243,7 +253,7 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
   const path2jpg = `${path2collections}${
     collection_id}/temp_collada/output/${image_id}${region_url}.jpg`;
   await fs.remove(path2jpg);
-  await copyGltf(image_id, collection_id, region_url, isTemp);
+  await copyGltf(image_id, collection_id, region_url, isTemp, improveFromVisit);
 }
 
 async function collada2gltfPromise(path2tempDae, options) {
@@ -259,7 +269,7 @@ async function collada2gltfPromise(path2tempDae, options) {
   });
 }
 
-async function copyGltf(image_id, collection_id, region_url, isTemp) {
+async function copyGltf(image_id, collection_id, region_url, isTemp, improveFromVisit) {
   // Generate the path of the files to be copied
   const rootTemp = `/data/collections/${
     collection_id}/temp_collada/output/`;
@@ -267,7 +277,7 @@ async function copyGltf(image_id, collection_id, region_url, isTemp) {
     collection_id}/gltf/`;
   // gltf
   const gltfTemp = `${rootTemp + image_id}${region_url}.gltf`;
-  const gltfPath = `${rootGltf + image_id}${region_url}${isTemp ? '_temp' : ''}.gltf`;
+  const gltfPath = `${rootGltf + image_id}${region_url}${isTemp ? '_temp' : ''}${improveFromVisit ? '_visit' : ''}.gltf`;
   await fs.copy(gltfTemp, gltfPath);
 }
 

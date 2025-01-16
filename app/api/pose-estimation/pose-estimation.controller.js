@@ -161,6 +161,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
    const imageModifier = req.body.image_modifiers;
+   const improveFromVisit = req.body.improveFromVisit;
 
    // The image used to compute in background has a width of 1024px where the image use by the slider in fron has a width of 500px.
    // The conversion is done to apply the same modification here as the front.
@@ -250,9 +251,9 @@ exports.computePoseCreateGltf = route(async (req, res) => {
       filteredResults.regionByPx = regionByPx;
 
       //Build gltf_url
-      filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true);
+      filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true, improveFromVisit);
       try {
-        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, path2image, true)
+        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, path2image, true, improveFromVisit)
         res.status(201).send(filteredResults);
       } catch (error) {
         getLogger().error(error);

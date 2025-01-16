@@ -74,6 +74,9 @@
       },
       "minItems": 4,
       "maxItems": 4
+    },
+    "improveFromVisit": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false,
