@@ -290,9 +290,6 @@ module.exports = (sequelize, DataTypes) => {
         // type of framing_mode (single_image, composite_image)
         type: DataTypes.TEXT,
         allowNull: false
-      },
-      image_modifiers: {
-        type: DataTypes
       }
     },
     {

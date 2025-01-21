@@ -192,8 +192,7 @@ exports.save = route(async (req, res) => {
         date_georef: models.sequelize.literal("now()"),
         geolocalisation_id: geoloc_id,
         state: "waiting_validation",
-        framing_mode: framing_mode,
-        image_modifiers: image_modifiers
+        framing_mode: framing_mode
       },
       {
         where: { id: image_id }
@@ -225,7 +224,8 @@ exports.save = route(async (req, res) => {
       state: "waiting_validation",
       date_checked: models.sequelize.literal("now()"),
       date_georef: models.sequelize.literal("now()"),
-      region_px: regionByPx
+      region_px: regionByPx,
+      image_modifiers: image_modifiers
     },
     {
       where: { id: geoloc_id }

@@ -2,13 +2,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('images', 'image_modifiers', {
+    await queryInterface.addColumn('geolocalisations', 'image_modifiers', {
       type: Sequelize.DataTypes.JSON
     });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeColumn('images', 'image_modifiers', {
+    await queryInterface.removeColumn('geolocalisations', 'image_modifiers', {
       type: Sequelize.DataTypes.JSON
     });
   }
