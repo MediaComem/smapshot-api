@@ -80,7 +80,7 @@ module.exports = () => {
     controller.getFootprint
   );
 
-  // Get GCPs of an image.
+  // Get geolocation id of an image.
   router.get("/images/:id/geolocation_id",
     validateDocumentedRequestParametersFor('GET', '/images/{id}/geolocation_id'),
     controller.getGeolocationId

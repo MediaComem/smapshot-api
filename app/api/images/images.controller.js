@@ -554,14 +554,18 @@ exports.getFootprint = utils.route(async (req, res) => {
 });
 
 exports.getGeolocationId = utils.route(async (req, res) => {
-  const queryPromise = models.images.findOne({
+  const geolocalisation_id = await models.images.findOne({
     attributes: ['geolocalisation_id'],
     where: {
       id: req.params.id
     },
   });
-  const result = await queryPromise;
-  res.status(200).send(result);
+
+  if (!geolocalisation_id) {
+    throw notFoundError(req);
+  }
+
+  res.status(200).send(geolocalisation_id);
 });
 
 // POST /images
