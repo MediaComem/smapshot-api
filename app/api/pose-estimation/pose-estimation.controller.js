@@ -10,6 +10,11 @@ const { poseEstimationError } = require('../../utils/errors');
 const { route, getLogger } = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
+const fs = require("fs");
+
+const cv = require("@techstark/opencv-js");
+const Jimp = require('jimp');
+
 async function getDbImage(image_id){
   const query = models.images.findOne({
     raw: true,
@@ -155,64 +160,107 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const tilt = parseFloat(req.body.tilt);
    const roll = parseFloat(req.body.roll);
    const id = parseInt(req.body.image_id);
+   const imageModifier = req.body.image_modifiers;
+   const improveFromVisit = req.body.improveFromVisit;
+
+   // The image used to compute in background has a width of 1024px where the image use by the slider in fron has a width of 500px.
+   // The conversion is done to apply the same modification here as the front.
+   const convertedModifier = imageModifier.modifier * (1024/500);
+
    let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
-   // Get image collection id and region
-   const sql = `
-       SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
-       FROM images
-       WHERE id = ${id}
-   `;
-   const queryCollectionIdPromise = await models.sequelize.query(sql, {
-     type: models.sequelize.QueryTypes.SELECT
-   });
-   const collection_id = queryCollectionIdPromise[0].collection_id;
-   if (!regionByPx) {
-     regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
-   }
-
-   // Compute Pose
-   // ------------
-    const gcpArrayString = JSON.stringify(GCPs)
-    let lock = 0
-    if (locationLocked){
-      lock=1
-    }else{
-      lock=0
+    // Get image collection id and region
+    const sql = `
+        SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
+        FROM images
+        WHERE id = ${id}
+    `;
+    const queryCollectionIdPromise = await models.sequelize.query(sql, {
+      type: models.sequelize.QueryTypes.SELECT
+    });
+    const collection_id = queryCollectionIdPromise[0].collection_id;
+    if (!regionByPx) {
+      regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
     }
 
-    let results;
-    try {
-      results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
-    } catch(error) {
-      getLogger().error(error);
-      throw poseEstimationError(req);
+    const path2collections = "/data/collections/";
+    const path2image = `${path2collections}${
+      collection_id}/images/output/${id}.png`;
+    let srcImage = `${config.apiUrl}${path2collections}${collection_id}/images/1024/${id}.jpg`
+
+    if (!fs.existsSync(srcImage)) {
+      const imageSquaredFromDB = await gltf.getSquareImageFromDB(id, regionByPx);
+      srcImage = imageSquaredFromDB.media.image_url;
     }
 
-    if (!results) {
-      throw poseEstimationError(req);
-    } else {
+    let jimpSrc = await Jimp.read(srcImage);
+    var src = cv.matFromImageData(jimpSrc.bitmap);
+    let dst = new cv.Mat();
+    let texture = new cv.Mat();
+    let dsize = new cv.Size(src.cols, src.rows);
+    let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
+    let dstTri;
 
-     const {imageCoordinatesForGltf, ...filteredResults } = results;
+    if (convertedModifier > 0)
+      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
+    else
+      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, Math.abs(convertedModifier), dsize.height, dsize.width-Math.abs(convertedModifier), dsize.height]);
+    let M = cv.getPerspectiveTransform(srcTri, dstTri);
 
-     // Compute surface covered with gcps
-     const ratio = computeGCPRatio(GCPs, width, height);
-     filteredResults.gcpPercentSurface = ratio;
+    cv.warpPerspective(src, dst, M, dsize);
+    cv.flip(dst,texture,0);
+    let resized_image = new cv.Mat();
+    cv.resize(dst, resized_image,new cv.Size(imageModifier.imageSize.width, imageModifier.imageSize.height), 0, 0, cv.INTER_AREA);
+    new Jimp({
+      width: resized_image.cols,
+      height: resized_image.rows,
+      data: Buffer.from(resized_image.data)
+      })
+      .write(path2image);
 
-     //Add region and url_gltf in results
-     filteredResults.image_id = id;
-     filteredResults.regionByPx = regionByPx;
+    // Compute Pose
+    // ------------
+      const gcpArrayString = JSON.stringify(GCPs)
+      let lock = 0
+      if (locationLocked){
+        lock=1
+      }else{
+        lock=0
+      }
 
-     //Build gltf_url
-     filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true);
-     try {
-       await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, true);
-       res.status(201).send(filteredResults);
-     } catch (error) {
-      getLogger().error(error);
-      throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
+      let results;
+      try {
+        results = await computeCameraPose(longitude, latitude, altitude, azimuth, tilt, roll, gcpArrayString, width, height, lock)
+      } catch(error) {
+        getLogger().error(error);
+        throw poseEstimationError(req);
+      }
+
+      if (!results) {
+        throw poseEstimationError(req);
+      } else {
+
+      const {imageCoordinatesForGltf, ...filteredResults } = results;
+
+      // Compute surface covered with gcps
+      const ratio = computeGCPRatio(GCPs, width, height);
+      filteredResults.gcpPercentSurface = ratio;
+
+      //Add region and url_gltf in results
+      filteredResults.image_id = id;
+      filteredResults.regionByPx = regionByPx;
+
+      //Build gltf_url
+      filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true, improveFromVisit);
+      try {
+        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, path2image, true, improveFromVisit)
+        res.status(201).send(filteredResults);
+      } catch (error) {
+        getLogger().error(error);
+        throw poseEstimationError(req, req.__('pose.3dModelCreationError'));
+      }
     }
-  }
+   
 });
 
 // Get parameters sent by the client

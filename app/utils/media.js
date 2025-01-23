@@ -94,12 +94,12 @@ exports.generateImageTiles = (image_id, collection_id, iiif_data) => {
     return tiles
 }
 
-exports.generateGltfUrl = (image_id, collection_id, region, isTemp = false) => {
+exports.generateGltfUrl = (image_id, collection_id, region, isTemp = false, improveFromVisit=false) => {
     let model_3d_url;
     if (region) {
-        model_3d_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${image_id}_${region[0]}_${region[1]}_${region[2]}_${region[3]}${isTemp ? '_temp' : ''}.gltf`;
+        model_3d_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${image_id}_${region[0]}_${region[1]}_${region[2]}_${region[3]}${isTemp ? '_temp' : ''}${improveFromVisit ? '_visit' : ''}.gltf`;
     } else {
-        model_3d_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${image_id}${isTemp ? '_temp' : ''}.gltf`;
+        model_3d_url = `${config.apiUrl}/data/collections/${collection_id}/gltf/${image_id}${isTemp ? '_temp' : ''}${improveFromVisit ? '_visit' : ''}.gltf`;
     }
 
     return model_3d_url

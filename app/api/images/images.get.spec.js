@@ -1,5 +1,6 @@
 const { expectNoSideEffects, loadInitialState } = require('../../../spec/expectations/side-effects');
 const { createImage } = require('../../../spec/fixtures/images');
+const { createGeolocalisation } = require('../../../spec/fixtures/geolocalisations');
 const { getExpectedImageAttributes } = require('../../../spec/expectations/images');
 const { typeError } = require('../../../spec/expectations/errors');
 const { testHttpRequest } = require('../../../spec/utils/api');
@@ -96,6 +97,90 @@ describe('GET /images/:id/attributes', () => {
 
            })
         )
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+})
+
+describe('GET /images/:id/geolocation_id', () => {
+  let app;
+
+  beforeEach(async () => {
+    await resetDatabase();
+    ({ app } = createApplicationWithMocks());
+  });
+
+  it('does not accept invalid path parameters', async () => {
+    const req = {
+      method: 'GET',
+      path: '/images/foo/geolocation_id'
+    };
+
+    expect(req).to.matchRequestDocumentation({ invalidParameters: [ 'id' ] });
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+      .to.have.status(400)
+      .and.to.have.requestParametersValidationErrors([
+        typeError({ location: 'path', property: 'id', type: 'integer' }),
+      ])
+      .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app);
+  });
+
+  it('returns not found for inexistant images', async () => {
+    const req = {
+      method: 'GET',
+      path: '/images/100/geolocation_id'
+    };
+
+    expect(req).to.matchRequestDocumentation();
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+      .to.have.status(404)
+      .and.have.httpProblemDetailsBody({
+        type: 'https://httpstatuses.com/404',
+        title: 'Not Found',
+        status: 404,
+        detail: __('general.resourceNotFound')
+      })
+      .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app);
+  });
+
+  describe('initial image', () => {
+    let image;
+    let geolocalisation;
+    let initialState;
+
+    beforeEach(async () => {
+      // Generate images for the collections.
+      geolocalisation = await createGeolocalisation({}),
+      image = await createImage({ state: 'initial', apriori_longitude: 7.44, apriori_latitude: 46.95, geolocalisation_id: geolocalisation.id });
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the image', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${image.id}/geolocation_id`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody({
+          geolocalisation_id: image.geolocalisation_id
+        })
         .and.to.matchResponseDocumentation();
 
       await expectNoSideEffects(app, initialState);

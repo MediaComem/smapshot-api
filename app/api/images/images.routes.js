@@ -80,6 +80,12 @@ module.exports = () => {
     controller.getFootprint
   );
 
+  // Get geolocation id of an image.
+  router.get("/images/:id/geolocation_id",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/geolocation_id'),
+    controller.getGeolocationId
+  );
+
   // Update the state of an image.
   router.put("/images/:id/state",
     authenticate(),

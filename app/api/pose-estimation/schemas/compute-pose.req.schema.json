@@ -47,6 +47,25 @@
         "type": "object"
       }
     },
+    "image_modifiers": {
+      "type": "object",
+      "properties": {
+        "modifier": {
+          "type": "integer"
+        },
+        "imageSize": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
     "regionByPx": {
       "type": "array",
       "items": {
@@ -55,6 +74,9 @@
       },
       "minItems": 4,
       "maxItems": 4
+    },
+    "improveFromVisit": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false,
