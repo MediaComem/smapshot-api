@@ -183,40 +183,46 @@ exports.computePoseCreateGltf = route(async (req, res) => {
       regionByPx = queryCollectionIdPromise[0].regionbypx; //for image without cumulative_views, take the region from the iiif_data
     }
 
-    const path2collections = "/data/collections/";
-    const path2image = `${path2collections}${
-      collection_id}/images/output/${id}.png`;
-    let srcImage = `${config.apiUrl}${path2collections}${collection_id}/images/1024/${id}.jpg`
+    let path2image = null;
 
-    if (!fs.existsSync(srcImage)) {
-      const imageSquaredFromDB = await gltf.getSquareImageFromDB(id, regionByPx);
-      srcImage = imageSquaredFromDB.media.image_url;
+    if (convertedModifier !== 0) {
+      const path2collections = "/data/collections/";
+      path2image = `${path2collections}${
+        collection_id}/images/output/${id}_${convertedModifier}.png`;
+      let srcImage = `${config.apiUrl}${path2collections}${collection_id}/images/1024/${id}.jpg`
+  
+      if (!fs.existsSync(srcImage)) {
+        const imageSquaredFromDB = await gltf.getSquareImageFromDB(id, regionByPx);
+        srcImage = imageSquaredFromDB.media.image_url;
+      }
+  
+      let jimpSrc = await Jimp.read(srcImage);
+      var src = cv.matFromImageData(jimpSrc.bitmap);
+      let dst = new cv.Mat();
+      let texture = new cv.Mat();
+      let dsize = new cv.Size(src.cols, src.rows);
+      let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
+      let dstTri;
+  
+      if (convertedModifier > 0)
+        dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
+      else
+        dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, Math.abs(convertedModifier), dsize.height, dsize.width-Math.abs(convertedModifier), dsize.height]);
+      let M = cv.getPerspectiveTransform(srcTri, dstTri);
+  
+      cv.warpPerspective(src, dst, M, dsize);
+      cv.flip(dst,texture,0);
+      let resized_image = new cv.Mat();
+      cv.resize(dst, resized_image,new cv.Size(imageModifier.imageSize.width, imageModifier.imageSize.height), 0, 0, cv.INTER_AREA);
+      new Jimp({
+        width: resized_image.cols,
+        height: resized_image.rows,
+        data: Buffer.from(resized_image.data)
+        })
+        .write(path2image);
+
+        path2image = config.apiUrl + path2image;
     }
-
-    let jimpSrc = await Jimp.read(srcImage);
-    var src = cv.matFromImageData(jimpSrc.bitmap);
-    let dst = new cv.Mat();
-    let texture = new cv.Mat();
-    let dsize = new cv.Size(src.cols, src.rows);
-    let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, 0, dsize.height, dsize.width, dsize.height]);
-    let dstTri;
-
-    if (convertedModifier > 0)
-      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [convertedModifier, 0, dsize.width-convertedModifier, 0, 0, dsize.height, dsize.width, dsize.height]);
-    else
-      dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dsize.width, 0, Math.abs(convertedModifier), dsize.height, dsize.width-Math.abs(convertedModifier), dsize.height]);
-    let M = cv.getPerspectiveTransform(srcTri, dstTri);
-
-    cv.warpPerspective(src, dst, M, dsize);
-    cv.flip(dst,texture,0);
-    let resized_image = new cv.Mat();
-    cv.resize(dst, resized_image,new cv.Size(imageModifier.imageSize.width, imageModifier.imageSize.height), 0, 0, cv.INTER_AREA);
-    new Jimp({
-      width: resized_image.cols,
-      height: resized_image.rows,
-      data: Buffer.from(resized_image.data)
-      })
-      .write(path2image);
 
     // Compute Pose
     // ------------
@@ -253,7 +259,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
       //Build gltf_url
       filteredResults.gltf_url = mediaUtils.generateGltfUrl(id, collection_id, regionByPx, true, improveFromVisit);
       try {
-        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, config.apiUrl + path2image, true, improveFromVisit)
+        await gltf.createGltfFromImageCoordinates(imageCoordinatesForGltf, id, collection_id, regionByPx, path2image, true, improveFromVisit)
         res.status(201).send(filteredResults);
       } catch (error) {
         getLogger().error(error);

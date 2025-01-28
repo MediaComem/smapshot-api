@@ -105,6 +105,10 @@ module.exports = () => {
     controller.submitImage
   );
 
+  router.post("/images/remove_unused_output",
+    controller.removeUnusedTempImage
+  )
+
   // Update the attributes of an image.
     router.put("/images/:id/attributes",
     authenticate(),

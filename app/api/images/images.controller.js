@@ -1,5 +1,8 @@
 const WebSocket = require('ws');
 const Sequelize = require("sequelize");
+const path = require('path');
+const glob = require('glob');
+const fs = require("fs-extra");
 
 const config = require('../../../config');
 const models = require("../../models");
@@ -373,12 +376,13 @@ exports.getAttributes = utils.route(async (req, res) => {
     let poses = [];
     for (const geoloc of res_geolocs) {
       const region = geoloc.dataValues.region_px ? geoloc.dataValues.region_px : null;
+      const isVisitedMode = geoloc.previous_geoloc_id !== null;
       const pose = {
         geolocalisation_id: geoloc.dataValues.id,
         image_id: image_id,
         state: geoloc.dataValues.state,
         regionByPx: geoloc.dataValues.region_px,
-        gltf_url: mediaUtils.generateGltfUrl(image_id, collection_id, region),
+        gltf_url: mediaUtils.generateGltfUrl(image_id, collection_id, region, isVisitedMode, isVisitedMode),
         altitude: geoloc.dataValues.altitude,
         latitude: geoloc.dataValues.latitude,
         longitude: geoloc.dataValues.longitude,
@@ -392,7 +396,7 @@ exports.getAttributes = utils.route(async (req, res) => {
     results.dataValues.poses = poses;
   }
 
-  //GROUP POSE attributes.
+  //GROUP POSE attributes
   //Geolocalisation registered in the images table.
   //If composite_image, corresponds to the last geolocalisation having been saved (geolocalisations/{id}/save).
 
@@ -971,4 +975,39 @@ async function findPhotographers(req, photographer_ids) {
   }
   return photographers
 }
+
+exports.removeUnusedTempImage = utils.route(async (req, res) => {
+  const data = req.body;
+  const newConvertedModifier = data.image_modifiers.modifier * (1024/500);
+  const getValidatedImageModifier = await models.images.findOne({
+    include: [
+      {
+        model: models.geolocalisations,
+        attributes: [
+          "id",
+          "image_modifiers"
+        ],
+        required:false
+      }
+    ],
+    where: {
+      id: data.image_id
+    }
+  });
+  let currentValidatedImageModifier = getValidatedImageModifier.geolocalisation.image_modifiers;
+  if (currentValidatedImageModifier === null) {
+    currentValidatedImageModifier = { modifier: 0, imageSize: { width: 0, height: 0 } };
+  }
+  const currentConvertedImageModifier = currentValidatedImageModifier.modifier * (1024/500);
+  const includedFiles = glob.sync(`/data/collections/${data.collection_id}/images/output/${data.image_id}*.png`)
+  for (let i = 0; i < includedFiles.length; i++) {
+    if (path.basename(includedFiles[i]) !== `${data.image_id}_${newConvertedModifier}.png` &&
+      path.basename(includedFiles[i]) !== `${data.image_id}_${currentConvertedImageModifier}.png`) {
+      await fs.unlink(includedFiles[i]);
+    }
+  }
+  res.status(200).send({
+    message: "Images have been removed."
+  });
+});
 

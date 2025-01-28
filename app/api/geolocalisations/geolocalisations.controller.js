@@ -30,7 +30,9 @@ exports.getAttributes = route(async (req, res) => {
     [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
     [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"],
-    "region_px"
+    "region_px",
+    "previous_geolocalisation_id",
+    "image_modifiers"
   ];
 
   const results = await models.geolocalisations.findOne({
