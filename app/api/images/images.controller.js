@@ -1003,6 +1003,7 @@ exports.removeUnusedTempImage = utils.route(async (req, res) => {
   const currentConvertedImageModifier = currentValidatedImageModifier.modifier * (1024/500);
   const includedFiles = glob.sync(`/data/collections/${data.collection_id}/images/output/${data.image_id}*.png`)
   for (let i = 0; i < includedFiles.length; i++) {
+    // Keep the current image geolocalize and the new expected one
     if (path.basename(includedFiles[i]) !== `${data.image_id}_${newConvertedModifier}.png` &&
       path.basename(includedFiles[i]) !== `${data.image_id}_${currentConvertedImageModifier}.png`) {
       await fs.unlink(includedFiles[i]);
