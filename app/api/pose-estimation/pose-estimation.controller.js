@@ -163,7 +163,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
    const imageModifier = req.body.image_modifiers;
    const improveFromVisit = req.body.improveFromVisit;
 
-   // The image used to compute in background has a width of 1024px where the image use by the slider in fron has a width of 500px.
+   // The image used to compute in the background has a width of 1024px where the image used by the slider in the front has a width of 500px.
    // The conversion is done to apply the same modification here as the front.
    const convertedModifier = imageModifier.modifier * (1024/500);
 

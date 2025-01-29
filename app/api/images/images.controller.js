@@ -376,13 +376,12 @@ exports.getAttributes = utils.route(async (req, res) => {
     let poses = [];
     for (const geoloc of res_geolocs) {
       const region = geoloc.dataValues.region_px ? geoloc.dataValues.region_px : null;
-      const isVisitedMode = geoloc.previous_geoloc_id !== null;
       const pose = {
         geolocalisation_id: geoloc.dataValues.id,
         image_id: image_id,
         state: geoloc.dataValues.state,
         regionByPx: geoloc.dataValues.region_px,
-        gltf_url: mediaUtils.generateGltfUrl(image_id, collection_id, region, isVisitedMode, isVisitedMode),
+        gltf_url: mediaUtils.generateGltfUrl(image_id, collection_id, region),
         altitude: geoloc.dataValues.altitude,
         latitude: geoloc.dataValues.latitude,
         longitude: geoloc.dataValues.longitude,
