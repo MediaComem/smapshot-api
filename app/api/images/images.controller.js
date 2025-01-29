@@ -994,8 +994,10 @@ exports.removeUnusedTempImage = utils.route(async (req, res) => {
       id: data.image_id
     }
   });
-  let currentValidatedImageModifier = getValidatedImageModifier.geolocalisation.image_modifiers;
-  if (currentValidatedImageModifier === null) {
+  let currentValidatedImageModifier = null;
+  if (getValidatedImageModifier.geolocalisation && getValidatedImageModifier.geolocalisation.image_modifiers) {
+    currentValidatedImageModifier = getValidatedImageModifier.geolocalisation.image_modifiers
+  } else {
     currentValidatedImageModifier = { modifier: 0, imageSize: { width: 0, height: 0 } };
   }
   const currentConvertedImageModifier = currentValidatedImageModifier.modifier * (1024/500);

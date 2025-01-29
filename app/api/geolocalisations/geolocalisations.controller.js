@@ -311,7 +311,8 @@ let validate = async (req, res) => {
       focal: req.geolocalisation.focal,
       px: req.geolocalisation.px,
       py: req.geolocalisation.py,
-      footprint: merged_footprint
+      footprint: merged_footprint,
+      geolocalisation_id: geoloc_id
     },
     {
       where: { id: image_id }
