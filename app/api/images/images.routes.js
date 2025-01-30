@@ -67,6 +67,12 @@ module.exports = () => {
     controller.getAttributes
   );
 
+  // Retrieve all georeferencers of an image.
+  router.get("/images/:id/georeferencers",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/georeferencers'),
+    controller.getGeoreferencers
+  );  
+
   // Get the GeoPose pf an image.
     router.get("/images/:id/geopose",
     authenticate({ required: false }),

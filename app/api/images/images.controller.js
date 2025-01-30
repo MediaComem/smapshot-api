@@ -13,6 +13,7 @@ const { notFoundError, requestBodyValidationError, poseEstimationError } = requi
 const { getOwnerScope } = require('./images.utils');
 const mediaUtils = require('../../utils/media');
 const pose = require("../pose-estimation/pose-estimation.controller");
+const { cleanProp } = require("../../utils/params");
 
 const Op = Sequelize.Op;
 
@@ -458,6 +459,35 @@ exports.getAttributes = utils.route(async (req, res) => {
     pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
   });
 });
+
+exports.getGeoreferencers = utils.route(async (req, res) => {
+  const image_id = req.params.id;
+  let includes = [
+    {
+      attributes: ['id', 'username'],
+      model: models.users,
+      as: 'volunteer',
+      required: true
+    }
+  ];
+
+  const whereGeoloc = {
+    stop: {
+      [Op.ne]: null
+    },
+    state: ['waiting_validation', 'validated'],
+    image_id: image_id
+  }
+
+  const topUsers = await models.geolocalisations.findAll({
+    attributes: [],
+    where: cleanProp(whereGeoloc),
+    include: includes,
+  });
+
+  res.status(200).send(topUsers);
+});
+
 
 // GET /images/:id/geopose
 // =========================
