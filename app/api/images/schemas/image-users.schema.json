@@ -1,0 +1,22 @@
+{
+  "$id": "ImageGeoreferencers",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "volunteer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
