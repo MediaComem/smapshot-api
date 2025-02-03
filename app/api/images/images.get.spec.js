@@ -285,10 +285,8 @@ describe('GET /images/:id/georeferencers', () => {
       expect(res)
         .to.have.status(200)
         .and.to.have.jsonBody([{
-          volunteer: {
             id: bob.id,
             username: bob.username
-          }
         }])
         .and.to.matchResponseDocumentation();
 
@@ -331,16 +329,61 @@ describe('GET /images/:id/georeferencers', () => {
       expect(res)
         .to.have.status(200)
         .and.to.have.jsonBody([{
-          volunteer: {
-            id: bob.id,
-            username: bob.username
-          }
+          id: bob.id,
+          username: bob.username
         },
         {
-          volunteer: {
-            id: alice.id,
-            username: alice.username
-          }
+          id: alice.id,
+          username: alice.username
+        }])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+
+  describe('with three georefencers and one is also the validator ', () => {
+    let geo1;
+    let initialState;
+
+    let owner1;
+    let col1;
+    let bob, alice;
+
+    beforeEach(async () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      [ owner1 ] = await generate(1, createOwner);
+      [ col1 ] = await Promise.all([
+        createCollection({ date_publi: yesterday, is_owner_challenge: true, owner: owner1 }),
+      ]);
+
+      [ bob, alice ] = await generate(2, createUser);
+
+      geo1 = await createGeolocalisation({ user: bob, collection: col1, stop: yesterday, state: 'validated' });
+      await createGeolocalisation({ user: alice, collection: col1, stop: yesterday, state: 'validated', image: geo1.image });
+      await createGeolocalisation({ user: alice, validator: alice, collection: col1, stop: yesterday, state: 'validated', image: geo1.image });
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the georeferencers', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${geo1.image_id}/georeferencers`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody([{
+          id: bob.id,
+          username: bob.username
+        },
+        {
+          id: alice.id,
+          username: alice.username
         }])
         .and.to.matchResponseDocumentation();
 
