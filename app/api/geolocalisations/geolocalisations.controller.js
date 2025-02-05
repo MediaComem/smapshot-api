@@ -30,7 +30,9 @@ exports.getAttributes = route(async (req, res) => {
     [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
     [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"],
-    "region_px"
+    "region_px",
+    "previous_geolocalisation_id",
+    "image_modifiers"
   ];
 
   const results = await models.geolocalisations.findOne({
@@ -246,18 +248,33 @@ exports.save = route(async (req, res) => {
         where: { id: geoloc_id }
       }
     );
-    // the previous geolocalisation is marked as "improved",
-    // the reason of the improvement are recorded
-    await models.geolocalisations.update(
-      {
-        state: "improved",
-        remark: remark,
-        errors_list: errors_list
-      },
-      {
-        where: { id: previous_geoloc_id }
-      }
-    );
+
+    let previousGeolocIdToSearchAndUpdate = previous_geoloc_id;
+
+    while (previousGeolocIdToSearchAndUpdate) {
+      // the previous geolocalisation is marked as "improved",
+      // the reason of the improvement are recorded
+      await models.geolocalisations.update(
+        {
+          state: "improved",
+          remark: remark,
+          errors_list: errors_list
+        },
+        {
+          where: { id: previousGeolocIdToSearchAndUpdate }
+        }
+      );
+
+      const geolocalisation = await models.geolocalisations.findOne({
+        where: {
+          id: previousGeolocIdToSearchAndUpdate
+        }
+      });
+
+      previousGeolocIdToSearchAndUpdate = geolocalisation.previous_geolocalisation_id
+
+    }
+    
 
     // the image is validated
     await models.images.update(
@@ -278,6 +295,7 @@ exports.save = route(async (req, res) => {
 let validate = async (req, res) => {
   const geoloc_id = req.geolocalisation.id;
   const image_id =  req.geolocalisation.image_id;
+  const previous_geolocalisation_id = req.geolocalisation.previous_geolocalisation_id;
   const validator_id = req.user.id;
 
   //validate geoloc in table geolocalisations
@@ -292,6 +310,17 @@ let validate = async (req, res) => {
       where: { id: geoloc_id }
     }
   );
+
+  if (previous_geolocalisation_id) {
+    await models.geolocalisations.update(
+      {
+        state: "improved"
+      },
+      {
+        where: { id: previous_geolocalisation_id }
+      }
+    );
+  }
 
   //FIND all validated footprints in table geolocalisations and merge them into one.
   const merged_footprint = await mergeFootprint(image_id);
@@ -309,7 +338,8 @@ let validate = async (req, res) => {
       focal: req.geolocalisation.focal,
       px: req.geolocalisation.px,
       py: req.geolocalisation.py,
-      footprint: merged_footprint
+      footprint: merged_footprint,
+      geolocalisation_id: geoloc_id
     },
     {
       where: { id: image_id }

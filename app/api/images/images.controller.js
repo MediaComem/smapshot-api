@@ -1,5 +1,8 @@
 const WebSocket = require('ws');
 const Sequelize = require("sequelize");
+const path = require('path');
+const glob = require('glob');
+const fs = require("fs-extra");
 
 const config = require('../../../config');
 const models = require("../../models");
@@ -10,6 +13,7 @@ const { notFoundError, requestBodyValidationError, poseEstimationError } = requi
 const { getOwnerScope } = require('./images.utils');
 const mediaUtils = require('../../utils/media');
 const pose = require("../pose-estimation/pose-estimation.controller");
+const { cleanProp } = require("../../utils/params");
 
 const Op = Sequelize.Op;
 
@@ -392,7 +396,7 @@ exports.getAttributes = utils.route(async (req, res) => {
     results.dataValues.poses = poses;
   }
 
-  //GROUP POSE attributes.
+  //GROUP POSE attributes
   //Geolocalisation registered in the images table.
   //If composite_image, corresponds to the last geolocalisation having been saved (geolocalisations/{id}/save).
 
@@ -455,6 +459,37 @@ exports.getAttributes = utils.route(async (req, res) => {
     pose: { altitude, latitude, longitude, azimuth, tilt, roll, focal, country_iso_a2, geolocalisation_id: geoloc_id, regionByPx: region_px, gltf_url }
   });
 });
+
+exports.getGeoreferencers = utils.route(async (req, res) => {
+  const image_id = req.params.id;
+
+  const whereGeoloc = {
+    stop: {
+      [Op.ne]: null
+    },
+    state: ['improved', 'validated'],
+    user_id: {
+      [Op.ne]: models.sequelize.col("validator_id")
+    },
+    image_id: image_id
+  }
+
+  let includes = [
+    {
+      attributes: [],
+      model: models.geolocalisations,
+      where: cleanProp(whereGeoloc),
+    }
+  ];
+
+  const topUsers = await models.users.findAll({
+    attributes: ['id', 'username'],
+    include: includes,
+  });
+
+  res.status(200).send(topUsers);
+});
+
 
 // GET /images/:id/geopose
 // =========================
@@ -971,4 +1006,42 @@ async function findPhotographers(req, photographer_ids) {
   }
   return photographers
 }
+
+exports.removeUnusedTempImage = utils.route(async (req, res) => {
+  const data = req.body;
+  const newConvertedModifier = data.image_modifiers.modifier * (1024/500);
+  const getValidatedImageModifier = await models.images.findOne({
+    include: [
+      {
+        model: models.geolocalisations,
+        attributes: [
+          "id",
+          "image_modifiers"
+        ],
+        required:false
+      }
+    ],
+    where: {
+      id: data.image_id
+    }
+  });
+  let currentValidatedImageModifier = null;
+  if (getValidatedImageModifier.geolocalisation && getValidatedImageModifier.geolocalisation.image_modifiers) {
+    currentValidatedImageModifier = getValidatedImageModifier.geolocalisation.image_modifiers
+  } else {
+    currentValidatedImageModifier = { modifier: 0, imageSize: { width: 0, height: 0 } };
+  }
+  const currentConvertedImageModifier = currentValidatedImageModifier.modifier * (1024/500);
+  const includedFiles = glob.sync(`/data/collections/${data.collection_id}/images/output/${data.image_id}*.png`)
+  for (let i = 0; i < includedFiles.length; i++) {
+    // Keep the current image geolocalize and the new expected one
+    if (path.basename(includedFiles[i]) !== `${data.image_id}_${newConvertedModifier}.png` &&
+      path.basename(includedFiles[i]) !== `${data.image_id}_${currentConvertedImageModifier}.png`) {
+      await fs.unlink(includedFiles[i]);
+    }
+  }
+  res.status(200).send({
+    message: "Images have been removed."
+  });
+});
 

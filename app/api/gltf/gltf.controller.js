@@ -8,7 +8,7 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const mediaUtils = require('../../utils/media');
 
-const getGltfPaths = async(id, regionByPx) => {
+const getGltfPaths = async(id, regionByPx, improveFromVisit = false) => {
   const sql = `
     SELECT collection_id, iiif_data->'regionByPx' AS regionbypx
     FROM images
@@ -27,7 +27,7 @@ const getGltfPaths = async(id, regionByPx) => {
   const rootGltf = `/data/collections/${
     collection_id}/gltf/`;
   
-  const gltfTemp = `${rootGltf + id}${region_url}_temp.gltf`;
+  const gltfTemp = `${rootGltf + id}${region_url}_temp${improveFromVisit ? '_visit' : ''}.gltf`;
   const gltfPath = `${rootGltf + id}${region_url}.gltf`;
 
   return {
@@ -117,7 +117,7 @@ exports.saveGltf = utils.route(async (req, res) => {
     res.status(201).send();
   }
   
-  const { gltfTemp, gltfPath } = await getGltfPaths(id, regionByPx);
+  const { gltfTemp, gltfPath } = await getGltfPaths(id, regionByPx, improveFromVisit);
   // gltf
   if (fs.existsSync(gltfTemp)) {
     await fs.rename(gltfTemp, gltfPath);
@@ -130,11 +130,7 @@ exports.deleteTempGltf = utils.route(async (req, res) => {
   const regionByPx = req.body.regionByPx;
   const improveFromVisit = req.body.improveFromVisit;
   
-  if (improveFromVisit) {
-    res.status(201).send();
-  }
-  
-  const { gltfTemp } = await getGltfPaths(id, regionByPx);
+  const { gltfTemp } = await getGltfPaths(id, regionByPx, improveFromVisit);
   if (fs.existsSync(gltfTemp)) {
     await fs.unlink(gltfTemp);
   }

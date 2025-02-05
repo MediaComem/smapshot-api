@@ -67,6 +67,12 @@ module.exports = () => {
     controller.getAttributes
   );
 
+  // Retrieve all georeferencers of an image.
+  router.get("/images/:id/georeferencers",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/georeferencers'),
+    controller.getGeoreferencers
+  );  
+
   // Get the GeoPose pf an image.
     router.get("/images/:id/geopose",
     authenticate({ required: false }),
@@ -104,6 +110,10 @@ module.exports = () => {
     controller.findCollection,
     controller.submitImage
   );
+
+  router.post("/images/remove_unused_output",
+    controller.removeUnusedTempImage
+  )
 
   // Update the attributes of an image.
     router.put("/images/:id/attributes",
