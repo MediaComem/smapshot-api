@@ -5,16 +5,11 @@
   "items": {
     "type": "object",
     "properties": {
-      "volunteer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "username": {
-            "type": "string"
-          }
-        }
+      "id": {
+        "type": "integer"
+      },
+      "username": {
+        "type": "string"
       }
     }
   },

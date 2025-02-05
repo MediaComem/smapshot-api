@@ -462,26 +462,28 @@ exports.getAttributes = utils.route(async (req, res) => {
 
 exports.getGeoreferencers = utils.route(async (req, res) => {
   const image_id = req.params.id;
-  let includes = [
-    {
-      attributes: ['id', 'username'],
-      model: models.users,
-      as: 'volunteer',
-      required: true
-    }
-  ];
 
   const whereGeoloc = {
     stop: {
       [Op.ne]: null
     },
-    state: ['waiting_validation', 'validated'],
+    state: ['improved', 'validated'],
+    user_id: {
+      [Op.ne]: models.sequelize.col("validator_id")
+    },
     image_id: image_id
   }
 
-  const topUsers = await models.geolocalisations.findAll({
-    attributes: [],
-    where: cleanProp(whereGeoloc),
+  let includes = [
+    {
+      attributes: [],
+      model: models.geolocalisations,
+      where: cleanProp(whereGeoloc),
+    }
+  ];
+
+  const topUsers = await models.users.findAll({
+    attributes: ['id', 'username'],
     include: includes,
   });
 
