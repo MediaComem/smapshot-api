@@ -391,3 +391,152 @@ describe('GET /images/:id/georeferencers', () => {
     });
   });
 })
+
+describe('GET /images/:id/check_waiting_validation', () => {
+  let app;
+
+  beforeEach(async () => {
+    await resetDatabase();
+    ({ app } = createApplicationWithMocks());
+  });
+
+  it('does not accept invalid path parameters', async () => {
+    const req = {
+      method: 'GET',
+      path: '/images/foo/check_waiting_validation'
+    };
+
+    expect(req).to.matchRequestDocumentation({ invalidParameters: [ 'id' ] });
+
+    const res = await testHttpRequest(app, req);
+
+    expect(res)
+      .to.have.status(400)
+      .and.to.have.requestParametersValidationErrors([
+        typeError({ location: 'path', property: 'id', type: 'integer' }),
+      ])
+      .and.to.matchResponseDocumentation();
+
+    await expectNoSideEffects(app);
+  });
+
+  describe('without geolocalisation for the image', () => {
+    let image;
+    let initialState;
+
+    beforeEach(async () => {
+      image = await createImage({ state: 'initial', apriori_longitude: 7.44, apriori_latitude: 46.95 });
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the state', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${image.id}/check_waiting_validation`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody({
+          hasWaitingGeolocalisation: false
+        })
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+
+  describe('without waiting state but with validated', () => {
+    let geolocalisation;
+    let initialState;
+
+    beforeEach(async () => {
+      // Generate images for the collections.
+      geolocalisation = await createGeolocalisation({state: 'validated'}),
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the state', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${geolocalisation.image_id}/check_waiting_validation`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody({
+          hasWaitingGeolocalisation: false
+        })
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+
+  describe('with waiting state', () => {
+    let geo1;
+    let initialState;
+
+    beforeEach(async () => {
+      geo1 = await createGeolocalisation({ state: 'waiting_validation' });
+
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the state', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${geo1.image_id}/check_waiting_validation`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody({
+          hasWaitingGeolocalisation: true
+        })
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+
+  describe('with waiting state and validated state', () => {
+    let geo1;
+    let initialState;
+
+    beforeEach(async () => {
+      geo1 = await createGeolocalisation({state: 'waiting_validation' });
+      await createGeolocalisation({ state: 'validated', image: geo1.image });
+
+      initialState = await loadInitialState();
+    });
+
+    it('retrieves the state', async () => {
+      const req = {
+        method: 'GET',
+        path: `/images/${geo1.image_id}/check_waiting_validation`
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody({
+          hasWaitingGeolocalisation: true
+        })
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+  });
+})

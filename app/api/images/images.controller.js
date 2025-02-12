@@ -479,6 +479,9 @@ exports.getGeoreferencers = utils.route(async (req, res) => {
       attributes: [],
       model: models.geolocalisations,
       where: cleanProp(whereGeoloc),
+      order: [
+        ['id', 'DESC'],
+      ]
     }
   ];
 
@@ -488,6 +491,23 @@ exports.getGeoreferencers = utils.route(async (req, res) => {
   });
 
   res.status(200).send(topUsers);
+});
+
+exports.checkWaitingValidation = utils.route(async (req, res) => {
+  const image_id = req.params.id;
+
+  const whereClause = {
+    image_id: image_id,
+    state: 'waiting_validation'
+  }
+
+  const hasWaitingValidationGeolocalisation = await models.geolocalisations.findOne({
+    where: whereClause
+  }) !== null;
+
+  res.status(200).send({
+    hasWaitingGeolocalisation: hasWaitingValidationGeolocalisation,
+  });
 });
 
 

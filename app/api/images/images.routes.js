@@ -71,7 +71,13 @@ module.exports = () => {
   router.get("/images/:id/georeferencers",
     validateDocumentedRequestParametersFor('GET', '/images/{id}/georeferencers'),
     controller.getGeoreferencers
-  );  
+  );
+
+  // Retrieve all georeferencers of an image.
+  router.get("/images/:id/check_waiting_validation",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/check_waiting_validation'),
+    controller.checkWaitingValidation
+  ); 
 
   // Get the GeoPose pf an image.
     router.get("/images/:id/geopose",
