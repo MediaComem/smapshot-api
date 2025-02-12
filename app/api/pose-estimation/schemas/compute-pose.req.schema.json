@@ -51,7 +51,7 @@
       "type": "object",
       "properties": {
         "modifier": {
-          "type": "integer"
+          "type": "number"
         },
         "imageSize": {
           "type": "object",
