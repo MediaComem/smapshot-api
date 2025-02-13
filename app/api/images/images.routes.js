@@ -73,7 +73,7 @@ module.exports = () => {
     controller.getGeoreferencers
   );
 
-  // Retrieve all georeferencers of an image.
+  // Check if there is at least one geolocalisation with waiting_validation status
   router.get("/images/:id/check_waiting_validation",
     validateDocumentedRequestParametersFor('GET', '/images/{id}/check_waiting_validation'),
     controller.checkWaitingValidation
