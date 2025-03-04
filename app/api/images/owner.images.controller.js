@@ -169,7 +169,7 @@ exports.getAttributes = utils.route(async (req, res) => {
           model: models.images,
           attributes: [],
           where: {
-            original_id : req.params.original_id
+            original_id : decodeURIComponent(req.params.original_id)
           },
           include:[
             {
@@ -217,7 +217,7 @@ exports.getAttributes = utils.route(async (req, res) => {
             model: models.images,
             attributes: ["original_id"],
             where: {
-              original_id: req.params.original_id
+              original_id: decodeURIComponent(req.params.original_id)
             },
             required: true
           }
