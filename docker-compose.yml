@@ -63,7 +63,7 @@ services:
       # If you need to bootstrap your database from a dump file, make sure
       # the DUMP_PATH variable is correctly set up in your .env and then
       # uncomment the following line:
-      - "${DUMP_PATH}:/tmp/dump.sql"
+      #- "${DUMP_PATH}:/tmp/dump.sql"
 
   # Vector tiles generation for points container
   vt_generate:
