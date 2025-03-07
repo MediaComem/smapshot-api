@@ -197,7 +197,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
         }
     
         let jimpSrc = await Jimp.read(srcImage);
-        var src = cv.matFromImageData(jimpSrc.bitmap);
+        let src = cv.matFromImageData(jimpSrc.bitmap);
         let dst = new cv.Mat();
         let texture = new cv.Mat();
         let dsize = new cv.Size(src.cols, src.rows);
@@ -218,13 +218,23 @@ exports.computePoseCreateGltf = route(async (req, res) => {
           width: resized_image.cols,
           height: resized_image.rows,
           data: Buffer.from(resized_image.data)
-          })
-          .write(path2image);
+        })
+        .write(path2image);
 
-          path2image = config.apiUrl + path2image;
+        path2image = config.apiUrl + path2image;
+
+        // Delete OpenCV object, this isn't done by the GC, we need to do that manually to avoid outofmemory
+        src.delete();
+        dst.delete();
+        texture.delete()
+        srcTri.delete();
+        dstTri.delete();
+        M.delete();
+        resized_image.delete();
+
       }
     } catch(error) {
-      getLogger().error(error);
+      getLogger().error(JSON.stringify(cv.exceptionFromPtr(error)));
       throw poseEstimationError(req);
     }
 
