@@ -38,6 +38,7 @@ exports.getAttributes = utils.route(async (req, res) => {
         'iiif_data',
         'country_iso_a2',
         'framing_mode',
+        'tilt_shift',
         [models.sequelize.literal("ST_X(images.location)"), "longitude"],
         [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
         [models.sequelize.literal("ST_Z(images.location)"), "altitude"],

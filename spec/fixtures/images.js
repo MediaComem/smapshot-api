@@ -117,7 +117,8 @@ exports.createImage = async (options = {}) => {
     country_iso_a2: get(options, 'country_iso_a2', null),
     iiif_data: iiif_data,
     last_login: null,
-    framing_mode: get(options, 'framing_mode', chance.pickone(framing_modes))
+    framing_mode: get(options, 'framing_mode', chance.pickone(framing_modes)),
+    tilt_shift: get(options, 'tilt_shift', false)
   };
 
   const result = await sequelize.query(
@@ -133,7 +134,7 @@ exports.createImage = async (options = {}) => {
         downloaded, download_timestamp, footprint, viewshed_simple,
         viewshed_created, viewshed_timestamp, geotag_created, geotag_timestamp,
         geotags_json, date_validated, last_start, last_start_user_id, shop_link,
-        geolocalisation_id, state, original_state, country_iso_a2, iiif_data, framing_mode
+        geolocalisation_id, state, original_state, country_iso_a2, iiif_data, framing_mode, tilt_shift
       )
       VALUES (
         :collection_id, :owner_id, :name, :date_inserted, :date_shot, :date_georef,
@@ -145,7 +146,7 @@ exports.createImage = async (options = {}) => {
         :downloaded, :download_timestamp, :footprint, :viewshed_simple,
         :viewshed_created, :viewshed_timestamp, :geotag_created, :geotag_timestamp,
         :geotags_json, :date_validated, :last_start, :last_start_user_id, :shop_link,
-        :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}, :framing_mode
+        :geolocalisation_id, :state, :original_state, :country_iso_a2, ${iiif_data}, :framing_mode, :tilt_shift
       )
       RETURNING id
     `,

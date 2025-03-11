@@ -212,6 +212,7 @@ exports.getAttributes = utils.route(async (req, res) => {
     'iiif_data',
     'country_iso_a2',
     'framing_mode',
+    'tilt_shift',
     [models.sequelize.literal("ST_X(images.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
     [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
@@ -694,6 +695,7 @@ exports.submitImage = utils.route(async (req, res) => {
       regionByPx: req.body.iiif_data.regionByPx
     },
     framing_mode: req.body.framing_mode ? req.body.framing_mode : 'single_image',
+    tilt_shift: req.body.tilt_shift ? req.body.tilt_shift : false,
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,
@@ -882,6 +884,7 @@ exports.updateAttributes = utils.route(async (req, res) => {
       regionByPx: req.body.iiif_data.regionByPx
     } : req.image.iiif_data,
     framing_mode: req.body.framing_mode,
+    tilt_shift: req.body.tilt_shift,
     title: req.body.title,
     orig_title: req.body.title,
     caption: req.body.caption,
