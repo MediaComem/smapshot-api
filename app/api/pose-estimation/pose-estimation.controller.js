@@ -33,7 +33,8 @@ async function getDbImage(image_id){
       "collection_id",
       "geolocalisation_id",
       "iiif_data",
-      "framing_mode"
+      "framing_mode",
+      "tilt_shift"
     ],
     include: [
       {

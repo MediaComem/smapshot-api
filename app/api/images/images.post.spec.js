@@ -122,6 +122,7 @@ describe('POST /images', () => {
           collection_id: collection1.id,
           view_type: "terrestrial",
           framing_mode: "single_image",
+          tilt_shift: false,
           license: "Zentralbibliothek Zürich",
           observation_enabled: true,
           correction_enabled: false,
