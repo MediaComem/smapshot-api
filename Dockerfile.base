@@ -1,4 +1,4 @@
-FROM node:18-buster
+FROM node:22-bookworm
 
 LABEL maintainer="smapshot@heig-vd.ch"
 
@@ -13,6 +13,12 @@ RUN apt-get update && \
 
 COPY requirements.txt /
 
-RUN python3 -m pip install --trusted-host pypi.python.org --upgrade pip \
-  && pip install --trusted-host pypi.python.org --upgrade setuptools wheel \
-  && pip3 install -r requirements.txt
+RUN python3 -m pip install \
+  --trusted-host pypi.python.org \
+  --break-system-packages \
+  --upgrade pip \
+  && pip install \
+  --trusted-host pypi.python.org \
+  --break-system-packages \
+  --upgrade setuptools wheel \
+  && pip3 install --break-system-packages -r requirements.txt
