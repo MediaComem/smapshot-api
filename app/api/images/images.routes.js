@@ -67,6 +67,18 @@ module.exports = () => {
     controller.getAttributes
   );
 
+  // Retrieve all georeferencers of an image.
+  router.get("/images/:id/georeferencers",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/georeferencers'),
+    controller.getGeoreferencers
+  );
+
+  // Check if there is at least one geolocalisation with waiting_validation status
+  router.get("/images/:id/check_waiting_validation",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/check_waiting_validation'),
+    controller.checkWaitingValidation
+  ); 
+
   // Get the GeoPose pf an image.
     router.get("/images/:id/geopose",
     authenticate({ required: false }),
@@ -78,6 +90,12 @@ module.exports = () => {
   router.get("/images/:id/footprint",
     validateDocumentedRequestParametersFor('GET', '/images/{id}/footprint'),
     controller.getFootprint
+  );
+
+  // Get geolocation id of an image.
+  router.get("/images/:id/geolocation_id",
+    validateDocumentedRequestParametersFor('GET', '/images/{id}/geolocation_id'),
+    controller.getGeolocationId
   );
 
   // Update the state of an image.
@@ -98,6 +116,10 @@ module.exports = () => {
     controller.findCollection,
     controller.submitImage
   );
+
+  router.post("/images/remove_unused_output",
+    controller.removeUnusedTempImage
+  )
 
   // Update the attributes of an image.
     router.put("/images/:id/attributes",

@@ -14,4 +14,14 @@ router.get("/gltf/regenerate",
   controller.generateFromDbPose
 );
 
+router.post("/gltf/:id/save",   
+  validateDocumentedRequestParametersFor('POST', '/gltf/{id}/save'),
+  controller.saveGltf
+);
+
+router.delete("/gltf/:id",
+  validateDocumentedRequestParametersFor('DELETE', '/gltf/{id}'),
+  controller.deleteTempGltf
+);
+
 module.exports = router;

@@ -1,0 +1,12 @@
+{
+  "$id": "ImageGeolocationId",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "geolocalisation_id": {
+      "$ref": "ApiId#"
+    }
+  },
+  "additionalProperties": false,
+  "required": []
+}

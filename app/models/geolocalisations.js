@@ -142,6 +142,9 @@ module.exports = (sequelize, DataTypes) => {
       region_px: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         allowNull: true
+      },
+      image_modifiers: {
+        type: DataTypes
       }
     },
     {

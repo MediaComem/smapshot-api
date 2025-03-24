@@ -290,6 +290,53 @@
         $ref: "#/components/responses/NotFoundError"
       "422":
         $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/images/{id}/georeferencers:
+  get:
+    summary: Retrieve all georeferencers of an image.
+    operationId: getGeoreferencers
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageGeoreferencers"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+
+/images/{id}/check_waiting_validation:
+  get:
+    summary: Check if image has a geolocalisation with waiting_validation state
+    operationId: checkWaitingValidation
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageWaitingValidation"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+
 /images/{imageId}/lock:
   post:
     summary: Lock an image.
@@ -420,6 +467,30 @@
           application/json:
             schema:
                 $ref: "#/components/schemas/ImageFootprint"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+/images/{id}/geolocation_id:
+  get:
+    summary: Get the geolocation of a validate image.
+    operationId: getGeolocationId
+    parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/ImageGeolocationId"
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "404":

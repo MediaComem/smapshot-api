@@ -38,6 +38,7 @@ exports.getAttributes = utils.route(async (req, res) => {
         'iiif_data',
         'country_iso_a2',
         'framing_mode',
+        'tilt_shift',
         [models.sequelize.literal("ST_X(images.location)"), "longitude"],
         [models.sequelize.literal("ST_Y(images.location)"), "latitude"],
         [models.sequelize.literal("ST_Z(images.location)"), "altitude"],
@@ -80,9 +81,9 @@ exports.getAttributes = utils.route(async (req, res) => {
         [ models.sequelize.fn("COUNT", models.sequelize.col("observations.*")), "nObs"]
       ];
 
-    const whereImages = {
-      original_id: req.params.original_id
-    };
+      const whereImages = {
+        original_id: decodeURIComponent(req.params.original_id)
+      };
 
     // Unpublished images can only be accessed by super administrators.
     if (!userHasRole(req, 'super_admin')) {
@@ -169,7 +170,7 @@ exports.getAttributes = utils.route(async (req, res) => {
           model: models.images,
           attributes: [],
           where: {
-            original_id : req.params.original_id
+            original_id : decodeURIComponent(req.params.original_id)
           },
           include:[
             {
@@ -217,7 +218,7 @@ exports.getAttributes = utils.route(async (req, res) => {
             model: models.images,
             attributes: ["original_id"],
             where: {
-              original_id: req.params.original_id
+              original_id: decodeURIComponent(req.params.original_id)
             },
             required: true
           }

@@ -67,6 +67,9 @@
         "composite_image"
       ]
     },
+    "tilt_shift": {
+      "type": "boolean"
+    },
     "is_published": {
       "type": "boolean"
     },
