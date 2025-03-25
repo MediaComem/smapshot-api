@@ -166,7 +166,7 @@ exports.computePoseCreateGltf = route(async (req, res) => {
 
    // The image used to compute in the background has a width of 1024px where the image used by the slider in the front has a width of 500px.
    // The conversion is done to apply the same modification here as the front.
-   const convertedModifier = imageModifier.modifier * (1024/500);
+   const convertedModifier = imageModifier && imageModifier.modifier ? imageModifier.modifier * (1024/500) : 0;
 
    let regionByPx = req.body.regionByPx; //get region from front-end for composite_images
 
