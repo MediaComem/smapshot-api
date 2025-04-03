@@ -1,3 +1,4 @@
+const Sequelize = require("sequelize");
 const models = require("../../models");
 const { notFoundError } = require('../../utils/errors');
 const { validateStoryRight } = require('../../utils/story');
@@ -58,8 +59,36 @@ const updateChapter = route(async (req, res) => {
 
 const deleteChapter = route(async (req, res) => {
   await validateStoryRight(req, res, req.params.storyId);
+  const chapter = await models.stories_chapters.findByPk(req.params.id);
 
   await models.stories_chapters.destroy({where: {id:req.params.id}});
+
+  const Op = Sequelize.Op;
+
+  const whereClause = {
+    story_id: req.params.storyId,
+    indexinstory: {
+      [Op.gt]: chapter.indexinstory
+    } 
+  }
+  const chaptersToUpdate = await models.stories_chapters.findAll({
+    attributes: ['id', 'indexinstory'],
+    where: whereClause,
+  })
+
+  if (chaptersToUpdate.length > 0) {
+    for(let i = 0; i < chaptersToUpdate.length; i++) {
+      await models.stories_chapters.update({
+        indexinstory: chaptersToUpdate[i].indexinstory - 1
+      },
+      {
+        where: {
+          id: chaptersToUpdate[i].id,
+        },
+      })
+    }
+  }
+  
   res.send({
     message: "The chapter was deleted."
   });
