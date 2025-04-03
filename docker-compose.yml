@@ -63,7 +63,7 @@ services:
       # data survives container restart.
       - "db_data:/var/lib/postgresql/data"
       - ./init_db.sh:/docker-entrypoint-initdb.d/11_init_db.sh
-      - "/Users/gdozot/Documents/Smapshot/DB/dump.sql:/tmp/dump.sql" #uncomment if you need to bootstrap your db from a dump
+      #- "${DUMP_PATH}:/tmp/dump.sql" #uncomment if you need to bootstrap your db from a dump
 
   # Vector tiles generation for points container
   vt_generate:
