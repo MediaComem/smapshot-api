@@ -650,10 +650,15 @@ async function mergeFootprint(image_id) {
     group: ['image_id']
   });
 
-  const merged_footprint = {
-    type: 'MultiPolygon',
-    coordinates: [geolocalisation.dataValues.merged_footprint.coordinates]
-  };
+
+
+  let merged_footprint;
+  if (geolocalisation && geolocalisation.dataValues) {
+    merged_footprint = {
+      type: 'MultiPolygon',
+      coordinates: [geolocalisation.dataValues.merged_footprint.coordinates]
+    };
+  }
 
   return merged_footprint
 }
