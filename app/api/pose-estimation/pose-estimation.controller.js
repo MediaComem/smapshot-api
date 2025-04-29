@@ -57,8 +57,12 @@ function computeCameraPose (lng, lat, alt, azimuth, tilt, roll, gcps, width, hei
     const path2py = path.join(config.root, 'app/georeferencer/georeferencer.py')
     const pythonProcess = spawn('python3',[path2py, lng, lat, alt, azimuth, tilt, roll, gcps, width, height, locked]);
     pythonProcess.stdout.on('data', (data) => {
-      const results = JSON.parse(data.toString())
-      resolve(results)
+      try {
+        const results = JSON.parse(data.toString())
+        resolve(results)
+      } catch (error) {
+        reject(error)
+      }
     })
     pythonProcess.stderr.on('data', (data) => {
       reject(data.toString())
