@@ -1,5 +1,4 @@
 # https://docs.docker.com/compose/compose-file/
-version: "3.8"
 
 services:
   # Application container (Node.js server).
@@ -21,7 +20,7 @@ services:
       # (https://www.npmjs.com/package/dotenv#what-happens-to-environment-variables-that-were-already-set).
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: smapshot_v2
+      DB_NAME: smapshot
       DB_USER: postgres
       DB_PASS: postgres
       # If this variable is set, the entrypoint script will run `npm install`
@@ -50,8 +49,6 @@ services:
     # -c work_mem=1GB
     hostname: db
     environment:
-      POSTGRES_DB: smapshot_v2
-      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       # Expose the database on port 5432 of the host by default
@@ -63,7 +60,10 @@ services:
       # data survives container restart.
       - "db_data:/var/lib/postgresql/data"
       - ./init_db.sh:/docker-entrypoint-initdb.d/11_init_db.sh
-      #- "${DUMP_PATH}:/tmp/dump.sql" #uncomment if you need to bootstrap your db from a dump
+      # If you need to bootstrap your database from a dump file, make sure
+      # the DUMP_PATH variable is correctly set up in your .env and then
+      # uncomment the following line:
+      #- "${DUMP_PATH}:/tmp/dump.sql"
 
   # Vector tiles generation for points container
   vt_generate:
@@ -77,7 +77,7 @@ services:
       # (https://www.npmjs.com/package/dotenv#what-happens-to-environment-variables-that-were-already-set).
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: smapshot_v2
+      DB_NAME: smapshot
       DB_USER: postgres
       DB_PASS: postgres
     restart: "always"
