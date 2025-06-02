@@ -495,6 +495,10 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
   }
 
+  if (query.license_type) {
+    whereClauses.push({ license_type_id: inUniqueOrList(query.license_type) });
+  }
+
   whereClauses.push(
     Sequelize.literal(
       `CASE
