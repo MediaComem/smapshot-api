@@ -243,6 +243,14 @@ async function createGltfFromImageCoordinates(imageCoordinates, image_id, collec
   const file = await fs.readFile(path2gltf, "utf8");
   const fileJson = JSON.parse(file);
   fileJson.images[0].uri = picPath;
+
+  // Update all samplers to use LINEAR filtering
+  if (fileJson.samplers) {
+    fileJson.samplers.forEach(sampler => {
+      sampler.minFilter = 9729; // LINEAR
+    });
+  }
+
   await fs.outputFile(path2gltf, JSON.stringify(fileJson), "utf8");
 
   // Delete automatically created texture
