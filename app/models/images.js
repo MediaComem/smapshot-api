@@ -294,7 +294,11 @@ module.exports = (sequelize, DataTypes) => {
       tilt_shift: {
         type: DataTypes.BOOLEAN,
         allowNull: false
-      }
+      },
+      license_type_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
     },
     {
       freezeTableName: true // Model tableName will be the same as the model name
@@ -312,6 +316,7 @@ module.exports = (sequelize, DataTypes) => {
     Images.belongsTo(models.users, { foreignKey: "user_id", as: "georeferencer" });
     Images.hasOne(models.geometadata, { foreignKey: "fk_image_id" });
     Images.hasOne(models.stories_chapters, {foreignKey: 'picture_id'});
+    Images.belongsTo(models.license_type, { foreignKey: "license_type_id", as: "license_type" });
   };
 
   return Images;

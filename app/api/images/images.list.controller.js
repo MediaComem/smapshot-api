@@ -413,6 +413,9 @@ const getImages = async (req, orderkey, count = true) => {
 const getImagesFromPOI = async (req) => {
   const query = req.query;
   const attributes = parseAttributes(query);
+  if (!query.attributes || query.attributes.includes('license')) {
+    attributes.push('license');
+  }
   const orderBy = query.sortKey;
   const poiLocationGeo = Sequelize.cast(
     Sequelize.fn(
@@ -495,6 +498,10 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
   }
 
+  if (query.license_type) {
+    whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
+  }
+
   whereClauses.push(
     Sequelize.literal(
       `CASE
@@ -522,6 +529,12 @@ const getImagesFromPOI = async (req) => {
         model: models.geometadata,
         required: true, // Ensure that only images with geometadata are retrieved
         attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+      },
+      {
+        model: models.license_type,
+        as: 'license_type', // Alias defined in images model
+        required: false,
+        attributes: [], // Exclude license_type fields from result
       },
     ],
     subQuery: false,
