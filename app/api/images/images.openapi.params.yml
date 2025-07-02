@@ -226,3 +226,9 @@
     maxItems: 7
     items:
       type: string
+- name: near_by_images
+  in: query
+  description: True eq images that either contain the specified point in their footprint or are within the specified maximum distance from the point. If false or omitted, only images that both contain the point and are within the maximum distance are returned.
+  example: true
+  schema:
+    type: boolean

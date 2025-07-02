@@ -502,26 +502,47 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
   }
 
-  whereClauses.push(
-    Sequelize.literal(
-      `CASE
-        WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
-        ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
-      END`
-    )
-  );
-
-  whereClauses.push(
-    Sequelize.where(
-      Sequelize.fn(
-        'ST_DWithin',
-        imageLocationGeo,
-        poiLocationGeo,
-        query.POI_MaxDistance
-      ),
-      true
-    )
-  );
+  if (query.near_by_images) {
+    whereClauses.push({
+      [Op.or]: [
+        Sequelize.literal(
+          `CASE
+            WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
+            ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
+          END`
+        ),
+        Sequelize.where(
+          Sequelize.fn(
+            'ST_DWithin',
+            imageLocationGeo,
+            poiLocationGeo,
+            query.POI_MaxDistance
+          ),
+          true
+        )
+      ]
+    });
+  } else {
+    whereClauses.push(
+      Sequelize.literal(
+        `CASE
+          WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
+          ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
+        END`
+      )
+    );
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn(
+          'ST_DWithin',
+          imageLocationGeo,
+          poiLocationGeo,
+          query.POI_MaxDistance
+        ),
+        true
+      )
+    );
+  }
 
   const sequelizeQuery = {
     include: [
