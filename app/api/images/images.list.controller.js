@@ -413,6 +413,9 @@ const getImages = async (req, orderkey, count = true) => {
 const getImagesFromPOI = async (req) => {
   const query = req.query;
   const attributes = parseAttributes(query);
+  if (!query.attributes || query.attributes.includes('license')) {
+    attributes.push('license');
+  }
   const orderBy = query.sortKey;
   const poiLocationGeo = Sequelize.cast(
     Sequelize.fn(
@@ -495,26 +498,51 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
   }
 
-  whereClauses.push(
-    Sequelize.literal(
-      `CASE
-        WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
-        ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
-      END`
-    )
-  );
+  if (query.license_type) {
+    whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
+  }
 
-  whereClauses.push(
-    Sequelize.where(
-      Sequelize.fn(
-        'ST_DWithin',
-        imageLocationGeo,
-        poiLocationGeo,
-        query.POI_MaxDistance
-      ),
-      true
-    )
-  );
+  if (query.near_by_images) {
+    whereClauses.push({
+      [Op.or]: [
+        Sequelize.literal(
+          `CASE
+            WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
+            ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
+          END`
+        ),
+        Sequelize.where(
+          Sequelize.fn(
+            'ST_DWithin',
+            imageLocationGeo,
+            poiLocationGeo,
+            query.POI_MaxDistance
+          ),
+          true
+        )
+      ]
+    });
+  } else {
+    whereClauses.push(
+      Sequelize.literal(
+        `CASE
+          WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
+          ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
+        END`
+      )
+    );
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn(
+          'ST_DWithin',
+          imageLocationGeo,
+          poiLocationGeo,
+          query.POI_MaxDistance
+        ),
+        true
+      )
+    );
+  }
 
   const sequelizeQuery = {
     include: [
@@ -522,6 +550,12 @@ const getImagesFromPOI = async (req) => {
         model: models.geometadata,
         required: true, // Ensure that only images with geometadata are retrieved
         attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+      },
+      {
+        model: models.license_type,
+        as: 'license_type', // Alias defined in images model
+        required: false,
+        attributes: [], // Exclude license_type fields from result
       },
     ],
     subQuery: false,
