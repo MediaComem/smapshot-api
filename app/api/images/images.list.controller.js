@@ -443,6 +443,8 @@ const getImagesFromPOI = async (req) => {
 
   let whereClauses = [];
 
+  whereClauses.push({ state: 'validated' });
+
   if (query.owner_id) {
     whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
   }
