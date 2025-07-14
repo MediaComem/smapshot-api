@@ -417,7 +417,12 @@ const getImagesFromPOI = async (req) => {
     attributes.push('license');
   }
   const orderBy = query.sortKey;
-  const poiLocationGeo = Sequelize.cast(
+  const poiLocationGeometry = Sequelize.fn(
+    'ST_SetSRID',
+    Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
+    4326
+  );
+  const poiLocationGeography = Sequelize.cast(
     Sequelize.fn(
       'ST_SetSRID',
       Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
@@ -432,7 +437,7 @@ const getImagesFromPOI = async (req) => {
   const distanceExpr = Sequelize.fn(
     'ST_Distance',
     imageLocationGeo,
-    poiLocationGeo
+    poiLocationGeography
   );
   const orderByNearest = distanceExpr;
 
@@ -505,40 +510,36 @@ const getImagesFromPOI = async (req) => {
   if (query.near_by_images) {
     whereClauses.push({
       [Op.or]: [
-        Sequelize.literal(
-          `CASE
-            WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
-            ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
-          END`
+        Sequelize.where(
+          Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
+          true
         ),
         Sequelize.where(
-          Sequelize.fn(
-            'ST_DWithin',
-            imageLocationGeo,
-            poiLocationGeo,
-            query.POI_MaxDistance
-          ),
+          Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+          true
+        ),
+        Sequelize.where(
+          Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, query.POI_MaxDistance),
           true
         )
       ]
     });
   } else {
     whereClauses.push(
-      Sequelize.literal(
-        `CASE
-          WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
-          ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
-        END`
+      Sequelize.where(
+        Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
+        true
       )
     );
     whereClauses.push(
       Sequelize.where(
-        Sequelize.fn(
-          'ST_DWithin',
-          imageLocationGeo,
-          poiLocationGeo,
-          query.POI_MaxDistance
-        ),
+        Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+        true
+      )
+    );
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, query.POI_MaxDistance),
         true
       )
     );
