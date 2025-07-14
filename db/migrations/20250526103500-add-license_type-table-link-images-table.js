@@ -33,12 +33,19 @@ module.exports = {
       FOREIGN KEY (license_type_id)
       REFERENCES public.license_type(id);
     `);
+    await queryInterface.sequelize.query(`
+      CREATE INDEX images_license_type_id_idx
+      ON public.images (license_type_id);
+    `);
   },
 
   down: async (queryInterface) => {
     await queryInterface.sequelize.query(`
       ALTER TABLE public.images
       DROP CONSTRAINT IF EXISTS fk_license_type;
+    `);
+    await queryInterface.sequelize.query(`
+      DROP INDEX IF EXISTS images_license_type_id_idx;
     `);
     await queryInterface.sequelize.query(`
       ALTER TABLE public.images
