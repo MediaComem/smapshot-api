@@ -46,6 +46,29 @@
           $ref: "#/components/responses/NotFoundError"
         "422":
           $ref: "#/components/responses/RequestBodyValidationErrors"
+
+/images/poi_stats:
+  get:
+    summary: Get count per decade about geolocalised images at latitude/longitude.
+    description: |-
+      Return the number of geolocalised images per decade at the specified latitude and longitude.
+      The latitude and longitude are specified in the query parameters.
+    operationId: getPoiStats
+    parameters: !include ./images.openapi.params.yml
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImagePoiStats"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+
 /images/id:
   get:
     summary: List image IDs.
