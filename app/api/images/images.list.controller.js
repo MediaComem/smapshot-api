@@ -651,13 +651,6 @@ exports.getPoiStats = utils.route(async (req, res) => {
 
   whereClauses.push({ state: 'validated' });
 
-  whereClauses.push(
-    Sequelize.where(
-      Sequelize.fn('EXTRACT', Sequelize.literal('YEAR FROM "date_shot_min"')),
-      { [Op.ne]: null }
-    )
-  );
-
   if (query.license_type) {
     whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
   }
@@ -758,7 +751,7 @@ exports.getPoiStats = utils.route(async (req, res) => {
   const result = await models.images.findAll({
     attributes: [
       [
-        Sequelize.literal('FLOOR(EXTRACT(YEAR FROM "date_shot_min") / 10) * 10'),
+        Sequelize.literal('FLOOR(EXTRACT(YEAR FROM COALESCE("date_shot_min", "date_shot")) / 10) * 10'),
         'decade'
       ],
       [Sequelize.fn('COUNT', '*'), 'count'],
