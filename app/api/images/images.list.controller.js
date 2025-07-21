@@ -666,6 +666,57 @@ exports.getPoiStats = utils.route(async (req, res) => {
     whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
   }
 
+  if (query.date_shot_min || query.date_shot_max) {
+    const dateShotConditions = {};
+    const dateShotMinConditions = {};
+    const dateShotMaxConditions = {};
+
+    if (query.date_shot_min) {
+      dateShotConditions[Op.gte] = query.date_shot_min;
+      dateShotMinConditions[Op.gte] = query.date_shot_min;
+      dateShotMaxConditions[Op.gte] = query.date_shot_min;
+    }
+
+    if (query.date_shot_max) {
+      dateShotConditions[Op.lte] = query.date_shot_max;
+      dateShotMinConditions[Op.lte] = query.date_shot_max;
+      dateShotMaxConditions[Op.lte] = query.date_shot_max;
+    }
+
+    whereClauses.push({
+      [Op.or]: [
+        {
+          date_shot: {
+            [Op.and]: [
+              { [Op.not]: null },
+              dateShotConditions,
+            ],
+          },
+        },
+        {
+          [Op.and]: [
+            {
+              date_shot_min: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMinConditions,
+                ],
+              },
+            },
+            {
+              date_shot_max: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMaxConditions,
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+  }
+
   if (query.near_by_images) {
     whereClauses.push({
       [Op.or]: [
