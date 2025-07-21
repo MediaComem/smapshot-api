@@ -1,0 +1,21 @@
+{
+  "$id": "ImagePoiStats",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "decade": {
+        "type": "string",
+        "description": "Decade, like '1910', '1920', etc."
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Number of images for the given decade"
+      }
+    },
+    "required": ["year", "count"],
+    "additionalProperties": false
+  }
+}
