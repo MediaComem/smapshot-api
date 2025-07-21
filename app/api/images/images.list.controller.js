@@ -754,8 +754,7 @@ exports.getPoiStats = utils.route(async (req, res) => {
         Sequelize.literal('FLOOR(EXTRACT(YEAR FROM COALESCE("date_shot_min", "date_shot")) / 10) * 10'),
         'decade'
       ],
-      [Sequelize.fn('COUNT', '*'), 'count'],
-      [Sequelize.fn('ARRAY_AGG', Sequelize.col('images.id')), 'image_ids']
+      'id'
     ],
     include: [
       {
@@ -772,12 +771,30 @@ exports.getPoiStats = utils.route(async (req, res) => {
     ],
     where: {
       [Op.and]: whereClauses
-    },
-    group: [Sequelize.literal('decade')],
-    order: [Sequelize.literal('decade')]
+    }
   });
 
-  res.status(200).send(result);
+  const grouped = {};
+
+  for (const row of result) {
+    const decade = row.get("decade");
+    const id = row.get("id");
+
+    if (!grouped[decade]) {
+      grouped[decade] = {
+        decade: decade,
+        count: 0,
+        image_ids: []
+      };
+    }
+
+    grouped[decade].count += 1;
+    grouped[decade].image_ids.push(id);
+  }
+
+  const sortedGrouped = Object.values(grouped).sort((a, b) => a.decade - b.decade);
+
+  res.status(200).send(sortedGrouped);
 
 });
 
