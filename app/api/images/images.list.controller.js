@@ -432,7 +432,7 @@ const getImages = async (req, orderkey, count = true) => {
 
 const getImagesFromPOI = async (req) => {
   const query = req.query;
-  const POI_MaxDistance = query.POI_MaxDistance || 2000;
+  const POI_MaxDistance = query.POI_MaxDistance || 3000;
   const attributes = parseAttributes(query);
   if (!query.attributes || query.attributes.includes('license')) {
     attributes.push('license');
@@ -557,10 +557,6 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({
       [Op.or]: [
         Sequelize.where(
-          Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
-          true
-        ),
-        Sequelize.where(
           Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
           true
         ),
@@ -571,12 +567,6 @@ const getImagesFromPOI = async (req) => {
       ]
     });
   } else {
-    whereClauses.push(
-      Sequelize.where(
-        Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
-        true
-      )
-    );
     whereClauses.push(
       Sequelize.where(
         Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
@@ -593,11 +583,6 @@ const getImagesFromPOI = async (req) => {
 
   const sequelizeQuery = {
     include: [
-      {
-        model: models.geometadata,
-        required: true, // Ensure that only images with geometadata are retrieved
-        attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
-      },
       {
         model: models.license_type,
         as: 'license_type', // Alias defined in images model
@@ -625,7 +610,7 @@ const getImagesFromPOI = async (req) => {
 
 exports.getPoiStats = utils.route(async (req, res) => {
   const query = req.query;
-  const POI_MaxDistance = query.POI_MaxDistance || 2000;
+  const POI_MaxDistance = query.POI_MaxDistance || 3000;
   const poiLocationGeometry = Sequelize.fn(
     'ST_SetSRID',
     Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
@@ -715,10 +700,6 @@ exports.getPoiStats = utils.route(async (req, res) => {
     whereClauses.push({
       [Op.or]: [
         Sequelize.where(
-          Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
-          true
-        ),
-        Sequelize.where(
           Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
           true
         ),
@@ -729,12 +710,6 @@ exports.getPoiStats = utils.route(async (req, res) => {
       ]
     });
   } else {
-    whereClauses.push(
-      Sequelize.where(
-        Sequelize.fn('ST_Contains', Sequelize.col('geometadatum.footprint'), poiLocationGeometry),
-        true
-      )
-    );
     whereClauses.push(
       Sequelize.where(
         Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
@@ -758,11 +733,6 @@ exports.getPoiStats = utils.route(async (req, res) => {
       'id'
     ],
     include: [
-      {
-        model: models.geometadata,
-        required: true, // Ensure that only images with geometadata are retrieved
-        attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
-      },
       {
         model: models.license_type,
         as: 'license_type',
