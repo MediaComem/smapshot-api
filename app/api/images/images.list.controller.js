@@ -32,6 +32,7 @@ const parseAttributes = (query) => {
     'height',
     'width',
     'iiif_data',
+    'view_type',
   ];
   const longitude = [
     models.sequelize.literal('ST_X(ST_SnapToGrid(location, 0.0001))'),
@@ -771,7 +772,9 @@ exports.getPoiStats = utils.route(async (req, res) => {
     ],
     where: {
       [Op.and]: whereClauses
-    }
+    },
+    limit: req.query.limit || 30,
+    order: [['view_type', 'DESC']],
   });
 
   const grouped = {};
