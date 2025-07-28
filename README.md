@@ -176,3 +176,4 @@ Command                 | Description
 ## Development guide
 
 Read [the development guide](./DEVELOPMENT.md) for more information.
+
