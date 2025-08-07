@@ -617,11 +617,7 @@ exports.getPoiStats = utils.route(async (req, res) => {
     4326
   );
   const poiLocationGeography = Sequelize.cast(
-    Sequelize.fn(
-      'ST_SetSRID',
-      Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
-      4326
-    ),
+    poiLocationGeometry,
     'geography'
   );
   const imageLocationGeo = Sequelize.cast(
