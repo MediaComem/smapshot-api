@@ -15,6 +15,11 @@ module.exports = () => {
     listController.getList
   );
 
+  router.get("/images/poi_stats",
+    validateDocumentedRequestParametersFor('GET', '/images/poi_stats'),
+    listController.getPoiStats
+  );
+
   // List image IDs.
   router.get("/images/id",
     authenticate({ required: false }),
@@ -109,7 +114,7 @@ module.exports = () => {
   );
 
   // Post a new image.
-    router.post("/images",
+  router.post("/images",
     authenticate(),
     authorize("owner_admin", "super_admin"),
     validateRequestBodyWithJsonSchema('ImagePostRequest'),
@@ -122,7 +127,7 @@ module.exports = () => {
   )
 
   // Update the attributes of an image.
-    router.put("/images/:id/attributes",
+  router.put("/images/:id/attributes",
     authenticate(),
     authorize("owner_admin", "super_admin"),
     validateDocumentedRequestParametersFor('PUT', '/images/{id}/attributes'),

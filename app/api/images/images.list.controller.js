@@ -32,6 +32,7 @@ const parseAttributes = (query) => {
     'height',
     'width',
     'iiif_data',
+    'view_type',
   ];
   const longitude = [
     models.sequelize.literal('ST_X(ST_SnapToGrid(location, 0.0001))'),
@@ -184,34 +185,53 @@ const getImages = async (req, orderkey, count = true) => {
   }
 
   if (query.date_shot_min || query.date_shot_max) {
+    const dateShotConditions = {};
+    const dateShotMinConditions = {};
+    const dateShotMaxConditions = {};
+
+    if (query.date_shot_min) {
+      dateShotConditions[Op.gte] = query.date_shot_min;
+      dateShotMinConditions[Op.gte] = query.date_shot_min;
+      dateShotMaxConditions[Op.gte] = query.date_shot_min;
+    }
+
+    if (query.date_shot_max) {
+      dateShotConditions[Op.lte] = query.date_shot_max;
+      dateShotMinConditions[Op.lte] = query.date_shot_max;
+      dateShotMaxConditions[Op.lte] = query.date_shot_max;
+    }
+
     whereClauses.push({
-      // Single date
-      [Op.or]: {
-        date_shot: {
-          [Op.and]: {
-            [Op.not]: null,
-            [Op.gte]: query.date_shot_min,
-            [Op.lte]: query.date_shot_max,
+      [Op.or]: [
+        {
+          date_shot: {
+            [Op.and]: [
+              { [Op.not]: null },
+              dateShotConditions,
+            ],
           },
         },
-        // Range of dates
-        [Op.and]: {
-          date_shot_min: {
-            [Op.and]: {
-              [Op.not]: null,
-              [Op.gte]: query.date_shot_min,
-              [Op.lte]: query.date_shot_max,
+        {
+          [Op.and]: [
+            {
+              date_shot_min: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMinConditions,
+                ],
+              },
             },
-          },
-          date_shot_max: {
-            [Op.and]: {
-              [Op.not]: null,
-              [Op.gte]: query.date_shot_min,
-              [Op.lte]: query.date_shot_max,
+            {
+              date_shot_max: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMaxConditions,
+                ],
+              },
             },
-          },
+          ],
         },
-      },
+      ],
     });
   }
 
@@ -412,9 +432,18 @@ const getImages = async (req, orderkey, count = true) => {
 
 const getImagesFromPOI = async (req) => {
   const query = req.query;
+  const POI_MaxDistance = query.POI_MaxDistance || 3000;
   const attributes = parseAttributes(query);
+  if (!query.attributes || query.attributes.includes('license')) {
+    attributes.push('license');
+  }
   const orderBy = query.sortKey;
-  const poiLocationGeo = Sequelize.cast(
+  const poiLocationGeometry = Sequelize.fn(
+    'ST_SetSRID',
+    Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
+    4326
+  );
+  const poiLocationGeography = Sequelize.cast(
     Sequelize.fn(
       'ST_SetSRID',
       Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
@@ -429,11 +458,17 @@ const getImagesFromPOI = async (req) => {
   const distanceExpr = Sequelize.fn(
     'ST_Distance',
     imageLocationGeo,
-    poiLocationGeo
+    poiLocationGeography
   );
   const orderByNearest = distanceExpr;
 
   let whereClauses = [];
+
+  whereClauses.push({ state: 'validated' });
+
+  if (query.id) {
+    whereClauses.push({ id: inUniqueOrList(query.id) });
+  }
 
   if (query.owner_id) {
     whereClauses.push({ owner_id: inUniqueOrList(query.owner_id) });
@@ -460,34 +495,53 @@ const getImagesFromPOI = async (req) => {
   }
 
   if (query.date_shot_min || query.date_shot_max) {
+    const dateShotConditions = {};
+    const dateShotMinConditions = {};
+    const dateShotMaxConditions = {};
+
+    if (query.date_shot_min) {
+      dateShotConditions[Op.gte] = query.date_shot_min;
+      dateShotMinConditions[Op.gte] = query.date_shot_min;
+      dateShotMaxConditions[Op.gte] = query.date_shot_min;
+    }
+
+    if (query.date_shot_max) {
+      dateShotConditions[Op.lte] = query.date_shot_max;
+      dateShotMinConditions[Op.lte] = query.date_shot_max;
+      dateShotMaxConditions[Op.lte] = query.date_shot_max;
+    }
+
     whereClauses.push({
-      // Single date
-      [Op.or]: {
-        date_shot: {
-          [Op.and]: {
-            [Op.not]: null,
-            [Op.gte]: query.date_shot_min,
-            [Op.lte]: query.date_shot_max,
+      [Op.or]: [
+        {
+          date_shot: {
+            [Op.and]: [
+              { [Op.not]: null },
+              dateShotConditions,
+            ],
           },
         },
-        // Range of dates
-        [Op.and]: {
-          date_shot_min: {
-            [Op.and]: {
-              [Op.not]: null,
-              [Op.gte]: query.date_shot_min,
-              [Op.lte]: query.date_shot_max,
+        {
+          [Op.and]: [
+            {
+              date_shot_min: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMinConditions,
+                ],
+              },
             },
-          },
-          date_shot_max: {
-            [Op.and]: {
-              [Op.not]: null,
-              [Op.gte]: query.date_shot_min,
-              [Op.lte]: query.date_shot_max,
+            {
+              date_shot_max: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMaxConditions,
+                ],
+              },
             },
-          },
+          ],
         },
-      },
+      ],
     });
   }
 
@@ -495,33 +549,45 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
   }
 
-  whereClauses.push(
-    Sequelize.literal(
-      `CASE
-        WHEN geometadatum.footprint IS NOT NULL AND ST_Contains(geometadatum.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326)) THEN true
-        ELSE ST_Contains(images.footprint, ST_SetSRID(ST_MakePoint(${query.POI_longitude}, ${query.POI_latitude}), 4326))
-      END`
-    )
-  );
+  if (query.license_type) {
+    whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
+  }
 
-  whereClauses.push(
-    Sequelize.where(
-      Sequelize.fn(
-        'ST_DWithin',
-        imageLocationGeo,
-        poiLocationGeo,
-        query.POI_MaxDistance
-      ),
-      true
-    )
-  );
+  if (query.near_by_images) {
+    whereClauses.push({
+      [Op.or]: [
+        Sequelize.where(
+          Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+          true
+        ),
+        Sequelize.where(
+          Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, POI_MaxDistance),
+          true
+        )
+      ]
+    });
+  } else {
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+        true
+      )
+    );
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, POI_MaxDistance),
+        true
+      )
+    );
+  }
 
   const sequelizeQuery = {
     include: [
       {
-        model: models.geometadata,
-        required: true, // Ensure that only images with geometadata are retrieved
-        attributes: [], // Exclude geometadata attributes from the result, we only need it for the join
+        model: models.license_type,
+        as: 'license_type', // Alias defined in images model
+        required: false,
+        attributes: [], // Exclude license_type fields from result
       },
     ],
     subQuery: false,
@@ -541,6 +607,165 @@ const getImagesFromPOI = async (req) => {
 
   return images;
 };
+
+exports.getPoiStats = utils.route(async (req, res) => {
+  const query = req.query;
+  const POI_MaxDistance = query.POI_MaxDistance || 3000;
+  const poiLocationGeometry = Sequelize.fn(
+    'ST_SetSRID',
+    Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
+    4326
+  );
+  const poiLocationGeography = Sequelize.cast(
+    poiLocationGeometry,
+    'geography'
+  );
+  const imageLocationGeo = Sequelize.cast(
+    Sequelize.col('images.location'),
+    'geography'
+  );
+
+  if (!query.POI_latitude || !query.POI_longitude) {
+    throw new Error('POI latitude and longitude are required for POI stats');
+  }
+
+  let whereClauses = [];
+
+  whereClauses.push({ state: 'validated' });
+
+  if (query.license_type) {
+    whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
+  }
+
+  if (query.view_type) {
+    whereClauses.push({ view_type: inUniqueOrList(query.view_type) });
+  }
+
+  if (query.date_shot_min || query.date_shot_max) {
+    const dateShotConditions = {};
+    const dateShotMinConditions = {};
+    const dateShotMaxConditions = {};
+
+    if (query.date_shot_min) {
+      dateShotConditions[Op.gte] = query.date_shot_min;
+      dateShotMinConditions[Op.gte] = query.date_shot_min;
+      dateShotMaxConditions[Op.gte] = query.date_shot_min;
+    }
+
+    if (query.date_shot_max) {
+      dateShotConditions[Op.lte] = query.date_shot_max;
+      dateShotMinConditions[Op.lte] = query.date_shot_max;
+      dateShotMaxConditions[Op.lte] = query.date_shot_max;
+    }
+
+    whereClauses.push({
+      [Op.or]: [
+        {
+          date_shot: {
+            [Op.and]: [
+              { [Op.not]: null },
+              dateShotConditions,
+            ],
+          },
+        },
+        {
+          [Op.and]: [
+            {
+              date_shot_min: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMinConditions,
+                ],
+              },
+            },
+            {
+              date_shot_max: {
+                [Op.and]: [
+                  { [Op.not]: null },
+                  dateShotMaxConditions,
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  if (query.near_by_images) {
+    whereClauses.push({
+      [Op.or]: [
+        Sequelize.where(
+          Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+          true
+        ),
+        Sequelize.where(
+          Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, POI_MaxDistance),
+          true
+        )
+      ]
+    });
+  } else {
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+        true
+      )
+    );
+    whereClauses.push(
+      Sequelize.where(
+        Sequelize.fn('ST_DWithin', imageLocationGeo, poiLocationGeography, POI_MaxDistance),
+        true
+      )
+    );
+  }
+
+  const result = await models.images.findAll({
+    attributes: [
+      [
+        Sequelize.literal('FLOOR(EXTRACT(YEAR FROM COALESCE("date_shot_min", "date_shot")) / 10) * 10'),
+        'decade'
+      ],
+      'id'
+    ],
+    include: [
+      {
+        model: models.license_type,
+        as: 'license_type',
+        required: false,
+        attributes: [],
+      }
+    ],
+    where: {
+      [Op.and]: whereClauses
+    },
+    limit: req.query.limit || 30,
+    order: [['view_type', 'DESC']],
+  });
+
+  const grouped = {};
+
+  for (const row of result) {
+    const decade = row.get("decade");
+    const id = row.get("id");
+
+    if (!grouped[decade]) {
+      grouped[decade] = {
+        decade: decade,
+        count: 0,
+        image_ids: []
+      };
+    }
+
+    grouped[decade].count += 1;
+    grouped[decade].image_ids.push(id);
+  }
+
+  const sortedGrouped = Object.values(grouped).sort((a, b) => a.decade - b.decade);
+
+  res.status(200).send(sortedGrouped);
+
+});
 
 exports.getList = utils.route(async (req, res) => {
   let images;
