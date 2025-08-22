@@ -1,0 +1,73 @@
+{
+  "general": {
+    "accessForbidden": "十分なアクセス権限がありません。",
+    "validationErrors": "検証エラー：1つ以上のフィールドが正しくありません。",
+    "resourceNotFound": "リソースが見つかりませんでした。"
+  },
+  "auth": {
+    "error": {
+      "noAccountExist": "そのメールアドレスのアカウントは存在しません。",
+      "usedSocialEmail": "あなたのメールアドレスはソーシャルログインで使用されています。GoogleまたはFacebookボタンを使用して接続してください。",
+      "noPasswordChangeWithSocialEmail": "GoogleやFacebookなどのソーシャルアカウントを使用しているため、smapshot上でパスワードを変更することはできません。",
+      "linkNotValid": "リンクは無効になっています。新しいリンクをリクエストしてください。",
+      "incorrectEmail": "メールアドレスが正しくありません。",
+      "incorrectPassword": "パスワードが正しくありません",
+      "missingUsername": "ユーザー名が不足しています",
+      "emailNotValid": "メールアドレスが有効ではありません",
+      "emailAlreadyExists": "ユーザーのメールアドレスは既に存在します",
+      "accountNotActivated": "アカウントはまだ有効化されていません。メールの受信箱を確認してください。",
+      "generalServerAuth": "サーバー認証エラーです。smapshotチームにお問い合わせください。",
+      "alreadyActivated": "アカウントは既に有効化されています"
+    },
+    "forgotPassword": {
+      "success": "数分以内に新しいパスワードが届きます！"
+    },
+    "resetPassword": {
+      "success": "パスワードが正常に変更されました！",
+      "failed": "パスワードを更新できません。入力された古いパスワードが正しくありません。",
+      "emailTitle": "Smapshot：パスワードをリセット",
+      "emailDescription": "<p>あなた（または他の誰か）がアカウントのパスワードリセットをリクエストしたため、このメールを受信しています。</p><p>以下のリンクをクリックするか、ブラウザにペーストしてプロセスを完了してください：</p><p><a href='{{ url }}'>パスワードをリセット</a></p><p>注意：リンクは1時間のみ有効です！</p><p>このリクエストをしていない場合は、このメールを無視してください。パスワードは変更されません。</p>"
+    },
+    "createAccount": {
+      "success": "確認リンク付きのメールが送信されました。"
+    },
+    "activateAccount": {
+      "success": "アカウントが有効化されました。ログインできます。"
+    },
+    "confirmAccount": {
+      "emailTitle": "アカウントを有効化",
+      "emailDescription": "<p>以下のリンクをクリックして、メールアドレスを確認し、smapshotアカウントを有効化してください：</p><p><a href='{{ url }}'>メールアドレスを確認</a></p>"
+    }
+  },
+  "corrections": {
+    "submitted": {
+      "success": "修正が送信されました。コレクションの所有者が確認を行います。",
+      "error": "修正を送信できません。しばらくしてからもう一度お試しください。"
+    }
+  },
+  "images": {
+    "missing": "画像が見つかりません。",
+    "submitted": {
+      "success": "画像が正常に送信されました。",
+      "originalIdAlreadyExist": "このoriginal_idの画像は既にデータベースに存在します。",
+      "photographerDoesNotExist": "指定されたIDの写真家は存在しません。"
+    }
+  },
+  "problems": {
+    "submitted": {
+      "success": "問題が送信されました。コレクションの所有者が確認を行います。",
+      "error": "問題を送信できません。しばらくしてからもう一度お試しください。",
+      "errorIdRequired": "画像IDまたは元の画像IDが必要です。"
+    }
+  },
+  "roles": {
+    "ownerIdNeeded": "所有者IDパラメータが必要です。"
+  },
+  "pose": {
+    "3dModelCreationError": "3Dモデル作成ステップでエラーが発生しました。smapshotチームにお問い合わせください。",
+    "impossible": "計算された姿勢は不可能です。対応点にエラーがないか確認してください。"
+  },
+  "locations": {
+    "noCountry": "その場所は国内にありません。"
+  }
+}
