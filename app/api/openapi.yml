@@ -42,7 +42,7 @@ components:
       example: en
       schema:
         type: string
-        enum: ["en", "de", "fr", "it", "pt", "jp"]
+        enum: ["en", "de", "fr", "it", "pt", "ja"]
     LimitParameter:
       name: limit
       in: query

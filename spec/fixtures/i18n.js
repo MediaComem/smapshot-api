@@ -2,7 +2,7 @@ const { get } = require("lodash");
 
 const { chance } = require("../utils/chance");
 
-const locales = ["de", "en", "fr", "it", "pt"];
+const locales = ["de", "en", "fr", "it", "pt", "ja"];
 
 /**
  * The locales supported by the application.
