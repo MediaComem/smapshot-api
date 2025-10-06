@@ -35,11 +35,11 @@ const parseAttributes = (query) => {
     'view_type',
   ];
   const longitude = [
-    models.sequelize.literal('ST_X(ST_SnapToGrid(location, 0.0001))'),
+    models.sequelize.literal('ST_X(ST_SnapToGrid(location, 0.00001))'),
     'longitude',
   ];
   const latitude = [
-    models.sequelize.literal('ST_Y(ST_SnapToGrid(location, 0.0001))'),
+    models.sequelize.literal('ST_Y(ST_SnapToGrid(location, 0.00001))'),
     'latitude',
   ];
   const date_shot_min = [
