@@ -465,6 +465,8 @@ const getImagesFromPOI = async (req) => {
   let whereClauses = [];
 
   whereClauses.push({ state: 'validated' });
+  // only published images by default
+  whereClauses.push({ is_published: true });
 
   if (query.id) {
     whereClauses.push({ id: inUniqueOrList(query.id) });
@@ -632,6 +634,8 @@ exports.getPoiStats = utils.route(async (req, res) => {
   let whereClauses = [];
 
   whereClauses.push({ state: 'validated' });
+  // only published images by default
+  whereClauses.push({ is_published: true });
 
   if (query.license_type) {
     whereClauses.push({ '$license_type.code$': inUniqueOrList(query.license_type) });
