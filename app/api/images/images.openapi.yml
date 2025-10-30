@@ -261,7 +261,7 @@
         example: 500
         schema:
           type: integer
-          enum: [200, 500, 1024]
+          enum: [200, 500, 1024, 1500]
     responses:
       "200":
         description: Successful request.
