@@ -58,7 +58,10 @@ exports.getList = route(async (req, res) => {
     where: cleanedWhereGeo,
     limit: req.query.limit || 100,
     offset: req.query.offset || 0,
-    order: [['date_georef', req.query.order || 'DESC']],
+    order: [
+      ['date_georef', req.query.order || 'DESC'],
+      ['id', req.query.order || 'DESC']
+    ],
     include: [
       {
         model: models.images,
