@@ -60,7 +60,7 @@ exports.getList = route(async (req, res) => {
     offset: req.query.offset || 0,
     order: [
       ['date_georef', req.query.order || 'DESC'],
-      ['id', 'DESC']
+      ['id', req.query.order || 'DESC']
     ],
     include: [
       {
