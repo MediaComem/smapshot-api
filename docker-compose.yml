@@ -5,6 +5,7 @@ services:
   # Application container (Node.js server).
   app:
     hostname: app
+    pull_policy: build
     build:
       context: .
       dockerfile: Dockerfile.dev
