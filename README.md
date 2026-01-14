@@ -94,15 +94,15 @@ Command                         | Description
 
 Command                                  | Description
 :--------------------------------------- | :----------------------------------------------------------------------------------------------------------------
-`docker-compose up --build app`          | Run the application in the foreground (this is what `npm run compose` does).
-`docker-compose up --build --detach app` | Run the application in the background.
-`docker-compose stop`                    | Stop all containers.
-`docker-compose down`                    | Stop and remove all containers (but keep the data).
-`docker-compose down --volumes`          | Stop and permanently delete all containers and data.
-`docker-compose exec app <command>`      | Execute a command inside the running `app` container (e.g. `docker-compose exec app npm install my-new-package`).
-`docker-compose ps`                      | List running containers.
+`docker compose up --build app`          | Run the application in the foreground (this is what `npm run compose` does).
+`docker compose up --build --detach app` | Run the application in the background.
+`docker compose stop`                    | Stop all containers.
+`docker compose down`                    | Stop and remove all containers (but keep the data).
+`docker compose down --volumes`          | Stop and permanently delete all containers and data.
+`docker compose exec app <command>`      | Execute a command inside the running `app` container (e.g. `docker compose exec app npm install my-new-package`).
+`docker compose ps`                      | List running containers.
 
-> Running the application with `docker-compose up` will also automatically
+> Running the application with `docker compose up` will also automatically
 > re-generate the API documentation and re-run the linter on code changes.
 
 ## Develop locally
@@ -111,7 +111,7 @@ You will need:
 
 * A [PostgreSQL](https://www.postgresql.org) 13+ server with the
   [PostGIS](https://postgis.net) extension.
-* [Node.js](https://nodejs.org) 12.x.
+* [Node.js](https://nodejs.org) 18.x.
 * [Python](https://www.python.org) 3+ and the
   [pip](https://pypi.org/project/pip/) package installer.
 
@@ -176,3 +176,4 @@ Command                 | Description
 ## Development guide
 
 Read [the development guide](./DEVELOPMENT.md) for more information.
+

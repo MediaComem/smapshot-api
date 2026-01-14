@@ -27,3 +27,47 @@
         $ref: "#/components/responses/ForbiddenError"
     security:
       bearerToken: []
+
+/gltf/{id}/save:
+  post:
+    summary: Save a temporary gltf to final gltf
+    operationId: save
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SaveTempGltf"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+
+/gltf/{id}:
+  delete:
+    summary: Delete a temporary gltf
+    operationId: delete
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SaveTempGltf"
+    responses:
+      "201":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"

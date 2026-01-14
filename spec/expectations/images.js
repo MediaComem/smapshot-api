@@ -90,7 +90,7 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
           owner, collection, photographers, user,
           latitude, longitude, roll, tilt, altitude, azimuth, country_iso_a2, focal,
           observation_enabled,
-          framing_mode, geolocalisation_id
+          framing_mode, tilt_shift, geolocalisation_id
         } = image;
   const {
     media: expectedMedia,
@@ -115,7 +115,8 @@ exports.getExpectedImageAttributes = (image, options = {}) => {
     date_shot_max: date_shot ? date_shot.toISOString().slice(0,10) : date_shot_max.toISOString().slice(0,10),
     observation_enabled,
     nObs: 0,
-    framing_mode
+    framing_mode,
+    tilt_shift
   };
 
   expected.pose = {
@@ -208,6 +209,7 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
     view_type,
     date_shot, date_shot_min, date_shot_max,
     nObs: 0,
+    tilt_shift: false,
     locked: false,
     locked_user_id: null, 
     delta_last_start: null,

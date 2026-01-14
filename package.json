@@ -6,11 +6,11 @@
   "author": "Timothée Produit",
   "bin": "./bin/www",
   "scripts": {
-    "compose:app": "docker-compose up -d --build app",
-    "compose:migrate": "docker-compose build base app && docker-compose run --rm app npm run migrate:wait",
-    "compose:sequelize-cli": "docker-compose build base app && docker-compose run --rm app npx sequelize-cli",
-    "compose:test": "docker-compose build base test_app && docker-compose run --rm test_app",
-    "compose:test:coverage": "docker-compose build base test_app && npx cross-env SHOW_OPENAPI_COVERAGE=true docker-compose run --rm test_app npm run test:coverage",
+    "compose:app": "docker compose up -d --build app",
+    "compose:migrate": "docker compose build base app && docker compose run --rm app npm run migrate:wait",
+    "compose:sequelize-cli": "docker compose build base app && docker compose run --rm app npx sequelize-cli",
+    "compose:test": "docker compose build base test_app && docker compose run --rm test_app",
+    "compose:test:coverage": "docker compose build base test_app && npx cross-env SHOW_OPENAPI_COVERAGE=true docker compose run --rm test_app npm run test:coverage",
     "compose:test:debug": "npx cross-env LOG_LEVEL=silly SHOW_OPENAPI_COVERAGE=true npm run compose:test",
     "dev": "concurrently \"npm run lint:watch\" \"npm run nodemon\"",
     "dev:docker": "concurrently \"npm run lint:watch\" \"npm run nodemon:docker\"",
@@ -47,12 +47,13 @@
     ]
   },
   "engines": {
-    "node": ">=22.0.0 <23.0.0"
+    "node": ">=20.0.0 <25.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.658.1",
     "@aws-sdk/credential-provider-node": "^3.658.1",
     "@small-tech/express-ws": "^1.0.1",
+    "@techstark/opencv-js": "^4.10.0-release.1",
     "@turf/bbox": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/turf": "^5.1.6",
@@ -75,6 +76,7 @@
     "helmet": "^3.23.3",
     "http-status-codes": "^1.4.0",
     "i18n": "^0.9.1",
+    "jimp": "^0.22.12",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "mathjs": "^7.6.0",

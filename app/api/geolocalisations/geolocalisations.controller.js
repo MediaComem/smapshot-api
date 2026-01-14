@@ -30,7 +30,9 @@ exports.getAttributes = route(async (req, res) => {
     [models.sequelize.literal("ST_X(geolocalisations.location)"), "longitude"],
     [models.sequelize.literal("ST_Y(geolocalisations.location)"), "latitude"],
     [models.sequelize.literal("ST_Z(geolocalisations.location)"), "altitude"],
-    "region_px"
+    "region_px",
+    "previous_geolocalisation_id",
+    "image_modifiers"
   ];
 
   const results = await models.geolocalisations.findOne({
@@ -126,6 +128,8 @@ exports.save = route(async (req, res) => {
   const previous_geoloc_id = data.previous_geoloc_id;
   const remark = data.remark;
   const errors_list = data.errors_list;
+  const image_modifiers = data.image_modifiers;
+  const improveFromVisit = data.improveFromVisit;
 
   let georeferencer_id = user_id; // in case of improvements, should be the original georeferencer id (l127)
 
@@ -172,30 +176,32 @@ exports.save = route(async (req, res) => {
   surfaceRatio = Math.round((areaBbox / areaImage) * 100);
 
   //for composite_image, the multiple geolocalisations are saved one after the other in the front-end. The last one will be the one also saved in the table images.
-  await models.images.update(
-    {
-      location: models.sequelize.fn(
-        "ST_SetSRID",
-        models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
-        "4326"
-      ),
-      roll: roll,
-      tilt: tilt,
-      azimuth: azimuth,
-      focal: focal,
-      px: px,
-      py: py,
-      user_id: georeferencer_id,
-      date_georef: models.sequelize.literal("now()"),
-      geolocalisation_id: geoloc_id,
-      state: "waiting_validation",
-      framing_mode: framing_mode
-    },
-    {
-      where: { id: image_id }
-    }
-  );
-
+  if (!improveFromVisit) {
+    await models.images.update(
+      {
+        location: models.sequelize.fn(
+          "ST_SetSRID",
+          models.sequelize.fn("ST_MakePoint", longitude, latitude, altitude),
+          "4326"
+        ),
+        roll: roll,
+        tilt: tilt,
+        azimuth: azimuth,
+        focal: focal,
+        px: px,
+        py: py,
+        user_id: georeferencer_id,
+        date_georef: models.sequelize.literal("now()"),
+        geolocalisation_id: geoloc_id,
+        state: "waiting_validation",
+        framing_mode: framing_mode
+      },
+      {
+        where: { id: image_id }
+      }
+    );  
+  }
+  
   // store the geolocalisation parameters
   await models.geolocalisations.update(
     {
@@ -214,13 +220,14 @@ exports.save = route(async (req, res) => {
       score: maxerror,
       surface_ratio: surfaceRatio,
       n_gcp: nGCP,
-      previous_geolocalisation_id: null,
+      previous_geolocalisation_id: improveFromVisit ? previous_geoloc_id : null,
       stop: models.sequelize.literal("now()"),
       user_id: georeferencer_id,
       state: "waiting_validation",
       date_checked: models.sequelize.literal("now()"),
       date_georef: models.sequelize.literal("now()"),
-      region_px: regionByPx
+      region_px: regionByPx,
+      image_modifiers: image_modifiers
     },
     {
       where: { id: geoloc_id }
@@ -241,18 +248,33 @@ exports.save = route(async (req, res) => {
         where: { id: geoloc_id }
       }
     );
-    // the previous geolocalisation is marked as "improved",
-    // the reason of the improvement are recorded
-    await models.geolocalisations.update(
-      {
-        state: "improved",
-        remark: remark,
-        errors_list: errors_list
-      },
-      {
-        where: { id: previous_geoloc_id }
-      }
-    );
+
+    let previousGeolocIdToSearchAndUpdate = previous_geoloc_id;
+
+    while (previousGeolocIdToSearchAndUpdate) {
+      // the previous geolocalisation is marked as "improved",
+      // the reason of the improvement are recorded
+      await models.geolocalisations.update(
+        {
+          state: "improved",
+          remark: remark,
+          errors_list: errors_list
+        },
+        {
+          where: { id: previousGeolocIdToSearchAndUpdate }
+        }
+      );
+
+      const geolocalisation = await models.geolocalisations.findOne({
+        where: {
+          id: previousGeolocIdToSearchAndUpdate
+        }
+      });
+
+      previousGeolocIdToSearchAndUpdate = geolocalisation.previous_geolocalisation_id
+
+    }
+    
 
     // the image is validated
     await models.images.update(
@@ -273,6 +295,7 @@ exports.save = route(async (req, res) => {
 let validate = async (req, res) => {
   const geoloc_id = req.geolocalisation.id;
   const image_id =  req.geolocalisation.image_id;
+  const previous_geolocalisation_id = req.geolocalisation.previous_geolocalisation_id;
   const validator_id = req.user.id;
 
   //validate geoloc in table geolocalisations
@@ -287,6 +310,17 @@ let validate = async (req, res) => {
       where: { id: geoloc_id }
     }
   );
+
+  if (previous_geolocalisation_id) {
+    await models.geolocalisations.update(
+      {
+        state: "improved"
+      },
+      {
+        where: { id: previous_geolocalisation_id }
+      }
+    );
+  }
 
   //FIND all validated footprints in table geolocalisations and merge them into one.
   const merged_footprint = await mergeFootprint(image_id);
@@ -304,7 +338,8 @@ let validate = async (req, res) => {
       focal: req.geolocalisation.focal,
       px: req.geolocalisation.px,
       py: req.geolocalisation.py,
-      footprint: merged_footprint
+      footprint: merged_footprint,
+      geolocalisation_id: geoloc_id
     },
     {
       where: { id: image_id }
@@ -615,10 +650,15 @@ async function mergeFootprint(image_id) {
     group: ['image_id']
   });
 
-  const merged_footprint = {
-    type: 'MultiPolygon',
-    coordinates: [geolocalisation.dataValues.merged_footprint.coordinates]
-  };
+
+
+  let merged_footprint;
+  if (geolocalisation && geolocalisation.dataValues) {
+    merged_footprint = {
+      type: 'MultiPolygon',
+      coordinates: [geolocalisation.dataValues.merged_footprint.coordinates]
+    };
+  }
 
   return merged_footprint
 }
