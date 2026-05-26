@@ -1,5 +1,5 @@
 # https://docs.docker.com/compose/compose-file/
-version: "3.8"
+version: '3.8'
 
 services:
   # Application container (Node.js server).
@@ -29,22 +29,22 @@ services:
       # before starting the application, to install new dependencies.
       DOCKER_INSTALL_DEPENDENCIES:
     ports:
-      - "${PORT:-1337}:1337"
-    restart: "no"
+      - '${PORT:-1337}:1337'
+    restart: 'no'
     stop_signal: KILL
     volumes:
       # Mount this repository into the container so that the server running
       # within it can detect changes to the code and restart automatically.
       # Exclude node_modules and mount it as persistent named volume instead.
-      - ".:/usr/src/app"
-      - "node_modules:/usr/src/app/node_modules"
-      - "./public/data:/data"
+      - '.:/usr/src/app'
+      - 'node_modules:/usr/src/app/node_modules'
+      - './public/data:/data'
 
   # Database container (PostgreSQL with PostGIS).
   db:
-    image: postgis/postgis:13-3.1-alpine
+    image: postgis/postgis:18-3.6-alpine
     # Known compatiblity issues with ARM architecture (like M1 chip) and postgis image
-    # As a workaround, use the following image instead: 
+    # As a workaround, use the following image instead:
     # image: furiousluke/postgis:13-3.3
     # Increase work_mem could be needed to avoid out of memory errors
     # command: >
@@ -57,12 +57,12 @@ services:
     ports:
       # Expose the database on port 5432 of the host by default
       # (or $DB_PORT, if specified).
-      - "${DB_PORT:-5434}:5432"
-    restart: "no"
+      - '${DB_PORT:-5434}:5432'
+    restart: 'no'
     volumes:
       # Mount a persistent Docker volume into the container so that PostgreSQL
       # data survives container restart.
-      - "db_data:/var/lib/postgresql/data"
+      - 'db_data:/var/lib/postgresql/data'
       - ./init_db.sh:/docker-entrypoint-initdb.d/11_init_db.sh
       #- "${DUMP_PATH}:/tmp/dump.sql" #uncomment if you need to bootstrap your db from a dump
 
@@ -81,7 +81,7 @@ services:
       DB_NAME: smapshot_v2
       DB_USER: postgres
       DB_PASS: postgres
-    restart: "always"
+    restart: 'always'
     stop_signal: KILL
     depends_on:
       - db
@@ -90,24 +90,24 @@ services:
       - ./docker/vt_generate/tasks.yml:/usr/src/app/tasks.yml
       # Mount a persistent Docker volume into the container so that PostgreSQL
       # data survives container restart.
-      - "vt_tilesets:/usr/src/app/output"
+      - 'vt_tilesets:/usr/src/app/output'
 
   # Serve vector tiles generated from vt_generate container
   vt_serve:
     image: mediacomem/mbtileserver:1.0.0
     hostname: vt_serve
     environment:
-      TILE_DIR: "/tilesets"
-      MBTILESERVER_ARGS: "--disable-preview --disable-svc-list"
+      TILE_DIR: '/tilesets'
+      MBTILESERVER_ARGS: '--disable-preview --disable-svc-list'
     ports:
-      - "${VT_PORT:-3005}:8000"
-    restart: "no"
+      - '${VT_PORT:-3005}:8000'
+    restart: 'no'
     depends_on:
       - vt_generate
     volumes:
       # Mount a persistent Docker volume into the container so that PostgreSQL
       # data survives container restart.
-      - "vt_tilesets:/tilesets"
+      - 'vt_tilesets:/tilesets'
 
   # Test application container (Mocha test runner).
   test_app:
@@ -137,19 +137,19 @@ services:
       NODE_ENV: test
       SEED:
       SHOW_OPEN_API_COVERAGE:
-    restart: "no"
+    restart: 'no'
     volumes:
-      - "./coverage:/usr/src/app/coverage"
+      - './coverage:/usr/src/app/coverage'
 
   # Test database container (PostgreSQL with PostGIS).
   test_db:
-    image: postgis/postgis:13-3.1-alpine
+    image: postgis/postgis:18-3.6-alpine
     hostname: test_db
     environment:
       POSTGRES_DB: smapshot_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    restart: "no"
+    restart: 'no'
 
   # Base image with compile-time and runtime dependencies.
   base:
@@ -160,8 +160,8 @@ services:
       dockerfile: Dockerfile.base
     command:
       # Run a dummy command so the container exits immediately.
-      - "true"
-    restart: "no"
+      - 'true'
+    restart: 'no'
 
 volumes:
   db_data:

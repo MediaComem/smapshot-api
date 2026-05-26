@@ -7995,6 +7995,16 @@
                           "title": {
                             "type": "string"
                           },
+                          "view_type": {
+                            "type": "string",
+                            "enum": [
+                              "terrestrial",
+                              "lowOblique",
+                              "highOblique",
+                              "nadir"
+                            ],
+                            "nullable": true
+                          },
                           "state": {
                             "type": "string",
                             "enum": [
@@ -27796,6 +27806,16 @@
                 "title": {
                   "type": "string"
                 },
+                "view_type": {
+                  "type": "string",
+                  "enum": [
+                    "terrestrial",
+                    "lowOblique",
+                    "highOblique",
+                    "nadir"
+                  ],
+                  "nullable": true
+                },
                 "state": {
                   "type": "string",
                   "enum": [
@@ -27915,6 +27935,16 @@
           },
           "title": {
             "type": "string"
+          },
+          "view_type": {
+            "type": "string",
+            "enum": [
+              "terrestrial",
+              "lowOblique",
+              "highOblique",
+              "nadir"
+            ],
+            "nullable": true
           },
           "state": {
             "type": "string",

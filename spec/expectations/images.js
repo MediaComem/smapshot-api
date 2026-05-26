@@ -308,12 +308,13 @@ exports.getExpectedRequestedImageAttributes = (request, options) => {
   return compactObject(expected);
 };
 
-function getMainAttributes({ id, original_id, title, state }) {
+function getMainAttributes({ id, original_id, title, view_type, state }) {
 
   const expected = {
     id,
     original_id,
     title,
+    view_type,
     state
   };
   return expected;
