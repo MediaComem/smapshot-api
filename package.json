@@ -50,7 +50,7 @@
     "node": ">=20.0.0 <25.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.658.1",
+    "@aws-sdk/client-sesv2": "^3.658.1",
     "@aws-sdk/credential-provider-node": "^3.658.1",
     "@small-tech/express-ws": "^1.0.1",
     "@techstark/opencv-js": "^4.10.0-release.1",
@@ -60,7 +60,7 @@
     "ajv": "^6.12.4",
     "ajv-errors": "^1.0.1",
     "axios": "^1.7.7",
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "body-parser": "^1.20.3",
     "bufferutil": "4.0.1",
     "collada2gltf": "0.0.0",
@@ -83,7 +83,7 @@
     "memorystore": "^1.6.7",
     "morgan": "^1.10.0",
     "node-fetch": "^2.7.0",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^9.0.3",
     "passport": "~0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth": "^2.0.0",
