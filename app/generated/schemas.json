@@ -3950,6 +3950,22 @@
       "title": {
         "type": "string"
       },
+      "view_type": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "terrestrial",
+              "lowOblique",
+              "highOblique",
+              "nadir"
+            ]
+          }
+        ]
+      },
       "state": {
         "$ref": "ImageState#"
       },
