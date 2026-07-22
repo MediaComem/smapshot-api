@@ -1,11 +1,11 @@
 const nodemailer = require('nodemailer');
-const aws = require("@aws-sdk/client-ses");
+const { SESv2Client, SendEmailCommand } = require("@aws-sdk/client-sesv2");
 const { defaultProvider } = require("@aws-sdk/credential-provider-node");
 
 const SEND_MAIL = Symbol('SEND_MAIL');
 
-const ses = new aws.SES({
-  apiVersion: "2010-12-01",
+const sesClient = new SESv2Client({
+  apiVersion: "2019-09-27",
   region: "eu-west-3",
   defaultProvider,
 });
@@ -46,7 +46,7 @@ exports.createSendMail = _smtpConfig => {
   });
   */
   const sesTransport = nodemailer.createTransport({
-    SES: { ses, aws },
+    SES: { sesClient, SendEmailCommand },
   });
 
   return options => sesTransport.sendMail(options);
