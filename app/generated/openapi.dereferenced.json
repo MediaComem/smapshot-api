@@ -7941,6 +7941,15 @@
             }
           },
           {
+            "name": "POI_ContainsBuffer",
+            "in": "query",
+            "description": "Buffer distance to consider an image's footprint as containing the point on map.",
+            "example": 400,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "license_type",
             "in": "query",
             "description": "Select only images whos license_type_id matches the code in the license_type table.",
@@ -9382,6 +9391,15 @@
             }
           },
           {
+            "name": "POI_ContainsBuffer",
+            "in": "query",
+            "description": "Buffer distance to consider an image's footprint as containing the point on map.",
+            "example": 400,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "license_type",
             "in": "query",
             "description": "Select only images whos license_type_id matches the code in the license_type table.",
@@ -10103,6 +10121,15 @@
             "in": "query",
             "description": "Max Distance to cover from point on map.",
             "example": 2000,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "POI_ContainsBuffer",
+            "in": "query",
+            "description": "Buffer distance to consider an image's footprint as containing the point on map.",
+            "example": 400,
             "schema": {
               "type": "number"
             }
