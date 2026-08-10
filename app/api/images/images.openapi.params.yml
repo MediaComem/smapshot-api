@@ -218,7 +218,7 @@
     type: number
 - name: POI_ContainsBuffer
   in: query
-  description: Buffer distance to consider an image's footprint as containing the point on map.
+  description: Buffer distance, in meters, to consider an image's footprint as containing the point on map.
   example: 400
   schema:
     type: number
