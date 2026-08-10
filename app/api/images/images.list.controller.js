@@ -438,17 +438,17 @@ const getImagesFromPOI = async (req) => {
     attributes.push('license');
   }
   const orderBy = query.sortKey;
-  const poiLocationGeometry = Sequelize.fn(
-    'ST_SetSRID',
-    Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
-    4326
-  );
+  const POI_ContainsBuffer = query.POI_ContainsBuffer || 400;
   const poiLocationGeography = Sequelize.cast(
     Sequelize.fn(
       'ST_SetSRID',
       Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
       4326
     ),
+    'geography'
+  );
+  const footprintGeography = Sequelize.cast(
+    Sequelize.col('images.footprint'),
     'geography'
   );
   const imageLocationGeo = Sequelize.cast(
@@ -559,7 +559,7 @@ const getImagesFromPOI = async (req) => {
     whereClauses.push({
       [Op.or]: [
         Sequelize.where(
-          Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+          Sequelize.fn('ST_DWithin', footprintGeography, poiLocationGeography, POI_ContainsBuffer),
           true
         ),
         Sequelize.where(
@@ -571,7 +571,7 @@ const getImagesFromPOI = async (req) => {
   } else {
     whereClauses.push(
       Sequelize.where(
-        Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+        Sequelize.fn('ST_DWithin', footprintGeography, poiLocationGeography, POI_ContainsBuffer),
         true
       )
     );
@@ -613,13 +613,17 @@ const getImagesFromPOI = async (req) => {
 exports.getPoiStats = utils.route(async (req, res) => {
   const query = req.query;
   const POI_MaxDistance = query.POI_MaxDistance || 3000;
-  const poiLocationGeometry = Sequelize.fn(
-    'ST_SetSRID',
-    Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
-    4326
-  );
+  const POI_ContainsBuffer = query.POI_ContainsBuffer || 400;
   const poiLocationGeography = Sequelize.cast(
-    poiLocationGeometry,
+    Sequelize.fn(
+      'ST_SetSRID',
+      Sequelize.fn('ST_MakePoint', query.POI_longitude, query.POI_latitude),
+      4326
+    ),
+    'geography'
+  );
+  const footprintGeography = Sequelize.cast(
+    Sequelize.col('images.footprint'),
     'geography'
   );
   const imageLocationGeo = Sequelize.cast(
@@ -700,7 +704,7 @@ exports.getPoiStats = utils.route(async (req, res) => {
     whereClauses.push({
       [Op.or]: [
         Sequelize.where(
-          Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+          Sequelize.fn('ST_DWithin', footprintGeography, poiLocationGeography, POI_ContainsBuffer),
           true
         ),
         Sequelize.where(
@@ -712,7 +716,7 @@ exports.getPoiStats = utils.route(async (req, res) => {
   } else {
     whereClauses.push(
       Sequelize.where(
-        Sequelize.fn('ST_Contains', Sequelize.col('images.footprint'), poiLocationGeometry),
+        Sequelize.fn('ST_DWithin', footprintGeography, poiLocationGeography, POI_ContainsBuffer),
         true
       )
     );
