@@ -1,0 +1,20 @@
+/settings/{name}:
+  get:
+    summary: Retrieve a setting's value by name.
+    operationId: getSettingByName
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: The unique name of the setting.
+        example: maintenance_mode
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema: {}
+      "404":
+        $ref: "#/components/responses/NotFoundError"

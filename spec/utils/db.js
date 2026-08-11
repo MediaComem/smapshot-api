@@ -22,6 +22,7 @@ exports.mainDatabaseTables = [
   "photographers",
   "problems",
   "problems_type",
+  "settings",
   "stories",
   "stories_chapters",
   "users",
@@ -65,6 +66,7 @@ exports.resetDatabase = () =>
   TRUNCATE photographers RESTART IDENTITY CASCADE;
   TRUNCATE stories RESTART IDENTITY CASCADE;
   TRUNCATE news RESTART IDENTITY CASCADE;
+  TRUNCATE settings RESTART IDENTITY CASCADE;
   TRUNCATE stories RESTART IDENTITY CASCADE;
   TRUNCATE news RESTART IDENTITY CASCADE;
 `);
