@@ -7937,7 +7937,8 @@
             "description": "Max Distance to cover from point on map.",
             "example": 2000,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -7946,7 +7947,8 @@
             "description": "Buffer distance, in meters, to consider an image's footprint as containing the point on map.",
             "example": 400,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -9387,7 +9389,8 @@
             "description": "Max Distance to cover from point on map.",
             "example": 2000,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -9396,7 +9399,8 @@
             "description": "Buffer distance, in meters, to consider an image's footprint as containing the point on map.",
             "example": 400,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -10122,7 +10126,8 @@
             "description": "Max Distance to cover from point on map.",
             "example": 2000,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -10131,7 +10136,8 @@
             "description": "Buffer distance, in meters, to consider an image's footprint as containing the point on map.",
             "example": 400,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "minimum": 0
             }
           },
           {

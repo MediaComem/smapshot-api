@@ -216,12 +216,14 @@
   example: 2000
   schema:
     type: number
+    minimum: 0
 - name: POI_ContainsBuffer
   in: query
   description: Buffer distance, in meters, to consider an image's footprint as containing the point on map.
   example: 400
   schema:
     type: number
+    minimum: 0
 - name: license_type
   in: query
   description: Select only images whos license_type_id matches the code in the license_type table.
