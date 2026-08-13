@@ -11,9 +11,7 @@ module.exports = {
     `);
     await queryInterface.sequelize.query(`
       INSERT INTO public.settings (name, value) VALUES
-        ('maintenance_mode', 'false'),
-        ('banner_criticality', '"warn"'),
-        ('maintenance_message', '{"de": "", "en": "", "fr": "", "it": "", "pt": "", "ja": ""}');
+        ('maintenance', '{"isEnable":false,"level":"warn","title":{"fr":"","en":"","de":"","it":"","pt":"","ja":""},"message":{"fr":"","en":"","de":"","it":"","pt":"","ja":""}}');
     `);
   },
 
