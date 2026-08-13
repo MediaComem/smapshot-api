@@ -438,7 +438,8 @@ const getImagesFromPOI = async (req) => {
     attributes.push('license');
   }
   const orderBy = query.sortKey;
-  const POI_ContainsBuffer = query.POI_ContainsBuffer || 400;
+  const POI_ContainsBuffer =
+    query.POI_ContainsBuffer != null ? query.POI_ContainsBuffer : 400;
   const poiLocationGeography = Sequelize.cast(
     Sequelize.fn(
       'ST_SetSRID',
@@ -613,7 +614,8 @@ const getImagesFromPOI = async (req) => {
 exports.getPoiStats = utils.route(async (req, res) => {
   const query = req.query;
   const POI_MaxDistance = query.POI_MaxDistance || 3000;
-  const POI_ContainsBuffer = query.POI_ContainsBuffer || 400;
+  const POI_ContainsBuffer =
+    query.POI_ContainsBuffer != null ? query.POI_ContainsBuffer : 400;
   const poiLocationGeography = Sequelize.cast(
     Sequelize.fn(
       'ST_SetSRID',
