@@ -68,6 +68,7 @@
         "impossible": "The computed pose is impossible, check that there is no error on the correspondences."
     },
     "locations":{
-        "noCountry": "The location is not within a country."
+        "noCountry": "The location is not within a country.",
+        "imageAlreadyGeoreferenced": "This image has already been georeferenced; its apriori location can no longer be updated."
     }
 }

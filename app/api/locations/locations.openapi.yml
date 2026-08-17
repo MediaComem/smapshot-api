@@ -27,3 +27,168 @@
               example: CH
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
+
+/locations/{collectionId}/apriori_locations:
+  get:
+    summary: Get the apriori locations of a collection's images, optionally filtered by state.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only access apriori
+      locations of a collection belonging to their own owner.
+    operationId: getAprioriLocationsByCollection
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: collectionId
+        in: path
+        description: The ID of the collection.
+        example: 1
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+      - name: state
+        in: query
+        description: >-
+          Filter apriori locations by the state of their image. Defaults to
+          `initial` if not provided.
+        example: initial
+        schema:
+          errorMessage: should be a valid image state or an array of valid image states
+          oneOf:
+            - $ref: "#/components/schemas/ImageState"
+            - type: array
+              items:
+                $ref: "#/components/schemas/ImageState"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AprioriLocationList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []
+
+/locations/images/{imageId}/apriori_locations:
+  get:
+    summary: Get the apriori locations of an image, regardless of its state.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only access apriori
+      locations of an image belonging to their own owner.
+    operationId: getAprioriLocationsByImage
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: imageId
+        in: path
+        description: The ID of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AprioriLocationList"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []
+
+/locations/images/{imageId}/exact-location:
+  put:
+    summary: Replace the apriori locations of an image with a new, exact one.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only update the
+      apriori location of an image belonging to their own owner.
+    operationId: updateExactLocation
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: imageId
+        in: path
+        description: The ID of the image.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateExactLocationRequest"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AprioriLocation"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "422":
+        $ref: "#/components/responses/RequestBodyValidationErrors"
+    security:
+      bearerToken: []
+
+/locations/apriori_locations/{aprioriLocationId}:
+  delete:
+    summary: Delete an apriori location.
+    description: |-
+      ## Authorization
+
+      **Required role:** `owner_admin`, `owner_validator` or `superadmin`.
+
+      **Scope:** an owner administrator or validator can only delete an
+      apriori location belonging to their own owner.
+    operationId: deleteAprioriLocation
+    parameters:
+      - $ref: "#/components/parameters/LanguageParameter"
+      - name: aprioriLocationId
+        in: path
+        description: The ID of the apriori location.
+        example: 42
+        required: true
+        schema:
+          $ref: "#/components/schemas/ApiId"
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessMessageResponse"
+      "400":
+        $ref: "#/components/responses/RequestParametersValidationErrors"
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+    security:
+      bearerToken: []

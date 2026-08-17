@@ -67,6 +67,7 @@
         "impossible": "Die berechnete Position ist nicht möglich, überprüfen Sie die Punktepaare."
     },
     "locations":{
-        "noCountry": "Der Standort entspricht keinem Land."
+        "noCountry": "Der Standort entspricht keinem Land.",
+        "imageAlreadyGeoreferenced": "Dieses Bild wurde bereits georeferenziert; seine ungefähre Position kann nicht mehr aktualisiert werden."
     }
 }
