@@ -67,7 +67,7 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AprioriLocationList"
+              $ref: "#/components/schemas/AprioriLocationWithImageTitleList"
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "401":
@@ -103,7 +103,7 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AprioriLocationList"
+              $ref: "#/components/schemas/AprioriLocationWithImageTitleList"
       "400":
         $ref: "#/components/responses/RequestParametersValidationErrors"
       "401":

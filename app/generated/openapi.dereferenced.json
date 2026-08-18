@@ -14711,6 +14711,10 @@
                       },
                       "exact": {
                         "type": "boolean"
+                      },
+                      "title": {
+                        "type": "string",
+                        "nullable": true
                       }
                     },
                     "additionalProperties": false,
@@ -14720,7 +14724,8 @@
                       "longitude",
                       "latitude",
                       "azimuth",
-                      "exact"
+                      "exact",
+                      "title"
                     ]
                   },
                   "additionalProperties": false
@@ -14996,6 +15001,10 @@
                       },
                       "exact": {
                         "type": "boolean"
+                      },
+                      "title": {
+                        "type": "string",
+                        "nullable": true
                       }
                     },
                     "additionalProperties": false,
@@ -15005,7 +15014,8 @@
                       "longitude",
                       "latitude",
                       "azimuth",
-                      "exact"
+                      "exact",
+                      "title"
                     ]
                   },
                   "additionalProperties": false
@@ -29947,6 +29957,90 @@
         },
         "additionalProperties": false,
         "required": []
+      },
+      "AprioriLocationWithImageTitleList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "image_id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "longitude": {
+              "type": "number"
+            },
+            "latitude": {
+              "type": "number"
+            },
+            "azimuth": {
+              "type": "number",
+              "nullable": true
+            },
+            "exact": {
+              "type": "boolean"
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "image_id",
+            "longitude",
+            "latitude",
+            "azimuth",
+            "exact",
+            "title"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "AprioriLocationWithImageTitle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "image_id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "azimuth": {
+            "type": "number",
+            "nullable": true
+          },
+          "exact": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "image_id",
+          "longitude",
+          "latitude",
+          "azimuth",
+          "exact",
+          "title"
+        ]
       },
       "AprioriLocationList": {
         "type": "array",

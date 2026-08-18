@@ -1,0 +1,38 @@
+{
+  "$id": "AprioriLocationWithImageTitle",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "ApiId#"
+    },
+    "image_id": {
+      "$ref": "ApiId#"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "azimuth": {
+      "type": ["number", "null"]
+    },
+    "exact": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "image_id",
+    "longitude",
+    "latitude",
+    "azimuth",
+    "exact",
+    "title"
+  ]
+}

@@ -46,7 +46,10 @@ async function assertImageOwnerScope(req, imageId) {
 
 function findAprioriLocations(imagesWhere) {
   return models.apriori_locations.findAll({
-    attributes: aprioriLocationAttributes,
+    attributes: [
+      ...aprioriLocationAttributes,
+      [ models.sequelize.col('image.title'), 'title' ]
+    ],
     include: [{
       model: models.images,
       attributes: [],

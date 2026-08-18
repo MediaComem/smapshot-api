@@ -201,7 +201,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
               longitude: 7.44,
               latitude: 46.95,
               azimuth: 12.5,
-              exact: false
+              exact: false,
+              title: image1.title
             }
           ])
           .and.to.matchResponseDocumentation();
@@ -237,7 +238,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             longitude: 7.44,
             latitude: 46.95,
             azimuth: 12.5,
-            exact: false
+            exact: false,
+            title: image1.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -269,7 +271,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             longitude: 7.44,
             latitude: 46.95,
             azimuth: 12.5,
-            exact: false
+            exact: false,
+            title: image1.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -362,7 +365,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             longitude: 7.5,
             latitude: 46,
             azimuth: null,
-            exact: false
+            exact: false,
+            title: image3.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -397,7 +401,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             longitude: 7.44,
             latitude: 46.95,
             azimuth: 12.5,
-            exact: false
+            exact: false,
+            title: image1.title
           },
           {
             id: aprioriLocation2.id,
@@ -405,7 +410,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             longitude: 7.34,
             latitude: 45.95,
             azimuth: null,
-            exact: true
+            exact: true,
+            title: image2.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -624,7 +630,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
               longitude: 7.44,
               latitude: 46.95,
               azimuth: 12.5,
-              exact: false
+              exact: false,
+              title: image1.title
             }
           ])
           .and.to.matchResponseDocumentation();
@@ -660,7 +667,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             longitude: 7.44,
             latitude: 46.95,
             azimuth: 12.5,
-            exact: false
+            exact: false,
+            title: image1.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -692,7 +700,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             longitude: 7.44,
             latitude: 46.95,
             azimuth: 12.5,
-            exact: false
+            exact: false,
+            title: image1.title
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -725,7 +734,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             longitude: 7.5,
             latitude: 46,
             azimuth: null,
-            exact: false
+            exact: false,
+            title: imageValidated.title
           }
         ])
         .and.to.matchResponseDocumentation();
