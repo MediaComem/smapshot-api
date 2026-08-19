@@ -4464,6 +4464,130 @@
     "required": []
   },
   {
+    "$id": "AprioriLocationWithImageTitleList",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "array",
+    "items": {
+      "$ref": "AprioriLocationWithImageTitle#"
+    },
+    "additionalProperties": false
+  },
+  {
+    "$id": "AprioriLocationWithImageTitle",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+      "id": {
+        "$ref": "ApiId#"
+      },
+      "image_id": {
+        "$ref": "ApiId#"
+      },
+      "longitude": {
+        "type": "number"
+      },
+      "latitude": {
+        "type": "number"
+      },
+      "azimuth": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "exact": {
+        "type": "boolean"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "original_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "image_id",
+      "longitude",
+      "latitude",
+      "azimuth",
+      "exact",
+      "title",
+      "original_id"
+    ]
+  },
+  {
+    "$id": "AprioriLocationList",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "array",
+    "items": {
+      "$ref": "AprioriLocation#"
+    },
+    "additionalProperties": false
+  },
+  {
+    "$id": "AprioriLocation",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+      "id": {
+        "$ref": "ApiId#"
+      },
+      "image_id": {
+        "$ref": "ApiId#"
+      },
+      "longitude": {
+        "type": "number"
+      },
+      "latitude": {
+        "type": "number"
+      },
+      "azimuth": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "exact": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "image_id",
+      "longitude",
+      "latitude",
+      "azimuth",
+      "exact"
+    ]
+  },
+  {
+    "$id": "UpdateExactLocationRequest",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+      "longitude": {
+        "type": "number"
+      },
+      "latitude": {
+        "type": "number"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "longitude",
+      "latitude"
+    ]
+  },
+  {
     "$id": "UserCorrectionInfoList",
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "array",
