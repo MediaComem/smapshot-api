@@ -1,7 +1,7 @@
 const models = require("../../models");
 const utils = require("../../utils/express");
 const { notFoundError, authorizationError, requestBodyValidationError } = require("../../utils/errors");
-const { inUniqueOrList } = require("../../utils/params");
+const { cleanProp, inUniqueOrList } = require("../../utils/params");
 
 const aprioriLocationAttributes = [
   "id",
@@ -48,7 +48,8 @@ function findAprioriLocations(imagesWhere) {
   return models.apriori_locations.findAll({
     attributes: [
       ...aprioriLocationAttributes,
-      [ models.sequelize.col('image.title'), 'title' ]
+      [ models.sequelize.col('image.title'), 'title' ],
+      [ models.sequelize.col('image.original_id'), 'original_id' ]
     ],
     include: [{
       model: models.images,
@@ -88,10 +89,11 @@ exports.getAprioriLocationsByCollection = utils.route(async (req, res) => {
 
   await assertCollectionOwnerScope(req, collectionId);
 
-  const aprioriLocations = await findAprioriLocations({
+  const aprioriLocations = await findAprioriLocations(cleanProp({
     collection_id: collectionId,
-    state: inUniqueOrList(state)
-  });
+    state: inUniqueOrList(state),
+    original_id: inUniqueOrList(req.query.original_id)
+  }));
 
   res.status(200).send(aprioriLocations);
 });

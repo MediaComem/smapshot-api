@@ -303,7 +303,8 @@ describe('PUT /locations/images/:imageId/exact-location', () => {
               latitude: 47,
               azimuth: null,
               exact: true,
-              title: image1.title
+              title: image1.title,
+              original_id: image1.original_id
             }
           ]);
       });

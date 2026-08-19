@@ -14679,6 +14679,15 @@
                 }
               ]
             }
+          },
+          {
+            "name": "original_id",
+            "in": "query",
+            "description": "Filter apriori locations to the image of the collection with this original ID.",
+            "example": "LB_3456_ETHZ",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -14715,6 +14724,10 @@
                       "title": {
                         "type": "string",
                         "nullable": true
+                      },
+                      "original_id": {
+                        "type": "string",
+                        "nullable": true
                       }
                     },
                     "additionalProperties": false,
@@ -14725,7 +14738,8 @@
                       "latitude",
                       "azimuth",
                       "exact",
-                      "title"
+                      "title",
+                      "original_id"
                     ]
                   },
                   "additionalProperties": false
@@ -15005,6 +15019,10 @@
                       "title": {
                         "type": "string",
                         "nullable": true
+                      },
+                      "original_id": {
+                        "type": "string",
+                        "nullable": true
                       }
                     },
                     "additionalProperties": false,
@@ -15015,7 +15033,8 @@
                       "latitude",
                       "azimuth",
                       "exact",
-                      "title"
+                      "title",
+                      "original_id"
                     ]
                   },
                   "additionalProperties": false
@@ -29987,6 +30006,10 @@
             "title": {
               "type": "string",
               "nullable": true
+            },
+            "original_id": {
+              "type": "string",
+              "nullable": true
             }
           },
           "additionalProperties": false,
@@ -29997,7 +30020,8 @@
             "latitude",
             "azimuth",
             "exact",
-            "title"
+            "title",
+            "original_id"
           ]
         },
         "additionalProperties": false
@@ -30029,6 +30053,10 @@
           "title": {
             "type": "string",
             "nullable": true
+          },
+          "original_id": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -30039,7 +30067,8 @@
           "latitude",
           "azimuth",
           "exact",
-          "title"
+          "title",
+          "original_id"
         ]
       },
       "AprioriLocationList": {

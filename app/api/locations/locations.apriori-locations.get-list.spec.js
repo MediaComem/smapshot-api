@@ -202,7 +202,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
               latitude: 46.95,
               azimuth: 12.5,
               exact: false,
-              title: image1.title
+              title: image1.title,
+              original_id: image1.original_id
             }
           ])
           .and.to.matchResponseDocumentation();
@@ -239,7 +240,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             latitude: 46.95,
             azimuth: 12.5,
             exact: false,
-            title: image1.title
+            title: image1.title,
+            original_id: image1.original_id
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -272,7 +274,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             latitude: 46.95,
             azimuth: 12.5,
             exact: false,
-            title: image1.title
+            title: image1.title,
+            original_id: image1.original_id
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -366,7 +369,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             latitude: 46,
             azimuth: null,
             exact: false,
-            title: image3.title
+            title: image3.title,
+            original_id: image3.original_id
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -402,7 +406,8 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             latitude: 46.95,
             azimuth: 12.5,
             exact: false,
-            title: image1.title
+            title: image1.title,
+            original_id: image1.original_id
           },
           {
             id: aprioriLocation2.id,
@@ -411,9 +416,111 @@ describe('GET /locations/:collectionId/apriori_locations', () => {
             latitude: 45.95,
             azimuth: null,
             exact: true,
-            title: image2.title
+            title: image2.title,
+            original_id: image2.original_id
           }
         ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
+    it('filters the apriori locations to the image with the requested original_id', async () => {
+      const admin = await createUser({ roles: [ 'owner_admin' ], owner: owner1 });
+      const token = await generateJwtFor(admin);
+      const initialState = await loadInitialState();
+
+      const req = {
+        ...baseRequest,
+        query: {
+          original_id: image1.original_id
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody([
+          {
+            id: aprioriLocation1.id,
+            image_id: image1.id,
+            longitude: 7.44,
+            latitude: 46.95,
+            azimuth: 12.5,
+            exact: false,
+            title: image1.title,
+            original_id: image1.original_id
+          }
+        ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
+    it('combines the original_id and state filters', async () => {
+      const admin = await createUser({ roles: [ 'owner_admin' ], owner: owner1 });
+      const token = await generateJwtFor(admin);
+      const initialState = await loadInitialState();
+
+      const req = {
+        ...baseRequest,
+        query: {
+          original_id: image2.original_id,
+          state: 'waiting_validation'
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody([
+          {
+            id: aprioriLocation2.id,
+            image_id: image2.id,
+            longitude: 7.34,
+            latitude: 45.95,
+            azimuth: null,
+            exact: true,
+            title: image2.title,
+            original_id: image2.original_id
+          }
+        ])
+        .and.to.matchResponseDocumentation();
+
+      await expectNoSideEffects(app, initialState);
+    });
+
+    it('retrieves an empty list when no image matches the requested original_id', async () => {
+      const admin = await createUser({ roles: [ 'owner_admin' ], owner: owner1 });
+      const token = await generateJwtFor(admin);
+      const initialState = await loadInitialState();
+
+      const req = {
+        ...baseRequest,
+        query: {
+          original_id: 'does-not-exist'
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      expect(req).to.matchRequestDocumentation();
+
+      const res = await testHttpRequest(app, req);
+
+      expect(res)
+        .to.have.status(200)
+        .and.to.have.jsonBody([])
         .and.to.matchResponseDocumentation();
 
       await expectNoSideEffects(app, initialState);
@@ -631,7 +738,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
               latitude: 46.95,
               azimuth: 12.5,
               exact: false,
-              title: image1.title
+              title: image1.title,
+              original_id: image1.original_id
             }
           ])
           .and.to.matchResponseDocumentation();
@@ -668,7 +776,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             latitude: 46.95,
             azimuth: 12.5,
             exact: false,
-            title: image1.title
+            title: image1.title,
+            original_id: image1.original_id
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -701,7 +810,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             latitude: 46.95,
             azimuth: 12.5,
             exact: false,
-            title: image1.title
+            title: image1.title,
+            original_id: image1.original_id
           }
         ])
         .and.to.matchResponseDocumentation();
@@ -735,7 +845,8 @@ describe('GET /locations/images/:imageId/apriori_locations', () => {
             latitude: 46,
             azimuth: null,
             exact: false,
-            title: imageValidated.title
+            title: imageValidated.title,
+            original_id: imageValidated.original_id
           }
         ])
         .and.to.matchResponseDocumentation();

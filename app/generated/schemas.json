@@ -4503,6 +4503,12 @@
           "string",
           "null"
         ]
+      },
+      "original_id": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "additionalProperties": false,
@@ -4513,7 +4519,8 @@
       "latitude",
       "azimuth",
       "exact",
-      "title"
+      "title",
+      "original_id"
     ]
   },
   {

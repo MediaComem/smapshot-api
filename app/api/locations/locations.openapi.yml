@@ -61,6 +61,14 @@
             - type: array
               items:
                 $ref: "#/components/schemas/ImageState"
+      - name: original_id
+        in: query
+        description: >-
+          Filter apriori locations to the image of the collection with this
+          original ID.
+        example: LB_3456_ETHZ
+        schema:
+          type: string
     responses:
       "200":
         description: Successful request.
