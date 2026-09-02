@@ -1,0 +1,55 @@
+/settings/{name}:
+  get:
+    summary: Retrieve a setting's value by name.
+    operationId: getSettingByName
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: The unique name of the setting.
+        example: maintenance_mode
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema: {}
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+
+  put:
+    summary: Update a setting's value by name.
+    operationId: updateSetting
+    description: |-
+      ## Authorization
+
+      **Required role:** `super_admin`.
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: The unique name of the setting.
+        example: maintenance_mode
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {}
+    responses:
+      "200":
+        description: Successful request.
+        content:
+          application/json:
+            schema: {}
+      "401":
+        $ref: "#/components/responses/UnauthorizedError"
+      "403":
+        $ref: "#/components/responses/ForbiddenError"
+      "404":
+        $ref: "#/components/responses/NotFoundError"
+    security:
+      bearerToken: []
