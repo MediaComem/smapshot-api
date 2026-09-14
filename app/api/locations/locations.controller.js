@@ -2,6 +2,8 @@ const models = require("../../models");
 const utils = require("../../utils/express");
 const { notFoundError, authorizationError, requestBodyValidationError } = require("../../utils/errors");
 const { cleanProp, inUniqueOrList } = require("../../utils/params");
+const { getOwnerScope: getImageOwnerScope } = require("../images/images.utils");
+const { getOwnerScope: getCollectionOwnerScope } = require("../collections/collections.utils");
 
 const aprioriLocationAttributes = [
   "id",
@@ -13,33 +15,27 @@ const aprioriLocationAttributes = [
 ];
 
 async function assertCollectionOwnerScope(req, collectionId) {
-  if (req.user.isSuperAdmin()) {
-    return;
-  }
+  const { include: scopeOwner } = getCollectionOwnerScope(req);
 
-  const collection = await models.collections.findByPk(collectionId, {
-    attributes: [ 'owner_id' ]
+  const collection = await models.collections.findOne({
+    where: { id: collectionId, ...scopeOwner },
+    attributes: [ 'id' ]
   });
 
-  if (!collection || collection.owner_id !== req.user.owner_id) {
+  if (!collection) {
     throw authorizationError(req.__('general.accessForbidden'));
   }
 }
 
 async function assertImageOwnerScope(req, imageId) {
-  if (req.user.isSuperAdmin()) {
-    return;
-  }
+  const { where: scopeOwner } = getImageOwnerScope(req);
 
-  const image = await models.images.findByPk(imageId, {
-    attributes: [],
-    include: [{
-      model: models.collections,
-      attributes: [ 'owner_id' ]
-    }]
+  const image = await models.images.findOne({
+    where: { id: imageId, ...scopeOwner },
+    attributes: [ 'id' ]
   });
 
-  if (!image || !image.collection || image.collection.owner_id !== req.user.owner_id) {
+  if (!image) {
     throw authorizationError(req.__('general.accessForbidden'));
   }
 }
@@ -111,17 +107,15 @@ exports.getAprioriLocationsByImage = utils.route(async (req, res) => {
 exports.updateExactLocation = utils.route(async (req, res) => {
   const imageId = req.params.imageId;
   const { longitude, latitude } = req.body;
-  const user = req.user;
 
-  const image = await models.images.findByPk(imageId, {
-    attributes: [ 'id', 'original_id', 'state' ],
-    include: [{
-      model: models.collections,
-      attributes: [ 'owner_id' ]
-    }]
+  const { where: scopeOwner } = getImageOwnerScope(req);
+
+  const image = await models.images.findOne({
+    where: { id: imageId, ...scopeOwner },
+    attributes: [ 'id', 'original_id', 'state' ]
   });
 
-  if (!image || !image.collection || (!user.isSuperAdmin() && image.collection.owner_id !== user.owner_id)) {
+  if (!image) {
     throw authorizationError(req.__('general.accessForbidden'));
   }
 
@@ -170,23 +164,19 @@ exports.updateExactLocation = utils.route(async (req, res) => {
 
 exports.deleteAprioriLocation = utils.route(async (req, res) => {
   const aprioriLocationId = req.params.aprioriLocationId;
-  const user = req.user;
+
+  const { where: scopeOwner } = getImageOwnerScope(req);
 
   const aprioriLocation = await models.apriori_locations.findByPk(aprioriLocationId, {
     include: [{
       model: models.images,
-      attributes: [ 'id' ],
-      include: [{
-        model: models.collections,
-        attributes: [ 'owner_id' ]
-      }]
+      attributes: [],
+      where: scopeOwner,
+      required: true
     }]
   });
 
-  if (
-    !aprioriLocation || !aprioriLocation.image || !aprioriLocation.image.collection ||
-    (!user.isSuperAdmin() && aprioriLocation.image.collection.owner_id !== user.owner_id)
-  ) {
+  if (!aprioriLocation) {
     throw authorizationError(req.__('general.accessForbidden'));
   }
 
