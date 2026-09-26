@@ -14612,6 +14612,1304 @@
         }
       }
     },
+    "/locations/{collectionId}/apriori_locations": {
+      "get": {
+        "summary": "Get the apriori locations of a collection's images, optionally filtered by state.",
+        "description": "## Authorization\n\n**Required role:** `owner_admin`, `owner_validator` or `superadmin`.\n\n**Scope:** an owner administrator or validator can only access apriori\nlocations of a collection belonging to their own owner.",
+        "operationId": "getAprioriLocationsByCollection",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Language to localize data and message returned by the API.",
+            "example": "en",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "de",
+                "fr",
+                "it",
+                "pt",
+                "ja"
+              ]
+            }
+          },
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "The ID of the collection.",
+            "example": 1,
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter apriori locations by the state of their image. Defaults to `initial` if not provided.",
+            "example": "initial",
+            "schema": {
+              "errorMessage": "should be a valid image state or an array of valid image states",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "initial",
+                    "waiting_alignment",
+                    "waiting_validation",
+                    "validated",
+                    "impossible"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "initial",
+                      "waiting_alignment",
+                      "waiting_validation",
+                      "validated",
+                      "impossible"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "original_id",
+            "in": "query",
+            "description": "Filter apriori locations to the image of the collection with this original ID.",
+            "example": "LB_3456_ETHZ",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "image_id": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "longitude": {
+                        "type": "number"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "azimuth": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "exact": {
+                        "type": "boolean"
+                      },
+                      "title": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "original_id": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "image_id",
+                      "longitude",
+                      "latitude",
+                      "azimuth",
+                      "exact",
+                      "title",
+                      "original_id"
+                    ]
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/400",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Bad Request",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 400,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "An error indicating that part of an HTTP request is invalid.",
+                        "properties": {
+                          "location": {
+                            "type": "string",
+                            "description": "Which part of the request contains the invalid data.",
+                            "enum": [
+                              "body",
+                              "header",
+                              "path",
+                              "query"
+                            ],
+                            "example": "query"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "The human-readable error message."
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "The path to the invalid data (location-dependent).",
+                            "example": "/foo",
+                            "format": "json-pointer"
+                          },
+                          "validation": {
+                            "description": "The type(s) of validation that failed.",
+                            "example": "type",
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "example": "someValidation"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "someValidation"
+                                },
+                                "minItems": 1
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "location",
+                          "message",
+                          "path",
+                          "validation"
+                        ]
+                      }
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "errors",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that authentication failed.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/401",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Unauthorized",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 401,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication was successful but the user is not authorized to perform this action due to insufficient privileges.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the user is not authorized to perform this action despite being authenticated, probably due to insufficient privileges.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/403",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Forbidden",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 403,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": {
+          "bearerToken": []
+        }
+      }
+    },
+    "/locations/images/{imageId}/apriori_locations": {
+      "get": {
+        "summary": "Get the apriori locations of an image, regardless of its state.",
+        "description": "## Authorization\n\n**Required role:** `owner_admin`, `owner_validator` or `superadmin`.\n\n**Scope:** an owner administrator or validator can only access apriori\nlocations of an image belonging to their own owner.",
+        "operationId": "getAprioriLocationsByImage",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Language to localize data and message returned by the API.",
+            "example": "en",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "de",
+                "fr",
+                "it",
+                "pt",
+                "ja"
+              ]
+            }
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "description": "The ID of the image.",
+            "example": 42,
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "image_id": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "longitude": {
+                        "type": "number"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "azimuth": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "exact": {
+                        "type": "boolean"
+                      },
+                      "title": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "original_id": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "image_id",
+                      "longitude",
+                      "latitude",
+                      "azimuth",
+                      "exact",
+                      "title",
+                      "original_id"
+                    ]
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/400",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Bad Request",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 400,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "An error indicating that part of an HTTP request is invalid.",
+                        "properties": {
+                          "location": {
+                            "type": "string",
+                            "description": "Which part of the request contains the invalid data.",
+                            "enum": [
+                              "body",
+                              "header",
+                              "path",
+                              "query"
+                            ],
+                            "example": "query"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "The human-readable error message."
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "The path to the invalid data (location-dependent).",
+                            "example": "/foo",
+                            "format": "json-pointer"
+                          },
+                          "validation": {
+                            "description": "The type(s) of validation that failed.",
+                            "example": "type",
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "example": "someValidation"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "someValidation"
+                                },
+                                "minItems": 1
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "location",
+                          "message",
+                          "path",
+                          "validation"
+                        ]
+                      }
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "errors",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that authentication failed.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/401",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Unauthorized",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 401,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication was successful but the user is not authorized to perform this action due to insufficient privileges.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the user is not authorized to perform this action despite being authenticated, probably due to insufficient privileges.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/403",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Forbidden",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 403,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": {
+          "bearerToken": []
+        }
+      }
+    },
+    "/locations/images/{imageId}/exact-location": {
+      "put": {
+        "summary": "Replace the apriori locations of an image with a new, exact one.",
+        "description": "## Authorization\n\n**Required role:** `owner_admin`, `owner_validator` or `superadmin`.\n\n**Scope:** an owner administrator or validator can only update the\napriori location of an image belonging to their own owner.",
+        "operationId": "updateExactLocation",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Language to localize data and message returned by the API.",
+            "example": "en",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "de",
+                "fr",
+                "it",
+                "pt",
+                "ja"
+              ]
+            }
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "description": "The ID of the image.",
+            "example": 42,
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "latitude": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "longitude",
+                  "latitude"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "image_id": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "longitude": {
+                      "type": "number"
+                    },
+                    "latitude": {
+                      "type": "number"
+                    },
+                    "azimuth": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "exact": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "image_id",
+                    "longitude",
+                    "latitude",
+                    "azimuth",
+                    "exact"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/400",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Bad Request",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 400,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "An error indicating that part of an HTTP request is invalid.",
+                        "properties": {
+                          "location": {
+                            "type": "string",
+                            "description": "Which part of the request contains the invalid data.",
+                            "enum": [
+                              "body",
+                              "header",
+                              "path",
+                              "query"
+                            ],
+                            "example": "query"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "The human-readable error message."
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "The path to the invalid data (location-dependent).",
+                            "example": "/foo",
+                            "format": "json-pointer"
+                          },
+                          "validation": {
+                            "description": "The type(s) of validation that failed.",
+                            "example": "type",
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "example": "someValidation"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "someValidation"
+                                },
+                                "minItems": 1
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "location",
+                          "message",
+                          "path",
+                          "validation"
+                        ]
+                      }
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "errors",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that authentication failed.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/401",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Unauthorized",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 401,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication was successful but the user is not authorized to perform this action due to insufficient privileges.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the user is not authorized to perform this action despite being authenticated, probably due to insufficient privileges.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/403",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Forbidden",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 403,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body contains invalid data.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the request body contains invalid data.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/422",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Unprocessable Entity",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 422,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "An error indicating that part of an HTTP request is invalid.",
+                        "properties": {
+                          "location": {
+                            "type": "string",
+                            "description": "Which part of the request contains the invalid data.",
+                            "enum": [
+                              "body",
+                              "header",
+                              "path",
+                              "query"
+                            ],
+                            "example": "query"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "The human-readable error message."
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "The path to the invalid data (location-dependent).",
+                            "example": "/foo",
+                            "format": "json-pointer"
+                          },
+                          "validation": {
+                            "description": "The type(s) of validation that failed.",
+                            "example": "type",
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "example": "someValidation"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "someValidation"
+                                },
+                                "minItems": 1
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "location",
+                          "message",
+                          "path",
+                          "validation"
+                        ]
+                      }
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "errors",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": {
+          "bearerToken": []
+        }
+      }
+    },
+    "/locations/apriori_locations/{aprioriLocationId}": {
+      "delete": {
+        "summary": "Delete an apriori location.",
+        "description": "## Authorization\n\n**Required role:** `owner_admin`, `owner_validator` or `superadmin`.\n\n**Scope:** an owner administrator or validator can only delete an\napriori location belonging to their own owner.",
+        "operationId": "deleteAprioriLocation",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "Language to localize data and message returned by the API.",
+            "example": "en",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "de",
+                "fr",
+                "it",
+                "pt",
+                "ja"
+              ]
+            }
+          },
+          {
+            "name": "aprioriLocationId",
+            "in": "path",
+            "description": "The ID of the apriori location.",
+            "example": 42,
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the request has invalid parameters (HTTP headers, URL query parameters or URL path parameters).",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/400",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Bad Request",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 400,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "An error indicating that part of an HTTP request is invalid.",
+                        "properties": {
+                          "location": {
+                            "type": "string",
+                            "description": "Which part of the request contains the invalid data.",
+                            "enum": [
+                              "body",
+                              "header",
+                              "path",
+                              "query"
+                            ],
+                            "example": "query"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "The human-readable error message."
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "The path to the invalid data (location-dependent).",
+                            "example": "/foo",
+                            "format": "json-pointer"
+                          },
+                          "validation": {
+                            "description": "The type(s) of validation that failed.",
+                            "example": "type",
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "example": "someValidation"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "someValidation"
+                                },
+                                "minItems": 1
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "location",
+                          "message",
+                          "path",
+                          "validation"
+                        ]
+                      }
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "errors",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that authentication failed.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/401",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Unauthorized",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 401,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication was successful but the user is not authorized to perform this action due to insufficient privileges.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A response body indicating that the user is not authorized to perform this action despite being authenticated, probably due to insufficient privileges.",
+                  "properties": {
+                    "type": {
+                      "example": "https://httpstatuses.com/403",
+                      "type": "string",
+                      "description": "A URI reference that identifies the problem type.",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "example": "Forbidden",
+                      "type": "string",
+                      "description": "A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization."
+                    },
+                    "status": {
+                      "example": 403,
+                      "type": "number",
+                      "description": "The HTTP status code generated by the origin server for this occurence of the problem.",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable explanation specific to this occurrence of the problem."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "A URI reference that identifies the specific occurrence of the problem",
+                      "format": "uri"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "status",
+                    "title",
+                    "type"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": {
+          "bearerToken": []
+        }
+      }
+    },
     "/me/info": {
       "get": {
         "summary": "Retrieve profile info from the logged in user.",
@@ -28678,6 +29976,190 @@
         },
         "additionalProperties": false,
         "required": []
+      },
+      "AprioriLocationWithImageTitleList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "image_id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "longitude": {
+              "type": "number"
+            },
+            "latitude": {
+              "type": "number"
+            },
+            "azimuth": {
+              "type": "number",
+              "nullable": true
+            },
+            "exact": {
+              "type": "boolean"
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "original_id": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "image_id",
+            "longitude",
+            "latitude",
+            "azimuth",
+            "exact",
+            "title",
+            "original_id"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "AprioriLocationWithImageTitle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "image_id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "azimuth": {
+            "type": "number",
+            "nullable": true
+          },
+          "exact": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "original_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "image_id",
+          "longitude",
+          "latitude",
+          "azimuth",
+          "exact",
+          "title",
+          "original_id"
+        ]
+      },
+      "AprioriLocationList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "image_id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "longitude": {
+              "type": "number"
+            },
+            "latitude": {
+              "type": "number"
+            },
+            "azimuth": {
+              "type": "number",
+              "nullable": true
+            },
+            "exact": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "image_id",
+            "longitude",
+            "latitude",
+            "azimuth",
+            "exact"
+          ]
+        },
+        "additionalProperties": false
+      },
+      "AprioriLocation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "image_id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "azimuth": {
+            "type": "number",
+            "nullable": true
+          },
+          "exact": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "image_id",
+          "longitude",
+          "latitude",
+          "azimuth",
+          "exact"
+        ]
+      },
+      "UpdateExactLocationRequest": {
+        "type": "object",
+        "properties": {
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "longitude",
+          "latitude"
+        ]
       },
       "UserCorrectionInfoList": {
         "type": "array",
