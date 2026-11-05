@@ -67,6 +67,7 @@
         "impossible": "La posizione calcolata è impossibile, controlla che non ci siano errori nelle corrispondenze."
     },
     "locations":{
-        "noCountry": "La posizione non corrisponde ad alcun paese."
+        "noCountry": "La posizione non corrisponde ad alcun paese.",
+        "imageAlreadyGeoreferenced": "Questa immagine è già stata georeferenziata; la sua posizione a priori non può più essere aggiornata."
     }
 }
