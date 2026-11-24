@@ -1,0 +1,9 @@
+{
+  "$id": "AprioriLocationWithImageTitleList",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "$ref": "AprioriLocationWithImageTitle#"
+  },
+  "additionalProperties": false
+}
